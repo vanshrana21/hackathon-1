@@ -3,8 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from supabase import Client
-from supabase._sync.client import SyncClient
 from dotenv import load_dotenv
 import os
 import httpx
@@ -21,15 +19,39 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_supabase_client: Client | None = None
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
 
-def get_supabase() -> Client:
-    global _supabase_client
-    if _supabase_client is None:
-        url = os.getenv("SUPABASE_URL")
-        key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-        _supabase_client = SyncClient(url, key)
-    return _supabase_client
+def supabase_insert(table: str, data: dict) -> dict:
+    url = f"{SUPABASE_URL}/rest/v1/{table}"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+    }
+    with httpx.Client() as client:
+        response = client.post(url, json=data, headers=headers)
+    if response.status_code != 201:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+    return response.json()
+
+def supabase_select(table: str, filters: dict = None) -> list:
+    url = f"{SUPABASE_URL}/rest/v1/{table}"
+    headers = {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json"
+    }
+    params = {}
+    if filters:
+        for key, value in filters.items():
+            params[key] = f"eq.{value}"
+    with httpx.Client() as client:
+        response = client.get(url, headers=headers, params=params)
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.text)
+    return response.json()
 
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
@@ -74,12 +96,12 @@ async def onboard_user(data: OnboardingData):
         "current_level": 1
     }
     
-    result = get_supabase().table("users").insert(user_data).execute()
+    result = supabase_insert("users", user_data)
     
-    if not result.data:
+    if not result:
         raise HTTPException(status_code=500, detail="Failed to create user")
     
-    user = result.data[0]
+    user = result[0]
     return UserResponse(
         id=user["id"],
         name=user["name"],
@@ -94,12 +116,12 @@ async def onboard_user(data: OnboardingData):
 
 @app.get("/users/{user_id}", response_model=UserResponse)
 async def get_user(user_id: str):
-    result = get_supabase().table("users").select("*").eq("id", user_id).execute()
+    result = supabase_select("users", {"id": user_id})
     
-    if not result.data:
+    if not result:
         raise HTTPException(status_code=404, detail="User not found")
     
-    user = result.data[0]
+    user = result[0]
     return UserResponse(
         id=user["id"],
         name=user["name"],

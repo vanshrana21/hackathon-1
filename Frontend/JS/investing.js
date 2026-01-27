@@ -33,6 +33,9 @@ function getProfile() {
 
 function saveProfile(profile) {
     localStorage.setItem('finplay_profile', JSON.stringify(profile));
+    if (window.SyncService) {
+        window.SyncService.debouncedSave();
+    }
 }
 
 function getPortfolio() {
@@ -43,6 +46,9 @@ function getPortfolio() {
 
 function savePortfolio(portfolio) {
     localStorage.setItem('finplay_portfolio', JSON.stringify(portfolio));
+    if (window.SyncService) {
+        window.SyncService.debouncedSave();
+    }
 }
 
 function getMarket() {
@@ -53,6 +59,9 @@ function getMarket() {
 
 function saveMarket(market) {
     localStorage.setItem('finplay_market', JSON.stringify(market));
+    if (window.SyncService) {
+        window.SyncService.debouncedSave();
+    }
 }
 
 function initializePortfolio(profile) {
@@ -785,7 +794,11 @@ function refreshUI() {
     renderTransactions();
 }
 
-function initializePage() {
+async function initializePage() {
+    if (window.SyncService) {
+        await window.SyncService.initializeFromServer();
+    }
+    
     const profile = getProfile();
     if (!profile) {
         window.location.href = '/';

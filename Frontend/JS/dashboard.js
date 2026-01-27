@@ -31,6 +31,9 @@ function getProfile() {
 
 function saveProfile(profile) {
     localStorage.setItem('finplay_profile', JSON.stringify(profile));
+    if (window.SyncService) {
+        window.SyncService.debouncedSave();
+    }
 }
 
 function initializeBudgetState(profile) {
@@ -410,7 +413,11 @@ function showMonthSummary(month, summary, xpEarned, totalSaved) {
     });
 }
 
-function loadUserData() {
+async function loadUserData() {
+    if (window.SyncService) {
+        await window.SyncService.initializeFromServer();
+    }
+    
     let profile = getProfile();
     
     if (!profile) {

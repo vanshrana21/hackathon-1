@@ -178,9 +178,19 @@ function calculateHealthScore(profile, portfolio) {
 
 function generateInsights(profile, portfolio) {
     const insights = [];
+    const monthHistory = profile.budget?.monthHistory || [];
+    
+    if (monthHistory.length === 0) {
+        insights.push({
+            icon: '📊',
+            text: 'Complete your first month to start seeing personalized insights about your financial patterns.',
+            type: 'neutral'
+        });
+        return insights;
+    }
+    
     const savingsRate = calculateSavingsRate(profile);
     const diversification = calculateDiversification(portfolio);
-    const monthHistory = profile.budget?.monthHistory || [];
     
     if (savingsRate >= 20) {
         insights.push({
@@ -382,6 +392,15 @@ function generateDecisions(profile, portfolio) {
     const decisions = [];
     const monthHistory = profile.budget?.monthHistory || [];
     const transactions = portfolio?.transactions || [];
+    
+    if (monthHistory.length === 0) {
+        decisions.push({
+            label: 'Getting Started',
+            text: 'Your key decisions will be tracked here as you complete monthly cycles.',
+            type: 'neutral'
+        });
+        return decisions;
+    }
     
     let bestMonth = null;
     let worstMonth = null;
@@ -769,38 +788,94 @@ function renderLifeEvents(profile) {
     container.innerHTML = html;
 }
 
+function isMonthZero(profile) {
+    return (profile.budget?.monthHistory || []).length === 0;
+}
+
 function updateUI(profile, portfolio) {
     const healthData = calculateHealthScore(profile, portfolio);
+    const monthZero = isMonthZero(profile);
     
-    document.getElementById('healthScore').textContent = healthData.total;
-    const ringCircumference = 327;
-    const offset = ringCircumference - (ringCircumference * healthData.total / 100);
-    document.getElementById('scoreRing').style.strokeDashoffset = offset;
-    
+    const healthScoreEl = document.getElementById('healthScore');
+    const scoreRingEl = document.getElementById('scoreRing');
     const labelEl = document.getElementById('healthLabel');
-    let label, labelClass;
-    if (healthData.total >= 80) { label = 'Excellent'; labelClass = 'score-excellent'; }
-    else if (healthData.total >= 60) { label = 'Good'; labelClass = 'score-good'; }
-    else if (healthData.total >= 40) { label = 'Fair'; labelClass = 'score-fair'; }
-    else { label = 'Needs Work'; labelClass = 'score-poor'; }
+    const ringCircumference = 327;
     
-    labelEl.textContent = label;
-    labelEl.className = `health-score-label ${labelClass}`;
+    if (monthZero) {
+        healthScoreEl.textContent = '--';
+        scoreRingEl.style.strokeDashoffset = ringCircumference;
+        scoreRingEl.style.stroke = 'rgba(255,255,255,0.1)';
+        labelEl.textContent = 'Not enough data yet';
+        labelEl.className = 'health-score-label score-pending';
+        
+        const scoreNote = document.getElementById('scoreNote');
+        if (scoreNote) {
+            scoreNote.textContent = 'Your Financial Health Score will appear after you complete your first month.';
+            scoreNote.style.display = 'block';
+        }
+    } else {
+        healthScoreEl.textContent = healthData.total;
+        const offset = ringCircumference - (ringCircumference * healthData.total / 100);
+        scoreRingEl.style.strokeDashoffset = offset;
+        scoreRingEl.style.stroke = '';
+        
+        let label, labelClass;
+        if (healthData.total >= 80) { label = 'Excellent'; labelClass = 'score-excellent'; }
+        else if (healthData.total >= 60) { label = 'Good'; labelClass = 'score-good'; }
+        else if (healthData.total >= 40) { label = 'Fair'; labelClass = 'score-fair'; }
+        else { label = 'Needs Work'; labelClass = 'score-poor'; }
+        
+        labelEl.textContent = label;
+        labelEl.className = `health-score-label ${labelClass}`;
+        
+        const scoreNote = document.getElementById('scoreNote');
+        if (scoreNote) {
+            scoreNote.textContent = 'This score reflects patterns across months — not single decisions.';
+            scoreNote.style.display = 'block';
+        }
+    }
     
-    document.getElementById('savingsRateValue').textContent = `${healthData.components.savingsRate.value}%`;
-    document.getElementById('savingsRateBar').style.width = `${healthData.components.savingsRate.score}%`;
-    
-    document.getElementById('budgetDisciplineValue').textContent = `${healthData.components.budgetDiscipline.value}%`;
-    document.getElementById('budgetDisciplineBar').style.width = `${healthData.components.budgetDiscipline.score}%`;
-    
-    document.getElementById('diversificationValue').textContent = healthData.components.diversification.value;
-    document.getElementById('diversificationBar').style.width = `${healthData.components.diversification.score}%`;
-    
-    document.getElementById('riskBalanceValue').textContent = healthData.components.riskBalance.value;
-    document.getElementById('riskBalanceBar').style.width = `${healthData.components.riskBalance.score}%`;
-    
-    document.getElementById('consistencyValue').textContent = healthData.components.consistency.value;
-    document.getElementById('consistencyBar').style.width = `${healthData.components.consistency.score}%`;
+    if (monthZero) {
+        document.getElementById('savingsRateValue').textContent = '--';
+        document.getElementById('savingsRateBar').style.width = '0%';
+        document.getElementById('savingsRateBar').classList.add('bar-muted');
+        
+        document.getElementById('budgetDisciplineValue').textContent = '--';
+        document.getElementById('budgetDisciplineBar').style.width = '0%';
+        document.getElementById('budgetDisciplineBar').classList.add('bar-muted');
+        
+        document.getElementById('diversificationValue').textContent = '--';
+        document.getElementById('diversificationBar').style.width = '0%';
+        document.getElementById('diversificationBar').classList.add('bar-muted');
+        
+        document.getElementById('riskBalanceValue').textContent = '--';
+        document.getElementById('riskBalanceBar').style.width = '0%';
+        document.getElementById('riskBalanceBar').classList.add('bar-muted');
+        
+        document.getElementById('consistencyValue').textContent = '--';
+        document.getElementById('consistencyBar').style.width = '0%';
+        document.getElementById('consistencyBar').classList.add('bar-muted');
+    } else {
+        document.getElementById('savingsRateValue').textContent = `${healthData.components.savingsRate.value}%`;
+        document.getElementById('savingsRateBar').style.width = `${healthData.components.savingsRate.score}%`;
+        document.getElementById('savingsRateBar').classList.remove('bar-muted');
+        
+        document.getElementById('budgetDisciplineValue').textContent = `${healthData.components.budgetDiscipline.value}%`;
+        document.getElementById('budgetDisciplineBar').style.width = `${healthData.components.budgetDiscipline.score}%`;
+        document.getElementById('budgetDisciplineBar').classList.remove('bar-muted');
+        
+        document.getElementById('diversificationValue').textContent = healthData.components.diversification.value;
+        document.getElementById('diversificationBar').style.width = `${healthData.components.diversification.score}%`;
+        document.getElementById('diversificationBar').classList.remove('bar-muted');
+        
+        document.getElementById('riskBalanceValue').textContent = healthData.components.riskBalance.value;
+        document.getElementById('riskBalanceBar').style.width = `${healthData.components.riskBalance.score}%`;
+        document.getElementById('riskBalanceBar').classList.remove('bar-muted');
+        
+        document.getElementById('consistencyValue').textContent = healthData.components.consistency.value;
+        document.getElementById('consistencyBar').style.width = `${healthData.components.consistency.score}%`;
+        document.getElementById('consistencyBar').classList.remove('bar-muted');
+    }
     
     document.getElementById('totalXp').textContent = profile.xp;
     document.getElementById('monthsPlayed').textContent = (profile.budget?.month || 1) - 1;

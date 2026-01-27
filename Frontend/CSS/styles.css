@@ -1990,6 +1990,25 @@ body {
     max-width: 400px;
 }
 
+.health-score-note {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    font-style: italic;
+    max-width: 400px;
+}
+
+.health-score-label.score-pending {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.component-fill.bar-muted {
+    background: rgba(255, 255, 255, 0.05);
+    opacity: 0.5;
+}
+
 .health-score-breakdown {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

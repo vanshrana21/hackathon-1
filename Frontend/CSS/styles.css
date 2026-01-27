@@ -4394,3 +4394,34 @@ body {
     color: var(--text-muted);
     margin-top: 4px;
 }
+
+/* Money Source Integrity - Onboarding Updates */
+.highlight-grid-simple {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+}
+
+.highlight-item-primary {
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+}
+
+.highlight-helper {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 6px;
+}
+
+.zero-start-note {
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    text-align: center;
+    font-style: italic;
+}

@@ -151,7 +151,7 @@ async def onboard_user(data: OnboardingData):
     profile = {
         "user_id": user_id,
         "name": data.name,
-        "balance": 100000,
+        "balance": 0,
         "income": income,
         "xp": xp,
         "level": 1,
@@ -179,7 +179,7 @@ async def onboard_user(data: OnboardingData):
             json={
                 "user_id": user_id,
                 "name": data.name,
-                "balance": 100000,
+                "balance": 0,
                 "income": income,
                 "xp": xp,
                 "level": 1,

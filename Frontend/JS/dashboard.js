@@ -936,8 +936,25 @@ function formatCurrency(amount) {
 // =================================================================
 function displayUserData(profile) {
     document.getElementById('userName').textContent = profile.name;
-    document.getElementById('virtualBalance').textContent = formatCurrency(profile.balance);
+    
+    const currentMonth = profile.budget?.month || 1;
+    const isMonth1 = currentMonth === 1;
+    const displayBalance = isMonth1 && profile.balance === 0 ? profile.income : profile.balance;
+    
+    document.getElementById('virtualBalance').textContent = formatCurrency(displayBalance);
     document.getElementById('monthlyIncome').textContent = formatCurrency(profile.income);
+    
+    const balanceLabel = document.querySelector('#virtualBalance').nextElementSibling;
+    const balanceHelper = balanceLabel?.nextElementSibling;
+    if (balanceLabel && balanceHelper) {
+        if (isMonth1 && profile.balance === 0) {
+            balanceLabel.textContent = 'Income for Month 1';
+            balanceHelper.textContent = "You'll allocate this income in this month's decisions";
+        } else {
+            balanceLabel.textContent = 'Available This Month';
+            balanceHelper.textContent = "Money you can allocate in this month's decisions";
+        }
+    }
     
     const activeGoals = (profile.goalWallets || []).filter(w => w.status === 'active').length;
     document.getElementById('focusGoal').textContent = activeGoals > 0 ? activeGoals : '-';
@@ -2219,6 +2236,17 @@ async function loadUserData() {
     profile = initializeTimeTravelLetters(profile);
     profile = initializeReflectionLogs(profile);
     profile = initializeLifeEvents(profile);
+    
+    const currentMonth = profile.budget?.month || 1;
+    const isMonth1Start = currentMonth === 1 && profile.balance === 0 && !profile.budget?.allocated;
+    
+    if (isMonth1Start && !profile._month1IncomeShown) {
+        setTimeout(() => {
+            showNotification(`Month 1: ${formatCurrency(profile.income)} income available to allocate`, 'info');
+        }, 500);
+        profile._month1IncomeShown = true;
+        saveProfile(profile);
+    }
     
     const walletResult = processFutureWalletContribution(profile);
     if (walletResult.contributed) {

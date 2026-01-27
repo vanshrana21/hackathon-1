@@ -267,6 +267,71 @@ function generateInsights(profile, portfolio) {
         });
     }
     
+    // Temptation Controls insight
+    const lockHistory = profile.temptationLocks?.history || [];
+    if (lockHistory.length > 0) {
+        const monthsWithinLimit = lockHistory.filter(h => h.stayedWithinLimit).length;
+        const totalMonths = lockHistory.length;
+        const successRate = Math.round((monthsWithinLimit / totalMonths) * 100);
+        
+        if (monthsWithinLimit === totalMonths) {
+            insights.push({
+                icon: '🛡️',
+                text: `You stayed within your self-set spending limits ${monthsWithinLimit} out of ${totalMonths} month(s). Constraints chosen in advance are more effective than willpower.`,
+                type: 'positive'
+            });
+        } else if (successRate >= 70) {
+            insights.push({
+                icon: '🛡️',
+                text: `You stayed within your temptation limits ${monthsWithinLimit} out of ${totalMonths} months (${successRate}%). Pre-commitment is working!`,
+                type: 'positive'
+            });
+        } else {
+            insights.push({
+                icon: '🛡️',
+                text: `You stayed within limits ${monthsWithinLimit} of ${totalMonths} months. Consider adjusting caps to be more sustainable.`,
+                type: 'neutral'
+            });
+        }
+    } else if (profile.temptationLocks?.enabled) {
+        insights.push({
+            icon: '🛡️',
+            text: `You've enabled Temptation Controls. These voluntary limits teach that discipline is designed, not forced.`,
+            type: 'neutral'
+        });
+    }
+    
+    // Goal Wallets insight
+    const goalWallets = profile.goalWallets || [];
+    const activeGoals = goalWallets.filter(w => w.status === 'active');
+    const completedGoals = goalWallets.filter(w => w.status === 'completed');
+    const earlyWithdrawnGoals = goalWallets.filter(w => w.status === 'withdrawn_early');
+    
+    if (completedGoals.length > 0) {
+        const totalCompleted = completedGoals.length;
+        const totalGoals = goalWallets.length;
+        insights.push({
+            icon: '🎯',
+            text: `You've completed ${totalCompleted} of ${totalGoals} goal wallet(s). Goal-linked saving increases follow-through by separating intention from impulse.`,
+            type: 'positive'
+        });
+    } else if (activeGoals.length > 0) {
+        const totalLocked = activeGoals.reduce((sum, w) => sum + w.currentAmount, 0);
+        insights.push({
+            icon: '🎯',
+            text: `You have ${activeGoals.length} active goal wallet(s) with ${formatCurrency(totalLocked)} locked toward future goals. Naming money changes behavior.`,
+            type: 'positive'
+        });
+    }
+    
+    if (earlyWithdrawnGoals.length > 0) {
+        insights.push({
+            icon: '💭',
+            text: `${earlyWithdrawnGoals.length} goal(s) withdrawn early. Each early withdrawal is a learning opportunity about commitment.`,
+            type: 'neutral'
+        });
+    }
+    
     return insights;
 }
 
@@ -433,7 +498,7 @@ function renderProgressTimeline(profile) {
     const monthHistory = profile.budget?.monthHistory || [];
     
     if (monthHistory.length === 0) {
-        container.innerHTML = '<p class="empty-state">Complete more months to see your progress</p>';
+        container.innerHTML = '<p class="empty-state">Your progress timeline will appear as you complete months</p>';
         return;
     }
     
@@ -451,6 +516,213 @@ function renderProgressTimeline(profile) {
         `;
     });
     html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderLettersArchive(profile) {
+    const container = document.getElementById('lettersContainer');
+    if (!container) return;
+    
+    const letters = profile.timeTravelLetters || [];
+    
+    if (letters.length === 0) {
+        container.innerHTML = `
+            <div class="letters-empty">
+                <p>No letters yet</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">When you write a letter to your future self, it will appear here.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const delivered = letters.filter(l => l.delivered);
+    const pending = letters.filter(l => !l.delivered);
+    
+    let html = `
+        <div class="letters-stats">
+            <div class="letters-stat">
+                <div class="letters-stat-value">${letters.length}</div>
+                <div class="letters-stat-label">Letters Written</div>
+            </div>
+            <div class="letters-stat">
+                <div class="letters-stat-value">${delivered.length}</div>
+                <div class="letters-stat-label">Delivered</div>
+            </div>
+            <div class="letters-stat">
+                <div class="letters-stat-value">${pending.length}</div>
+                <div class="letters-stat-label">Waiting</div>
+            </div>
+        </div>
+        <div class="letters-list">
+    `;
+    
+    letters.forEach(letter => {
+        const status = letter.delivered ? 'delivered' : 'pending';
+        const dateText = letter.delivered 
+            ? `Delivered Month ${letter.deliveredAt}` 
+            : `Arrives Month ${letter.deliverMonth}`;
+        
+        html += `
+            <div class="letter-archive-item">
+                <div class="lai-header">
+                    <span class="lai-date">Written Month ${letter.writtenMonth} • ${dateText}</span>
+                    <span class="lai-badge ${status}">${status}</span>
+                </div>
+                <p class="lai-message">"${letter.message}"</p>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function renderLessonsLearned(profile) {
+    const container = document.getElementById('lessonsContainer');
+    if (!container) return;
+    
+    const reflections = profile.reflectionLogs || [];
+    
+    if (reflections.length === 0) {
+        container.innerHTML = `
+            <div class="lessons-empty">
+                <p>No reflections yet</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">When outcomes differ from expectations, you'll see observations here — not judgments.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const contextCounts = {};
+    reflections.forEach(r => {
+        contextCounts[r.context] = (contextCounts[r.context] || 0) + 1;
+    });
+    
+    const mostCommon = Object.entries(contextCounts).sort((a, b) => b[1] - a[1])[0];
+    const mostCommonTheme = mostCommon ? mostCommon[0].replace('_', ' ') : 'general';
+    
+    let html = `
+        <div class="lessons-stats">
+            <div class="lessons-stat">
+                <div class="lessons-stat-value">${reflections.length}</div>
+                <div class="lessons-stat-label">Reflections</div>
+            </div>
+            <div class="lessons-stat">
+                <div class="lessons-stat-value">${reflections.filter(r => r.userReflection).length}</div>
+                <div class="lessons-stat-label">With Notes</div>
+            </div>
+            <div class="lessons-stat">
+                <div class="lessons-stat-value">${mostCommonTheme}</div>
+                <div class="lessons-stat-label">Common Theme</div>
+            </div>
+        </div>
+        <div class="lessons-list">
+    `;
+    
+    reflections.slice().reverse().forEach(reflection => {
+        html += `
+            <div class="lesson-item">
+                <div class="lesson-header">
+                    <span class="lesson-trigger">${reflection.triggerEvent}<span class="lesson-context-badge">${reflection.context}</span></span>
+                    <span class="lesson-month">Month ${reflection.month}</span>
+                </div>
+                <p class="lesson-insight">${reflection.autoInsight}</p>
+                ${reflection.userReflection ? `<p class="lesson-reflection">"${reflection.userReflection}"</p>` : ''}
+            </div>
+        `;
+    });
+    
+    html += `
+        </div>
+        <div class="lessons-educational">
+            <p>People who reflect improve outcomes faster than those who avoid review.</p>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+function renderLifeEvents(profile) {
+    const container = document.getElementById('lifeEventsContainer');
+    if (!container) return;
+    
+    const events = profile.lifeEvents || [];
+    
+    if (events.length === 0) {
+        container.innerHTML = `
+            <div class="life-events-empty">
+                <p>No life events yet</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">Unexpected events happen naturally as months pass. You'll navigate them when they arrive.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const negativeCount = events.filter(e => e.type === 'negative').length;
+    const positiveCount = events.filter(e => e.type === 'positive').length;
+    
+    let totalImpact = 0;
+    events.forEach(e => {
+        if (e.financialImpact?.cashChange) {
+            totalImpact += e.financialImpact.cashChange;
+        }
+    });
+    
+    const hasBuffer = profile.balance > profile.income * 2;
+    const recoveryQuality = hasBuffer ? 'Resilient' : events.length <= 2 ? 'Early Days' : 'Building';
+    
+    let html = `
+        <div class="life-events-stats">
+            <div class="le-stat">
+                <div class="le-stat-value">${events.length}</div>
+                <div class="le-stat-label">Events</div>
+            </div>
+            <div class="le-stat">
+                <div class="le-stat-value">${negativeCount} / ${positiveCount}</div>
+                <div class="le-stat-label">Challenges / Windfalls</div>
+            </div>
+            <div class="le-stat">
+                <div class="le-stat-value">${recoveryQuality}</div>
+                <div class="le-stat-label">Recovery</div>
+            </div>
+        </div>
+        <div class="life-events-list">
+    `;
+    
+    events.slice().reverse().forEach(event => {
+        let impactText = '';
+        if (event.financialImpact?.cashChange) {
+            const sign = event.financialImpact.cashChange > 0 ? '+' : '';
+            impactText = `${sign}₹${Math.abs(event.financialImpact.cashChange).toLocaleString('en-IN')}`;
+        } else if (event.financialImpact?.marketEffect) {
+            impactText = `${Math.round(event.financialImpact.marketEffect * 100)}% on investments`;
+        } else if (event.financialImpact?.incomeChange) {
+            impactText = `${Math.round(event.financialImpact.incomeChange * 100)}% income`;
+        }
+        
+        const impactClass = event.type === 'positive' ? 'positive' : event.type === 'negative' ? 'negative' : '';
+        
+        html += `
+            <div class="le-archive-item type-${event.type}">
+                <div class="le-item-header">
+                    <span class="le-item-title">${event.title}</span>
+                    <span class="le-item-month">Month ${event.month}</span>
+                </div>
+                ${impactText ? `<div class="le-item-impact ${impactClass}">${impactText}</div>` : ''}
+                <div class="le-item-takeaway">${event.takeaway}</div>
+            </div>
+        `;
+    });
+    
+    html += `
+        </div>
+        <div class="life-events-insight">
+            <p>${hasBuffer 
+                ? 'You recovered faster in months where savings buffers existed.' 
+                : 'Building savings buffers helps absorb life\'s unexpected shocks.'}</p>
+        </div>
+    `;
+    
     container.innerHTML = html;
 }
 
@@ -524,6 +796,9 @@ function updateUI(profile, portfolio) {
     `).join('');
     
     renderProgressTimeline(profile);
+    renderLettersArchive(profile);
+    renderLessonsLearned(profile);
+    renderLifeEvents(profile);
     
     document.getElementById('currentMonth').textContent = `Month ${profile.budget?.month || 1}`;
     document.getElementById('levelBadge').querySelector('span:last-child').textContent = `Level ${profile.level}`;
@@ -567,7 +842,86 @@ async function loadDemoPreset() {
                 { month: 4, needs: 25000, wants: 10000, savings: 15000, totalSaved: 15000, xpEarned: 35 },
                 { month: 5, needs: 25000, wants: 11000, savings: 14000, totalSaved: 14000, xpEarned: 30 }
             ]
-        }
+        },
+        timeTravelLetters: [
+            {
+                id: 'demo_ttl_1',
+                writtenMonth: 1,
+                deliverMonth: 4,
+                trigger: 'month_start',
+                tone: 'encouraging',
+                message: 'Remember why you started. Every small step counts. You are building something meaningful.',
+                delivered: true,
+                deliveredAt: 4
+            },
+            {
+                id: 'demo_ttl_2',
+                writtenMonth: 3,
+                deliverMonth: 9,
+                trigger: 'month_start',
+                tone: 'proud',
+                message: 'If you are reading this, you made it through 6 more months. I hope you kept saving. I believe in you.',
+                delivered: false,
+                deliveredAt: null
+            }
+        ],
+        goalWallets: [
+            {
+                id: 'demo_gw_1',
+                name: 'Emergency Fund',
+                targetAmount: 50000,
+                currentAmount: 35000,
+                totalContributed: 30000,
+                totalGrowth: 5000,
+                monthlyContribution: 5000,
+                investmentType: 'fd',
+                lockInMonths: 12,
+                startMonth: 1,
+                maturityMonth: 13,
+                status: 'active',
+                penaltyApplied: false,
+                history: []
+            }
+        ],
+        reflectionLogs: [
+            {
+                id: 'demo_rfl_1',
+                month: 3,
+                context: 'budget',
+                triggerEvent: 'Below savings target',
+                observedOutcome: 'Savings rate was 8% this month, below the recommended 10%.',
+                reflectionPrompt: 'What would you like to try differently next month?',
+                userReflection: 'I spent more on dining out than planned. Next month I will set a stricter limit.',
+                autoInsight: 'One high-expense category caused most of the overspend.',
+                acknowledged: true
+            }
+        ],
+        lifeEvents: [
+            {
+                id: 'demo_le_1',
+                month: 2,
+                type: 'negative',
+                category: 'health',
+                title: 'Unexpected Medical Expense',
+                description: 'A sudden health issue required immediate attention and treatment.',
+                financialImpact: { cashChange: -12000 },
+                userDecision: null,
+                takeaway: 'This is why emergency funds exist — not to avoid emergencies, but to survive them calmly.',
+                resolved: true
+            },
+            {
+                id: 'demo_le_2',
+                month: 4,
+                type: 'positive',
+                category: 'income',
+                title: 'Performance Bonus',
+                description: 'Your hard work was recognized with a one-time bonus.',
+                financialImpact: { cashChange: 8000 },
+                userDecision: null,
+                takeaway: 'Windfalls are opportunities. How you use them shapes your financial future.',
+                resolved: true
+            }
+        ]
     };
     
     const demoPortfolio = {

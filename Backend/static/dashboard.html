@@ -41,7 +41,7 @@
                 <div class="welcome-section">
                     <div class="welcome-text">
                         <h1>Welcome, <span id="userName">User</span>!</h1>
-                        <p>Ready to level up your financial skills?</p>
+                        <p>Practice financial decisions in a safe space — no real money at risk</p>
                     </div>
                 </div>
             </div>
@@ -49,13 +49,20 @@
 
         <main class="dashboard-content">
             <div class="container">
-                <div class="stats-grid">
+                <section class="money-overview-section">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">Your Money at a Glance</h2>
+                        <p class="section-subtitle">Understand what's available to spend and what's protected for the future</p>
+                    </div>
+                    
+                    <div class="stats-grid">
                     <div class="stat-card">
                         <div class="stat-card-header">
                             <div class="stat-card-icon">💰</div>
                         </div>
                         <div class="stat-card-value" id="virtualBalance">₹1,00,000</div>
-                        <div class="stat-card-label">Virtual Balance</div>
+                        <div class="stat-card-label">Spendable Balance</div>
+                        <div class="stat-card-helper">Available for budgeting</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-header">
@@ -63,48 +70,58 @@
                         </div>
                         <div class="stat-card-value" id="monthlyIncome">₹30,000</div>
                         <div class="stat-card-label">Monthly Income</div>
+                        <div class="stat-card-helper">Added each month</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-header">
-                            <div class="stat-card-icon">⚡</div>
+                            <div class="stat-card-icon">🛡️</div>
                         </div>
-                        <div class="stat-card-value" id="xpValue">50 XP</div>
-                        <div class="stat-card-label">Experience Points</div>
+                        <div class="stat-card-value" id="totalProtected">₹0</div>
+                        <div class="stat-card-label">Total Protected</div>
+                        <div class="stat-card-helper">Future Self + Goals</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-header">
                             <div class="stat-card-icon">🎯</div>
                         </div>
                         <div class="stat-card-value" id="focusGoal">-</div>
-                        <div class="stat-card-label">Focus Goal</div>
+                        <div class="stat-card-label">Active Goals</div>
+                        <div class="stat-card-helper">Working toward</div>
                     </div>
-                </div>
+                    </div>
+                </section>
+
+                <section class="protected-money-section">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">Protected Money</h2>
+                        <p class="section-subtitle">Money set aside for your future — intentionally harder to spend</p>
+                    </div>
 
                 <div id="futureWalletCard" class="card future-wallet-card">
                     <div class="future-wallet-header">
                         <div class="fw-badge">🔐</div>
                         <div class="fw-title">
                             <h3>Future Self Wallet</h3>
-                            <p class="fw-subtitle">Pay Yourself First — 15% auto-saved before spending</p>
+                            <p class="fw-subtitle">Automatically saves a portion of your income before you can spend it</p>
                         </div>
                     </div>
                     <div class="future-wallet-stats">
                         <div class="fw-stat">
                             <div class="fw-stat-value" id="futureWalletBalance">₹0</div>
-                            <div class="fw-stat-label">Total Protected</div>
+                            <div class="fw-stat-label">Protected Balance</div>
                         </div>
                         <div class="fw-stat">
                             <div class="fw-stat-value" id="futureWalletContribution">₹0</div>
                             <div class="fw-stat-label">This Month</div>
                         </div>
                         <div class="fw-stat">
-                            <div class="fw-stat-value" id="futureWalletTotal">₹0</div>
-                            <div class="fw-stat-label">All-Time Saved</div>
+                            <div class="fw-stat-value" id="futureWalletRate">15%</div>
+                            <div class="fw-stat-label">Current Rate</div>
                         </div>
                     </div>
                     <div class="fw-info">
                         <span class="fw-info-icon">💡</span>
-                        <span>This money is protected from spending. It represents your long-term savings.</span>
+                        <span>This money is protected from spending. Think of it as paying your future self first.</span>
                     </div>
                     <div class="fw-actions">
                         <button class="btn btn-secondary btn-sm" id="adjustRateBtn">
@@ -120,7 +137,7 @@
                 <div class="dashboard-main">
                     <div class="card level-card">
                         <div class="card-header">
-                            <h2 class="card-title">Current Level</h2>
+                            <h2 class="card-title">Your Progress</h2>
                         </div>
                         <div class="level-info">
                             <div class="level-name" id="levelName">Level 1 – Budgeting Basics</div>
@@ -135,12 +152,6 @@
                                 <span id="xpToNext">100 XP to Level 2</span>
                             </div>
                         </div>
-                        <button class="btn btn-primary" style="width: 100%;" id="startLevelBtn">
-                            Earn Bonus XP
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M5 12h14M12 5l7 7-7 7"/>
-                            </svg>
-                        </button>
                     </div>
 
                     <div class="card profile-card">
@@ -165,35 +176,38 @@
                         </div>
                     </div>
                 </div>
+                </section>
 
                 <section class="budget-section">
-                    <h2 class="section-title">Monthly Budget</h2>
-                    <p class="section-subtitle">Allocate your spendable income (after Future Self Wallet deduction)</p>
+                    <div class="section-header-bar">
+                        <h2 class="section-title">Monthly Budget</h2>
+                        <p class="section-subtitle">Allocate your spendable income — these choices are reversible until you confirm</p>
+                    </div>
 
                     <div id="budgetAllocation" class="card budget-allocation-card">
                         <h3 class="card-title">Allocate Your Spendable Income</h3>
                         <p class="allocation-hint">
-                            <strong>Spendable: <span id="spendableIncome">₹0</span></strong> (after 15% auto-saved)
+                            <strong>Spendable: <span id="spendableIncome">₹0</span></strong> (after Future Self Wallet)
                         </p>
                         <p class="allocation-hint">Needs (essentials) + Wants (lifestyle) + Savings = Spendable Income</p>
                         
                         <div class="allocation-inputs">
                             <div class="allocation-input-group">
-                                <label>Needs (50% recommended)</label>
+                                <label>Needs (50% suggested)</label>
                                 <div class="input-with-icon">
                                     <span>₹</span>
                                     <input type="number" id="needsInput" placeholder="0" min="0">
                                 </div>
                             </div>
                             <div class="allocation-input-group">
-                                <label>Wants (30% recommended)</label>
+                                <label>Wants (30% suggested)</label>
                                 <div class="input-with-icon">
                                     <span>₹</span>
                                     <input type="number" id="wantsInput" placeholder="0" min="0">
                                 </div>
                             </div>
                             <div class="allocation-input-group">
-                                <label>Savings (20% recommended)</label>
+                                <label>Savings (20% suggested)</label>
                                 <div class="input-with-icon">
                                     <span>₹</span>
                                     <input type="number" id="savingsInput" placeholder="0" min="0">
@@ -271,11 +285,43 @@
                     </div>
                 </section>
 
+                <section class="goal-wallets-section">
+                    <div class="goal-wallets-header">
+                        <div class="goal-wallets-title-area">
+                            <div class="goal-wallets-icon">🎯</div>
+                            <div>
+                                <h2 class="section-title">Goal Wallets</h2>
+                                <p class="section-subtitle">Commit money to specific goals — withdrawing early has trade-offs, so consider carefully</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="goalWalletsContainer" class="goal-wallets-container">
+                    </div>
+                </section>
+
+                <section class="time-travel-section">
+                    <div class="time-travel-header">
+                        <div class="time-travel-title-area">
+                            <div class="time-travel-icon">✉️</div>
+                            <div>
+                                <h2 class="section-title">Time-Travel Letters</h2>
+                                <p class="section-subtitle">Write a note to your future self — it arrives at a moment you choose</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="timeTravelContainer" class="time-travel-container">
+                        <div class="time-travel-prompt">
+                            <p>Capture what you're thinking now. Your future self will appreciate the reminder.</p>
+                            <button class="btn btn-secondary btn-sm" id="writeLetterBtn">Write Letter</button>
+                        </div>
+                    </div>
+                </section>
+
                 <section id="expenseSection" class="expense-section" style="display: none;">
                     <div class="expense-header">
                         <div>
                             <h2 class="section-title">Monthly Expenses</h2>
-                            <p class="section-subtitle">Pay your expenses. Needs are mandatory, Wants are optional.</p>
+                            <p class="section-subtitle">Needs are required. Wants are optional — choose what matters to you.</p>
                         </div>
                         <button class="btn btn-primary" id="endMonthBtn" disabled>
                             End Month

@@ -1,3 +1,4 @@
+console.log('[dashboard.js] Script loaded successfully');
 
         async function loadUserData() {
             const userId = localStorage.getItem('user_id');

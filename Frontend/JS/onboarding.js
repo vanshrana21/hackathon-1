@@ -1,3 +1,4 @@
+console.log('[onboarding.js] Script loaded successfully');
 
         const state = {
             currentStep: 1,

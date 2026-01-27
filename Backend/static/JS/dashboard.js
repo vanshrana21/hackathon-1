@@ -897,11 +897,11 @@ function addXp(amount, silent = false) {
     
     if (!silent) {
         if (profile.level > oldLevel) {
-            showNotification(`Level Up! You're now Level ${profile.level}!`, 'success');
+            showNotification(`Level Up! You reached Level ${profile.level}`, 'success');
         } else if (amount > 0) {
-            showNotification(`+${amount} XP earned!`, 'xp');
+            showNotification(`+${amount} Experience gained`, 'xp');
         } else if (amount < 0) {
-            showNotification(`${amount} XP penalty!`, 'error');
+            showNotification(`${amount} Experience`, 'error');
         }
     }
     
@@ -936,8 +936,25 @@ function formatCurrency(amount) {
 // =================================================================
 function displayUserData(profile) {
     document.getElementById('userName').textContent = profile.name;
-    document.getElementById('virtualBalance').textContent = formatCurrency(profile.balance);
+    
+    const currentMonth = profile.budget?.month || 1;
+    const isMonth1 = currentMonth === 1;
+    const displayBalance = isMonth1 && profile.balance === 0 ? profile.income : profile.balance;
+    
+    document.getElementById('virtualBalance').textContent = formatCurrency(displayBalance);
     document.getElementById('monthlyIncome').textContent = formatCurrency(profile.income);
+    
+    const balanceLabel = document.querySelector('#virtualBalance').nextElementSibling;
+    const balanceHelper = balanceLabel?.nextElementSibling;
+    if (balanceLabel && balanceHelper) {
+        if (isMonth1 && profile.balance === 0) {
+            balanceLabel.textContent = 'Income for Month 1';
+            balanceHelper.textContent = "You'll allocate this income in this month's decisions";
+        } else {
+            balanceLabel.textContent = 'Available This Month';
+            balanceHelper.textContent = "Money you can allocate in this month's decisions";
+        }
+    }
     
     const activeGoals = (profile.goalWallets || []).filter(w => w.status === 'active').length;
     document.getElementById('focusGoal').textContent = activeGoals > 0 ? activeGoals : '-';
@@ -959,9 +976,9 @@ function displayUserData(profile) {
     const xpInLevel = getXpForCurrentLevel(profile.xp);
     const xpProgress = (xpInLevel / XP_PER_LEVEL) * 100;
     
-    document.getElementById('currentXp').textContent = `${xpInLevel} XP`;
+    document.getElementById('currentXp').textContent = `${xpInLevel} Experience`;
     document.getElementById('xpFill').style.width = `${xpProgress}%`;
-    document.getElementById('xpToNext').textContent = `${XP_PER_LEVEL} XP to Level ${profile.level + 1}`;
+    document.getElementById('xpToNext').textContent = `${XP_PER_LEVEL} to Level ${profile.level + 1}`;
     
     const levelInfo = getLevelInfo(profile.level);
     document.getElementById('levelName').textContent = `Level ${profile.level} – ${levelInfo.name}`;
@@ -1111,7 +1128,7 @@ function allocateBudget() {
     const savingsPercent = (savings / spendableIncome) * 100;
     if (savingsPercent >= 20) {
         addXp(25);
-        showNotification('Great savings allocation! +25 XP', 'success');
+        showNotification('+25 Experience — decision recorded', 'success');
     } else if (savingsPercent >= 10) {
         addXp(15);
     } else {
@@ -1324,8 +1341,8 @@ function showMonthSummary(month, summary, xpEarned, totalSaved, futureWalletCont
                     <span class="summary-stat-label">Added to Balance</span>
                 </div>
                 <div class="summary-stat">
-                    <span class="summary-stat-value">+${xpEarned} XP</span>
-                    <span class="summary-stat-label">Earned</span>
+                    <span class="summary-stat-value">+${xpEarned}</span>
+                    <span class="summary-stat-label">Experience Gained</span>
                 </div>
             </div>
             ${summary.length > 0 ? `<ul class="summary-list">${summary.map(s => `<li>${s}</li>`).join('')}</ul>` : ''}
@@ -2219,6 +2236,17 @@ async function loadUserData() {
     profile = initializeTimeTravelLetters(profile);
     profile = initializeReflectionLogs(profile);
     profile = initializeLifeEvents(profile);
+    
+    const currentMonth = profile.budget?.month || 1;
+    const isMonth1Start = currentMonth === 1 && profile.balance === 0 && !profile.budget?.allocated;
+    
+    if (isMonth1Start && !profile._month1IncomeShown) {
+        setTimeout(() => {
+            showNotification(`Month 1: ${formatCurrency(profile.income)} income available to allocate`, 'info');
+        }, 500);
+        profile._month1IncomeShown = true;
+        saveProfile(profile);
+    }
     
     const walletResult = processFutureWalletContribution(profile);
     if (walletResult.contributed) {

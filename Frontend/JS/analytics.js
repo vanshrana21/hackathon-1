@@ -577,6 +577,74 @@ function renderLettersArchive(profile) {
     container.innerHTML = html;
 }
 
+function renderLessonsLearned(profile) {
+    const container = document.getElementById('lessonsContainer');
+    if (!container) return;
+    
+    const reflections = profile.reflectionLogs || [];
+    
+    if (reflections.length === 0) {
+        container.innerHTML = `
+            <div class="lessons-empty">
+                <p>No reflections yet</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">Reflections appear when there's an opportunity to learn from a decision.</p>
+            </div>
+            <div class="lessons-educational">
+                <p>People who reflect improve outcomes faster than those who avoid review.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const contextCounts = {};
+    reflections.forEach(r => {
+        contextCounts[r.context] = (contextCounts[r.context] || 0) + 1;
+    });
+    
+    const mostCommon = Object.entries(contextCounts).sort((a, b) => b[1] - a[1])[0];
+    const mostCommonTheme = mostCommon ? mostCommon[0].replace('_', ' ') : 'general';
+    
+    let html = `
+        <div class="lessons-stats">
+            <div class="lessons-stat">
+                <div class="lessons-stat-value">${reflections.length}</div>
+                <div class="lessons-stat-label">Reflections</div>
+            </div>
+            <div class="lessons-stat">
+                <div class="lessons-stat-value">${reflections.filter(r => r.userReflection).length}</div>
+                <div class="lessons-stat-label">With Notes</div>
+            </div>
+            <div class="lessons-stat">
+                <div class="lessons-stat-value">${mostCommonTheme}</div>
+                <div class="lessons-stat-label">Common Theme</div>
+            </div>
+        </div>
+        <div class="lessons-list">
+    `;
+    
+    reflections.slice().reverse().forEach(reflection => {
+        html += `
+            <div class="lesson-item">
+                <div class="lesson-header">
+                    <span class="lesson-trigger">${reflection.triggerEvent}<span class="lesson-context-badge">${reflection.context}</span></span>
+                    <span class="lesson-month">Month ${reflection.month}</span>
+                </div>
+                <p class="lesson-insight">${reflection.autoInsight}</p>
+                ${reflection.userReflection ? `<p class="lesson-reflection">"${reflection.userReflection}"</p>` : ''}
+            </div>
+        `;
+    });
+    
+    html += `
+        </div>
+        <div class="lessons-educational">
+            <p>People who reflect improve outcomes faster than those who avoid review.</p>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
 function updateUI(profile, portfolio) {
     const healthData = calculateHealthScore(profile, portfolio);
     
@@ -648,6 +716,7 @@ function updateUI(profile, portfolio) {
     
     renderProgressTimeline(profile);
     renderLettersArchive(profile);
+    renderLessonsLearned(profile);
     
     document.getElementById('currentMonth').textContent = `Month ${profile.budget?.month || 1}`;
     document.getElementById('levelBadge').querySelector('span:last-child').textContent = `Level ${profile.level}`;
@@ -730,6 +799,19 @@ async function loadDemoPreset() {
                 status: 'active',
                 penaltyApplied: false,
                 history: []
+            }
+        ],
+        reflectionLogs: [
+            {
+                id: 'demo_rfl_1',
+                month: 3,
+                context: 'budget',
+                triggerEvent: 'Below savings target',
+                observedOutcome: 'Savings rate was 8% this month, below the recommended 10%.',
+                reflectionPrompt: 'What would you like to try differently next month?',
+                userReflection: 'I spent more on dining out than planned. Next month I will set a stricter limit.',
+                autoInsight: 'One high-expense category caused most of the overspend.',
+                acknowledged: true
             }
         ]
     };

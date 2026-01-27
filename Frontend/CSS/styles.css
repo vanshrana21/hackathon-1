@@ -3458,6 +3458,234 @@ body {
     color: var(--text-secondary);
 }
 
+/* Regret-Free Review / Reflection Modal */
+.reflection-overlay .modal-content {
+    background: linear-gradient(135deg, rgba(30, 35, 50, 0.98), rgba(25, 28, 40, 0.98));
+}
+
+.reflection-modal {
+    max-width: 480px;
+}
+
+.reflection-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.reflection-icon {
+    font-size: 2.5rem;
+}
+
+.reflection-header h2 {
+    margin: 0;
+    font-size: 1.4rem;
+}
+
+.reflection-context {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--text-muted);
+}
+
+.reflection-outcome {
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.reflection-question {
+    margin-bottom: 20px;
+}
+
+.reflection-prompt {
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.reflection-question textarea {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    resize: none;
+    font-family: inherit;
+}
+
+.reflection-question textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.reflection-insight {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 10px;
+    margin-bottom: 16px;
+}
+
+.insight-icon {
+    font-size: 1.2rem;
+}
+
+.reflection-insight p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.reflection-reminder {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.reflection-reminder p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+/* Lessons Learned Section (Analytics) */
+.lessons-section {
+    margin-top: 32px;
+}
+
+.lessons-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.lessons-title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.lessons-icon {
+    font-size: 1.5rem;
+}
+
+.lessons-container {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+}
+
+.lessons-empty {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-secondary);
+}
+
+.lessons-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.lessons-stat {
+    text-align: center;
+}
+
+.lessons-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.lessons-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.lessons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.lesson-item {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.lesson-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.lesson-trigger {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.lesson-month {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.lesson-insight {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    padding-left: 12px;
+    border-left: 2px solid var(--primary);
+}
+
+.lesson-reflection {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.lesson-context-badge {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--primary);
+    margin-left: 8px;
+}
+
+.lessons-educational {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+.lessons-educational p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
 /* Letters Archive Section */
 .letters-section {
     margin-top: 32px;

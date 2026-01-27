@@ -664,6 +664,15 @@ function showEarlyWithdrawalConfirm(profile, walletId) {
         
         if (result.success) {
             showNotification(`${formatCurrency(result.amount)} withdrawn (${formatCurrency(result.penalty)} penalty applied)`, 'info');
+            
+            const triggerData = checkEarlyWithdrawalReflection(getProfile(), wallet.name);
+            if (triggerData) {
+                const reflection = createReflectionLog(getProfile(), triggerData);
+                setTimeout(() => {
+                    showReflectionModal(getProfile(), reflection);
+                }, 1000);
+            }
+            
             displayUserData(getProfile());
         }
         
@@ -1318,6 +1327,210 @@ function showMonthSummary(month, summary, xpEarned, totalSaved, futureWalletCont
 }
 
 // =================================================================
+// REGRET-FREE REVIEW SYSTEM
+// =================================================================
+const AUTO_INSIGHTS = {
+    budget: [
+        "One high-expense category caused most of the overspend.",
+        "Unexpected expenses can be managed with a small buffer fund.",
+        "Tracking patterns over time reveals spending habits you might not notice day-to-day."
+    ],
+    investment: [
+        "Market volatility affected short-term results — time reduces risk.",
+        "Temporary drops are normal. Long-term investors benefit from staying the course.",
+        "Diversification helps smooth out the bumps in any single investment."
+    ],
+    temptation: [
+        "Impulse moments often pass within 24 hours.",
+        "Having barriers in place makes it easier to pause and reconsider.",
+        "Small wins against temptation build confidence over time."
+    ],
+    goal_withdrawal: [
+        "Early withdrawals often feel necessary in the moment but less so later.",
+        "Each goal is a commitment to your future self.",
+        "Flexibility is healthy — but patterns reveal what matters most."
+    ]
+};
+
+const REFLECTION_PROMPTS = {
+    budget: "What would you like to try differently next month?",
+    investment: "What did this experience teach you about your risk tolerance?",
+    temptation: "What was going through your mind in that moment?",
+    goal_withdrawal: "Looking back, how do you feel about this decision?"
+};
+
+function initializeReflectionLogs(profile) {
+    if (!profile.reflectionLogs) {
+        profile.reflectionLogs = [];
+        saveProfile(profile);
+    }
+    return profile;
+}
+
+function generateReflectionId() {
+    return 'rfl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function getLastReflectionMonth(profile) {
+    if (!profile.reflectionLogs || profile.reflectionLogs.length === 0) return 0;
+    return Math.max(...profile.reflectionLogs.map(r => r.month));
+}
+
+function canTriggerReflection(profile) {
+    const currentMonth = profile.budget?.month || 1;
+    const lastReflectionMonth = getLastReflectionMonth(profile);
+    return currentMonth - lastReflectionMonth >= 2;
+}
+
+function detectReflectionTrigger(profile, monthData) {
+    const spendableIncome = getSpendableIncome(profile);
+    
+    if (monthData.totalSaved < 0) {
+        return {
+            context: 'budget',
+            triggerEvent: 'Budget deficit month',
+            observedOutcome: `Spending exceeded planned savings by ${formatCurrency(Math.abs(monthData.totalSaved))}.`
+        };
+    }
+    
+    const savingsRate = (monthData.savings / spendableIncome) * 100;
+    if (savingsRate < 10 && monthData.savings < profile.income * 0.1) {
+        return {
+            context: 'budget',
+            triggerEvent: 'Below savings target',
+            observedOutcome: `Savings rate was ${savingsRate.toFixed(0)}% this month, below the recommended 10%.`
+        };
+    }
+    
+    return null;
+}
+
+function checkEarlyWithdrawalReflection(profile, walletName) {
+    if (!canTriggerReflection(profile)) return null;
+    
+    return {
+        context: 'goal_withdrawal',
+        triggerEvent: `Early withdrawal from "${walletName}"`,
+        observedOutcome: `You withdrew from your goal wallet before maturity.`
+    };
+}
+
+function createReflectionLog(profile, triggerData) {
+    const currentMonth = profile.budget?.month || 1;
+    
+    const autoInsights = AUTO_INSIGHTS[triggerData.context] || AUTO_INSIGHTS.budget;
+    const autoInsight = autoInsights[Math.floor(Math.random() * autoInsights.length)];
+    
+    const reflection = {
+        id: generateReflectionId(),
+        month: currentMonth,
+        context: triggerData.context,
+        triggerEvent: triggerData.triggerEvent,
+        observedOutcome: triggerData.observedOutcome,
+        reflectionPrompt: REFLECTION_PROMPTS[triggerData.context],
+        userReflection: null,
+        autoInsight: autoInsight,
+        acknowledged: false
+    };
+    
+    profile.reflectionLogs.push(reflection);
+    saveProfile(profile);
+    
+    return reflection;
+}
+
+function acknowledgeReflection(profile, reflectionId, userReflection = null) {
+    const reflection = profile.reflectionLogs.find(r => r.id === reflectionId);
+    if (reflection) {
+        reflection.acknowledged = true;
+        if (userReflection && userReflection.trim().length > 0) {
+            reflection.userReflection = userReflection.trim().substring(0, 200);
+        }
+        saveProfile(profile);
+    }
+}
+
+function showReflectionModal(profile, reflection) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay reflection-overlay';
+    
+    modal.innerHTML = `
+        <div class="modal-content reflection-modal">
+            <div class="reflection-header">
+                <span class="reflection-icon">💭</span>
+                <h2>A Moment to Reflect</h2>
+            </div>
+            
+            <div class="reflection-context">
+                <p class="reflection-outcome">${reflection.observedOutcome}</p>
+            </div>
+            
+            <div class="reflection-question">
+                <p class="reflection-prompt">${reflection.reflectionPrompt}</p>
+                <textarea id="reflectionInput" maxlength="200" rows="3" placeholder="Optional — take a moment to think..."></textarea>
+                <span class="char-count"><span id="reflectionCharCount">0</span>/200</span>
+            </div>
+            
+            <div class="reflection-insight">
+                <span class="insight-icon">💡</span>
+                <p>${reflection.autoInsight}</p>
+            </div>
+            
+            <div class="reflection-reminder">
+                <p>Mistakes are data, not identity. Reflection builds awareness.</p>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="skipReflectionBtn">Skip for now</button>
+                <button class="btn btn-primary" id="saveReflectionBtn">Continue</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    const reflectionInput = document.getElementById('reflectionInput');
+    const charCount = document.getElementById('reflectionCharCount');
+    
+    reflectionInput.addEventListener('input', () => {
+        charCount.textContent = reflectionInput.value.length;
+    });
+    
+    document.getElementById('skipReflectionBtn').addEventListener('click', () => {
+        const freshProfile = getProfile();
+        acknowledgeReflection(freshProfile, reflection.id, null);
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
+    
+    document.getElementById('saveReflectionBtn').addEventListener('click', () => {
+        const freshProfile = getProfile();
+        const userText = reflectionInput.value.trim();
+        acknowledgeReflection(freshProfile, reflection.id, userText);
+        
+        if (userText.length > 0) {
+            showNotification('Reflection saved', 'success');
+        }
+        
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
+}
+
+function checkAndTriggerReflection(profile, monthData) {
+    if (!canTriggerReflection(profile)) return;
+    
+    const trigger = detectReflectionTrigger(profile, monthData);
+    if (trigger) {
+        const reflection = createReflectionLog(profile, trigger);
+        setTimeout(() => {
+            showReflectionModal(getProfile(), reflection);
+        }, 2000);
+    }
+}
+
+// =================================================================
 // TIME-TRAVEL LETTERS
 // =================================================================
 function initializeTimeTravelLetters(profile) {
@@ -1577,6 +1790,7 @@ async function loadUserData() {
     profile = initializeFutureWallet(profile);
     profile = initializeGoalWallets(profile);
     profile = initializeTimeTravelLetters(profile);
+    profile = initializeReflectionLogs(profile);
     
     const walletResult = processFutureWalletContribution(profile);
     if (walletResult.contributed) {

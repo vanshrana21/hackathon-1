@@ -1,15 +1,12 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
-from dotenv import load_dotenv
+from typing import Optional
 import os
-import httpx
 
-load_dotenv()
-
-app = FastAPI(title="Financial Literacy Platform")
+app = FastAPI(title="FinPlay - Financial Literacy Platform")
 
 app.add_middleware(
     CORSMiddleware,
@@ -18,40 +15,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
-
-def supabase_insert(table: str, data: dict) -> dict:
-    url = f"{SUPABASE_URL}/rest/v1/{table}"
-    headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json",
-        "Prefer": "return=representation"
-    }
-    with httpx.Client() as client:
-        response = client.post(url, json=data, headers=headers)
-    if response.status_code != 201:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    return response.json()
-
-def supabase_select(table: str, filters: dict = None) -> list:
-    url = f"{SUPABASE_URL}/rest/v1/{table}"
-    headers = {
-        "apikey": SUPABASE_KEY,
-        "Authorization": f"Bearer {SUPABASE_KEY}",
-        "Content-Type": "application/json"
-    }
-    params = {}
-    if filters:
-        for key, value in filters.items():
-            params[key] = f"eq.{value}"
-    with httpx.Client() as client:
-        response = client.get(url, headers=headers, params=params)
-    if response.status_code != 200:
-        raise HTTPException(status_code=response.status_code, detail=response.text)
-    return response.json()
 
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
@@ -64,75 +27,51 @@ INCOME_BY_LIFE_STAGE = {
     "Independent Adult": 75000
 }
 
+XP_BY_KNOWLEDGE = {
+    "Beginner": 50,
+    "Some Knowledge": 75,
+    "Intermediate": 100
+}
+
 class OnboardingData(BaseModel):
     name: str
     knowledge_level: str
     life_stage: str
-    goal: str
+    primary_goal: str
 
-class UserResponse(BaseModel):
-    id: str
+class ProfileResponse(BaseModel):
     name: str
+    balance: int
+    income: int
+    xp: int
+    level: int
+    focus_goal: str
     knowledge_level: str
     life_stage: str
-    goal: str
-    monthly_income: int
-    virtual_balance: int
-    xp: int
-    current_level: int
 
-@app.post("/users/onboard", response_model=UserResponse)
+@app.post("/users/onboard")
 async def onboard_user(data: OnboardingData):
-    monthly_income = INCOME_BY_LIFE_STAGE.get(data.life_stage, 30000)
+    if not data.name or not data.knowledge_level or not data.life_stage or not data.primary_goal:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Invalid onboarding data"}
+        )
     
-    user_data = {
+    income = INCOME_BY_LIFE_STAGE.get(data.life_stage, 15000)
+    xp = XP_BY_KNOWLEDGE.get(data.knowledge_level, 50)
+    
+    profile = {
         "name": data.name,
+        "balance": 100000,
+        "income": income,
+        "xp": xp,
+        "level": 1,
+        "focus_goal": data.primary_goal,
         "knowledge_level": data.knowledge_level,
-        "life_stage": data.life_stage,
-        "goal": data.goal,
-        "monthly_income": monthly_income,
-        "virtual_balance": 100000,
-        "xp": 50,
-        "current_level": 1
+        "life_stage": data.life_stage
     }
     
-    result = supabase_insert("users", user_data)
-    
-    if not result:
-        raise HTTPException(status_code=500, detail="Failed to create user")
-    
-    user = result[0]
-    return UserResponse(
-        id=user["id"],
-        name=user["name"],
-        knowledge_level=user["knowledge_level"],
-        life_stage=user["life_stage"],
-        goal=user["goal"],
-        monthly_income=user["monthly_income"],
-        virtual_balance=user["virtual_balance"],
-        xp=user["xp"],
-        current_level=user["current_level"]
-    )
-
-@app.get("/users/{user_id}", response_model=UserResponse)
-async def get_user(user_id: str):
-    result = supabase_select("users", {"id": user_id})
-    
-    if not result:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    user = result[0]
-    return UserResponse(
-        id=user["id"],
-        name=user["name"],
-        knowledge_level=user["knowledge_level"],
-        life_stage=user["life_stage"],
-        goal=user["goal"],
-        monthly_income=user["monthly_income"],
-        virtual_balance=user["virtual_balance"],
-        xp=user["xp"],
-        current_level=user["current_level"]
-    )
+    return profile
 
 app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "CSS")), name="css")
 app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "JS")), name="js")

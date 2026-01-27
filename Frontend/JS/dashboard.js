@@ -1327,6 +1327,417 @@ function showMonthSummary(month, summary, xpEarned, totalSaved, futureWalletCont
 }
 
 // =================================================================
+// LIFE SHOCK SCENARIOS
+// =================================================================
+const LIFE_EVENTS = {
+    negative: [
+        {
+            id: 'medical_expense',
+            category: 'health',
+            title: 'Unexpected Medical Expense',
+            description: 'A sudden health issue required immediate attention and treatment.',
+            impact: { cashChange: -15000 },
+            takeaway: 'This is why emergency funds exist — not to avoid emergencies, but to survive them calmly.',
+            probability: 0.15
+        },
+        {
+            id: 'car_repair',
+            category: 'expense',
+            title: 'Vehicle Breakdown',
+            description: 'Your vehicle needed urgent repairs to stay functional.',
+            impact: { cashChange: -8000 },
+            takeaway: 'Unexpected repairs are part of life. A buffer makes them manageable, not catastrophic.',
+            probability: 0.12
+        },
+        {
+            id: 'pay_delay',
+            category: 'income',
+            title: 'Salary Delay',
+            description: 'Your employer delayed this month\'s payment due to cash flow issues.',
+            impact: { incomeChange: -0.3 },
+            takeaway: 'Income isn\'t always predictable. Savings provide stability when paychecks don\'t.',
+            probability: 0.08
+        },
+        {
+            id: 'market_dip',
+            category: 'market',
+            title: 'Market Correction',
+            description: 'Financial markets experienced a temporary downturn this month.',
+            impact: { marketEffect: -0.08 },
+            takeaway: 'Market volatility is normal. Long-term investors benefit from staying the course.',
+            probability: 0.10
+        },
+        {
+            id: 'home_repair',
+            category: 'expense',
+            title: 'Home Repair Needed',
+            description: 'A plumbing issue required immediate professional attention.',
+            impact: { cashChange: -5000 },
+            takeaway: 'Homes need maintenance. Budgeting for the unexpected prevents stress.',
+            probability: 0.10
+        }
+    ],
+    positive: [
+        {
+            id: 'bonus',
+            category: 'income',
+            title: 'Performance Bonus',
+            description: 'Your hard work was recognized with a one-time bonus.',
+            impact: { cashChange: 10000 },
+            takeaway: 'Windfalls are opportunities. How you use them shapes your financial future.',
+            probability: 0.10
+        },
+        {
+            id: 'tax_refund',
+            category: 'income',
+            title: 'Tax Refund',
+            description: 'You received a refund from your tax filing.',
+            impact: { cashChange: 8000 },
+            takeaway: 'Unexpected income is a chance to strengthen your financial foundation.',
+            probability: 0.08
+        },
+        {
+            id: 'side_income',
+            category: 'income',
+            title: 'Side Income Opportunity',
+            description: 'A freelance project brought in extra income this month.',
+            impact: { cashChange: 6000 },
+            takeaway: 'Multiple income streams build resilience and flexibility.',
+            probability: 0.07
+        },
+        {
+            id: 'gift',
+            category: 'income',
+            title: 'Financial Gift',
+            description: 'A family member gave you a monetary gift.',
+            impact: { cashChange: 5000 },
+            takeaway: 'Gifts can accelerate goals when applied thoughtfully.',
+            probability: 0.05
+        }
+    ],
+    neutral: [
+        {
+            id: 'job_offer',
+            category: 'opportunity',
+            title: 'New Job Opportunity',
+            description: 'You received an offer for a new position with different terms.',
+            hasDecision: true,
+            choices: [
+                { 
+                    id: 'accept', 
+                    label: 'Accept the offer', 
+                    impact: { incomeChange: 0.15 },
+                    outcome: 'You took a chance on growth. New challenges often bring new rewards.'
+                },
+                { 
+                    id: 'decline', 
+                    label: 'Stay in current role', 
+                    impact: { cashChange: 0 },
+                    outcome: 'Stability has its own value. You chose what felt right for now.'
+                }
+            ],
+            takeaway: 'Career decisions have no universally right answer — only what\'s right for you.',
+            probability: 0.06
+        },
+        {
+            id: 'investment_opportunity',
+            category: 'opportunity',
+            title: 'Investment Opportunity',
+            description: 'A friend suggested an investment opportunity with uncertain returns.',
+            hasDecision: true,
+            choices: [
+                { 
+                    id: 'invest', 
+                    label: 'Invest a portion', 
+                    impact: { cashChange: -5000 },
+                    outcome: 'You took a calculated risk. Time will tell how it plays out.'
+                },
+                { 
+                    id: 'pass', 
+                    label: 'Pass on this one', 
+                    impact: { cashChange: 0 },
+                    outcome: 'Not every opportunity needs to be taken. Selectivity is a skill.'
+                }
+            ],
+            takeaway: 'Opportunities feel urgent but rarely are. Taking time to decide is wisdom, not hesitation.',
+            probability: 0.05
+        }
+    ]
+};
+
+function initializeLifeEvents(profile) {
+    if (!profile.lifeEvents) {
+        profile.lifeEvents = [];
+        saveProfile(profile);
+    }
+    return profile;
+}
+
+function generateLifeEventId() {
+    return 'le_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function getLastEventMonth(profile) {
+    if (!profile.lifeEvents || profile.lifeEvents.length === 0) return 0;
+    return Math.max(...profile.lifeEvents.map(e => e.month));
+}
+
+function calculateStabilityFactor(profile) {
+    let factor = 1.0;
+    
+    const hasEmergencyFund = profile.balance > profile.income * 3;
+    if (hasEmergencyFund) factor *= 0.7;
+    
+    const hasDiversifiedGoals = (profile.goalWallets?.filter(w => w.status === 'active').length || 0) >= 2;
+    if (hasDiversifiedGoals) factor *= 0.8;
+    
+    const hasConsistentSavings = (profile.budget?.monthHistory?.length || 0) >= 3;
+    if (hasConsistentSavings) {
+        const recentMonths = profile.budget.monthHistory.slice(-3);
+        const avgSavings = recentMonths.reduce((sum, m) => sum + m.totalSaved, 0) / 3;
+        if (avgSavings > profile.income * 0.1) factor *= 0.85;
+    }
+    
+    return Math.max(0.4, factor);
+}
+
+function shouldTriggerLifeEvent(profile) {
+    const currentMonth = profile.budget?.month || 1;
+    const lastEventMonth = getLastEventMonth(profile);
+    
+    if (currentMonth - lastEventMonth < 2) return false;
+    
+    if (currentMonth <= 2) return false;
+    
+    const stabilityFactor = calculateStabilityFactor(profile);
+    const baseChance = 0.35;
+    const adjustedChance = baseChance * stabilityFactor;
+    
+    return Math.random() < adjustedChance;
+}
+
+function selectLifeEvent(profile) {
+    const stabilityFactor = calculateStabilityFactor(profile);
+    
+    let negativeWeight = 0.45 * stabilityFactor;
+    let positiveWeight = 0.35 + (1 - stabilityFactor) * 0.1;
+    let neutralWeight = 0.20;
+    
+    const totalWeight = negativeWeight + positiveWeight + neutralWeight;
+    negativeWeight /= totalWeight;
+    positiveWeight /= totalWeight;
+    
+    const roll = Math.random();
+    let eventType;
+    
+    if (roll < negativeWeight) {
+        eventType = 'negative';
+    } else if (roll < negativeWeight + positiveWeight) {
+        eventType = 'positive';
+    } else {
+        eventType = 'neutral';
+    }
+    
+    const events = LIFE_EVENTS[eventType];
+    const totalProbability = events.reduce((sum, e) => sum + e.probability, 0);
+    let randomPick = Math.random() * totalProbability;
+    
+    for (const event of events) {
+        randomPick -= event.probability;
+        if (randomPick <= 0) {
+            return { ...event, type: eventType };
+        }
+    }
+    
+    return { ...events[0], type: eventType };
+}
+
+function applyLifeEventImpact(profile, event, choiceId = null) {
+    let impact = event.impact;
+    
+    if (event.hasDecision && choiceId) {
+        const choice = event.choices.find(c => c.id === choiceId);
+        if (choice) {
+            impact = choice.impact;
+        }
+    }
+    
+    if (impact.cashChange) {
+        profile.balance = Math.max(0, profile.balance + impact.cashChange);
+    }
+    
+    if (impact.marketEffect && profile.goalWallets) {
+        profile.goalWallets.forEach(wallet => {
+            if (wallet.status === 'active' && wallet.investmentType !== 'fd') {
+                const change = wallet.currentAmount * impact.marketEffect;
+                wallet.currentAmount = Math.max(0, wallet.currentAmount + change);
+                wallet.totalGrowth += change;
+            }
+        });
+    }
+    
+    saveProfile(profile);
+    return impact;
+}
+
+function createLifeEventLog(profile, eventData, choiceId = null) {
+    const currentMonth = profile.budget?.month || 1;
+    
+    let outcome = eventData.takeaway;
+    if (eventData.hasDecision && choiceId) {
+        const choice = eventData.choices.find(c => c.id === choiceId);
+        if (choice) {
+            outcome = choice.outcome;
+        }
+    }
+    
+    const logEntry = {
+        id: generateLifeEventId(),
+        month: currentMonth,
+        type: eventData.type,
+        category: eventData.category,
+        title: eventData.title,
+        description: eventData.description,
+        financialImpact: eventData.hasDecision && choiceId 
+            ? eventData.choices.find(c => c.id === choiceId)?.impact 
+            : eventData.impact,
+        userDecision: choiceId || null,
+        takeaway: outcome,
+        resolved: true
+    };
+    
+    profile.lifeEvents.push(logEntry);
+    saveProfile(profile);
+    
+    return logEntry;
+}
+
+function showLifeEventModal(profile, eventData) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay life-event-overlay';
+    
+    const typeClass = eventData.type;
+    const typeIcon = eventData.type === 'negative' ? '⚠️' : eventData.type === 'positive' ? '✨' : '🔄';
+    
+    let impactHtml = '';
+    if (!eventData.hasDecision) {
+        const impact = eventData.impact;
+        if (impact.cashChange) {
+            const sign = impact.cashChange > 0 ? '+' : '';
+            const colorClass = impact.cashChange > 0 ? 'positive' : 'negative';
+            impactHtml = `<div class="le-impact ${colorClass}">${sign}${formatCurrency(impact.cashChange)}</div>`;
+        } else if (impact.incomeChange) {
+            const percent = Math.round(impact.incomeChange * 100);
+            const sign = percent > 0 ? '+' : '';
+            impactHtml = `<div class="le-impact ${percent > 0 ? 'positive' : 'negative'}">${sign}${percent}% income this month</div>`;
+        } else if (impact.marketEffect) {
+            const percent = Math.round(impact.marketEffect * 100);
+            impactHtml = `<div class="le-impact negative">${percent}% on growth investments</div>`;
+        }
+    }
+    
+    let choicesHtml = '';
+    if (eventData.hasDecision) {
+        choicesHtml = `
+            <div class="le-choices">
+                <p class="le-choices-prompt">What would you like to do?</p>
+                ${eventData.choices.map(choice => `
+                    <button class="le-choice-btn" data-choice="${choice.id}">
+                        <span class="choice-label">${choice.label}</span>
+                        <span class="choice-impact">${formatChoiceImpact(choice.impact)}</span>
+                    </button>
+                `).join('')}
+            </div>
+        `;
+    }
+    
+    modal.innerHTML = `
+        <div class="modal-content life-event-modal le-${typeClass}">
+            <div class="le-header">
+                <span class="le-type-icon">${typeIcon}</span>
+                <span class="le-category">${eventData.category}</span>
+            </div>
+            
+            <h2 class="le-title">${eventData.title}</h2>
+            
+            <p class="le-description">${eventData.description}</p>
+            
+            ${impactHtml}
+            
+            ${choicesHtml}
+            
+            <div class="le-takeaway">
+                <span class="takeaway-icon">💡</span>
+                <p>${eventData.takeaway}</p>
+            </div>
+            
+            ${!eventData.hasDecision ? `
+                <button class="btn btn-primary le-continue-btn" id="acknowledgeEventBtn">Continue</button>
+            ` : ''}
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    if (!eventData.hasDecision) {
+        document.getElementById('acknowledgeEventBtn').addEventListener('click', () => {
+            applyLifeEventImpact(profile, eventData);
+            createLifeEventLog(profile, eventData);
+            
+            modal.classList.remove('show');
+            setTimeout(() => {
+                modal.remove();
+                displayUserData(getProfile());
+            }, 300);
+        });
+    } else {
+        modal.querySelectorAll('.le-choice-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const choiceId = btn.dataset.choice;
+                const freshProfile = getProfile();
+                
+                applyLifeEventImpact(freshProfile, eventData, choiceId);
+                createLifeEventLog(freshProfile, eventData, choiceId);
+                
+                const choice = eventData.choices.find(c => c.id === choiceId);
+                showNotification(choice.outcome, 'info');
+                
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                    displayUserData(getProfile());
+                }, 300);
+            });
+        });
+    }
+}
+
+function formatChoiceImpact(impact) {
+    if (impact.cashChange) {
+        const sign = impact.cashChange > 0 ? '+' : '';
+        return `${sign}${formatCurrency(impact.cashChange)}`;
+    }
+    if (impact.incomeChange) {
+        const percent = Math.round(impact.incomeChange * 100);
+        return `${percent > 0 ? '+' : ''}${percent}% income`;
+    }
+    return 'No immediate impact';
+}
+
+function checkAndTriggerLifeEvent(profile) {
+    if (!shouldTriggerLifeEvent(profile)) return false;
+    
+    const event = selectLifeEvent(profile);
+    
+    setTimeout(() => {
+        showLifeEventModal(getProfile(), event);
+    }, 1000);
+    
+    return true;
+}
+
+// =================================================================
 // REGRET-FREE REVIEW SYSTEM
 // =================================================================
 const AUTO_INSIGHTS = {
@@ -1791,6 +2202,7 @@ async function loadUserData() {
     profile = initializeGoalWallets(profile);
     profile = initializeTimeTravelLetters(profile);
     profile = initializeReflectionLogs(profile);
+    profile = initializeLifeEvents(profile);
     
     const walletResult = processFutureWalletContribution(profile);
     if (walletResult.contributed) {
@@ -1800,6 +2212,7 @@ async function loadUserData() {
     }
     
     checkAndDeliverLetters(getProfile(), 'month_start');
+    checkAndTriggerLifeEvent(getProfile());
     
     displayUserData(getProfile());
 }

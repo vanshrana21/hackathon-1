@@ -3832,6 +3832,274 @@ body {
     margin-bottom: 12px;
 }
 
+/* Life Shock Scenarios */
+.life-event-overlay .modal-content {
+    max-width: 480px;
+}
+
+.life-event-modal {
+    text-align: center;
+}
+
+.life-event-modal.le-negative {
+    border-top: 4px solid #ef4444;
+}
+
+.life-event-modal.le-positive {
+    border-top: 4px solid #10b981;
+}
+
+.life-event-modal.le-neutral {
+    border-top: 4px solid #6366f1;
+}
+
+.le-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.le-type-icon {
+    font-size: 2.5rem;
+}
+
+.le-category {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+}
+
+.le-title {
+    font-size: 1.4rem;
+    margin-bottom: 12px;
+}
+
+.le-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+.le-impact {
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.le-impact.positive {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.le-impact.negative {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.le-choices {
+    margin-bottom: 20px;
+}
+
+.le-choices-prompt {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.le-choice-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    cursor: pointer;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+}
+
+.le-choice-btn:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--primary);
+}
+
+.choice-label {
+    font-weight: 500;
+}
+
+.choice-impact {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.le-takeaway {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.takeaway-icon {
+    font-size: 1.2rem;
+}
+
+.le-takeaway p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.le-continue-btn {
+    min-width: 160px;
+}
+
+/* Life Events Analytics Section */
+.life-events-section {
+    margin-top: 32px;
+}
+
+.life-events-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.life-events-title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.life-events-icon {
+    font-size: 1.5rem;
+}
+
+.life-events-container {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+}
+
+.life-events-empty {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-secondary);
+}
+
+.life-events-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.le-stat {
+    text-align: center;
+}
+
+.le-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.le-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.life-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.le-archive-item {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--border);
+}
+
+.le-archive-item.type-negative {
+    border-left-color: #ef4444;
+}
+
+.le-archive-item.type-positive {
+    border-left-color: #10b981;
+}
+
+.le-archive-item.type-neutral {
+    border-left-color: #6366f1;
+}
+
+.le-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.le-item-title {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.le-item-month {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.le-item-impact {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.le-item-impact.positive {
+    color: #10b981;
+}
+
+.le-item-impact.negative {
+    color: #ef4444;
+}
+
+.le-item-takeaway {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.life-events-insight {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+}
+
+.life-events-insight p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .onboarding-card {

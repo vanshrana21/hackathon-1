@@ -645,6 +645,93 @@ function renderLessonsLearned(profile) {
     container.innerHTML = html;
 }
 
+function renderLifeEvents(profile) {
+    const container = document.getElementById('lifeEventsContainer');
+    if (!container) return;
+    
+    const events = profile.lifeEvents || [];
+    
+    if (events.length === 0) {
+        container.innerHTML = `
+            <div class="life-events-empty">
+                <p>No life events yet</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">Life events will occur randomly as you progress through months.</p>
+            </div>
+            <div class="life-events-insight">
+                <p>Good financial behavior is not about avoiding shocks — it's about recovering from them.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const negativeCount = events.filter(e => e.type === 'negative').length;
+    const positiveCount = events.filter(e => e.type === 'positive').length;
+    
+    let totalImpact = 0;
+    events.forEach(e => {
+        if (e.financialImpact?.cashChange) {
+            totalImpact += e.financialImpact.cashChange;
+        }
+    });
+    
+    const hasBuffer = profile.balance > profile.income * 2;
+    const recoveryQuality = hasBuffer ? 'Resilient' : events.length <= 2 ? 'Early Days' : 'Building';
+    
+    let html = `
+        <div class="life-events-stats">
+            <div class="le-stat">
+                <div class="le-stat-value">${events.length}</div>
+                <div class="le-stat-label">Events</div>
+            </div>
+            <div class="le-stat">
+                <div class="le-stat-value">${negativeCount} / ${positiveCount}</div>
+                <div class="le-stat-label">Challenges / Windfalls</div>
+            </div>
+            <div class="le-stat">
+                <div class="le-stat-value">${recoveryQuality}</div>
+                <div class="le-stat-label">Recovery</div>
+            </div>
+        </div>
+        <div class="life-events-list">
+    `;
+    
+    events.slice().reverse().forEach(event => {
+        let impactText = '';
+        if (event.financialImpact?.cashChange) {
+            const sign = event.financialImpact.cashChange > 0 ? '+' : '';
+            impactText = `${sign}₹${Math.abs(event.financialImpact.cashChange).toLocaleString('en-IN')}`;
+        } else if (event.financialImpact?.marketEffect) {
+            impactText = `${Math.round(event.financialImpact.marketEffect * 100)}% on investments`;
+        } else if (event.financialImpact?.incomeChange) {
+            impactText = `${Math.round(event.financialImpact.incomeChange * 100)}% income`;
+        }
+        
+        const impactClass = event.type === 'positive' ? 'positive' : event.type === 'negative' ? 'negative' : '';
+        
+        html += `
+            <div class="le-archive-item type-${event.type}">
+                <div class="le-item-header">
+                    <span class="le-item-title">${event.title}</span>
+                    <span class="le-item-month">Month ${event.month}</span>
+                </div>
+                ${impactText ? `<div class="le-item-impact ${impactClass}">${impactText}</div>` : ''}
+                <div class="le-item-takeaway">${event.takeaway}</div>
+            </div>
+        `;
+    });
+    
+    html += `
+        </div>
+        <div class="life-events-insight">
+            <p>${hasBuffer 
+                ? 'You recovered faster in months where savings buffers existed.' 
+                : 'Building savings buffers helps absorb life\'s unexpected shocks.'}</p>
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
 function updateUI(profile, portfolio) {
     const healthData = calculateHealthScore(profile, portfolio);
     
@@ -717,6 +804,7 @@ function updateUI(profile, portfolio) {
     renderProgressTimeline(profile);
     renderLettersArchive(profile);
     renderLessonsLearned(profile);
+    renderLifeEvents(profile);
     
     document.getElementById('currentMonth').textContent = `Month ${profile.budget?.month || 1}`;
     document.getElementById('levelBadge').querySelector('span:last-child').textContent = `Level ${profile.level}`;
@@ -812,6 +900,32 @@ async function loadDemoPreset() {
                 userReflection: 'I spent more on dining out than planned. Next month I will set a stricter limit.',
                 autoInsight: 'One high-expense category caused most of the overspend.',
                 acknowledged: true
+            }
+        ],
+        lifeEvents: [
+            {
+                id: 'demo_le_1',
+                month: 2,
+                type: 'negative',
+                category: 'health',
+                title: 'Unexpected Medical Expense',
+                description: 'A sudden health issue required immediate attention and treatment.',
+                financialImpact: { cashChange: -12000 },
+                userDecision: null,
+                takeaway: 'This is why emergency funds exist — not to avoid emergencies, but to survive them calmly.',
+                resolved: true
+            },
+            {
+                id: 'demo_le_2',
+                month: 4,
+                type: 'positive',
+                category: 'income',
+                title: 'Performance Bonus',
+                description: 'Your hard work was recognized with a one-time bonus.',
+                financialImpact: { cashChange: 8000 },
+                userDecision: null,
+                takeaway: 'Windfalls are opportunities. How you use them shapes your financial future.',
+                resolved: true
             }
         ]
     };

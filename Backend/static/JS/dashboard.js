@@ -230,6 +230,46 @@ function calculateMonthlyGrowth(wallet) {
     return wallet.currentAmount * randomReturn;
 }
 
+function calculateGoalFeasibility(targetAmount, monthlyContribution, lockInMonths, income) {
+    const contributionPercent = (monthlyContribution / income) * 100;
+    const isLargeGoal = targetAmount > income * 6;
+    const isShortTimeline = lockInMonths < 6;
+    
+    if (contributionPercent > 50 || (isLargeGoal && isShortTimeline)) {
+        return {
+            level: 'aggressive',
+            icon: '🔴',
+            label: 'Highly Aggressive',
+            message: 'This timeline may feel stressful. Many people prefer extending the time instead.'
+        };
+    }
+    
+    if (contributionPercent > 20 && contributionPercent <= 35) {
+        return {
+            level: 'stretch',
+            icon: '⚠️',
+            label: 'Stretch Goal',
+            message: 'This goal will require consistency and fewer trade-offs elsewhere.'
+        };
+    }
+    
+    if (contributionPercent > 35 && contributionPercent <= 50) {
+        return {
+            level: 'stretch',
+            icon: '⚠️',
+            label: 'Stretch Goal',
+            message: 'This goal will require consistency and fewer trade-offs elsewhere.'
+        };
+    }
+    
+    return {
+        level: 'comfortable',
+        icon: '✅',
+        label: 'Comfortable',
+        message: 'This goal fits well with steady monthly habits.'
+    };
+}
+
 function processGoalWalletMonth(profile) {
     const currentMonth = profile.budget?.month || 1;
     
@@ -378,6 +418,13 @@ function showCreateGoalModal(profile) {
                     <span class="preview-label">Estimated at maturity:</span>
                     <span class="preview-value" id="estimatedMaturity">--</span>
                 </div>
+                <div class="goal-feasibility" id="goalFeasibility">
+                    <span class="feasibility-icon">✅</span>
+                    <span class="feasibility-label">Comfortable</span>
+                </div>
+                <div class="goal-feasibility-message" id="goalFeasibilityMessage">
+                    This goal fits well with steady monthly habits.
+                </div>
             </div>
             
             <div class="goal-info">
@@ -405,6 +452,7 @@ function showCreateGoalModal(profile) {
     function updatePreview() {
         const months = parseInt(goalLockIn.value);
         const contribution = parseInt(goalContribution.value) || 0;
+        const target = parseInt(goalTarget.value) || 0;
         const investmentType = modal.querySelector('input[name="investmentType"]:checked')?.value || 'balanced';
         
         lockInValue.textContent = `${months} months`;
@@ -420,6 +468,24 @@ function showCreateGoalModal(profile) {
         }
         
         document.getElementById('estimatedMaturity').textContent = formatCurrency(Math.round(balance));
+        
+        const feasibilityEl = document.getElementById('goalFeasibility');
+        const feasibilityMsgEl = document.getElementById('goalFeasibilityMessage');
+        
+        if (contribution > 0 && target > 0) {
+            const feasibility = calculateGoalFeasibility(target, contribution, months, profile.income);
+            feasibilityEl.innerHTML = `
+                <span class="feasibility-icon">${feasibility.icon}</span>
+                <span class="feasibility-label">${feasibility.label}</span>
+            `;
+            feasibilityEl.className = `goal-feasibility feasibility-${feasibility.level}`;
+            feasibilityMsgEl.textContent = feasibility.message;
+            feasibilityEl.style.display = 'flex';
+            feasibilityMsgEl.style.display = 'block';
+        } else {
+            feasibilityEl.style.display = 'none';
+            feasibilityMsgEl.style.display = 'none';
+        }
         
         validateForm();
     }

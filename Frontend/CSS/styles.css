@@ -3253,6 +3253,357 @@ body {
     margin-bottom: 20px;
 }
 
+/* Time-Travel Letters */
+.letter-delivery-overlay .modal-content {
+    background: linear-gradient(135deg, rgba(30, 30, 50, 0.98), rgba(20, 20, 40, 0.98));
+}
+
+.letter-modal {
+    max-width: 440px;
+    text-align: center;
+}
+
+.letter-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.letter-icon {
+    font-size: 2.5rem;
+    animation: letterFloat 3s ease-in-out infinite;
+}
+
+@keyframes letterFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+.letter-from {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.letter-body {
+    padding: 24px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border-left: 3px solid var(--primary);
+}
+
+.letter-message {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    font-style: italic;
+}
+
+.letter-footer {
+    margin-bottom: 24px;
+}
+
+.letter-signature {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.letter-continue-btn {
+    min-width: 160px;
+}
+
+.letter-tone-encouraging .letter-body {
+    border-left-color: #10b981;
+}
+
+.letter-tone-proud .letter-body {
+    border-left-color: #f59e0b;
+}
+
+.letter-tone-calm .letter-body {
+    border-left-color: #6366f1;
+}
+
+/* Write Letter Modal */
+.write-letter-modal {
+    max-width: 520px;
+}
+
+.letter-modal-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.letter-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.letter-form textarea {
+    width: 100%;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    resize: none;
+    font-family: inherit;
+}
+
+.letter-form textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.char-count {
+    display: block;
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.delivery-options {
+    display: flex;
+    gap: 8px;
+}
+
+.delivery-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delivery-option:has(input:checked) {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--primary);
+}
+
+.delivery-option input {
+    display: none;
+}
+
+.delivery-option span {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.delivery-option:has(input:checked) span {
+    color: var(--text-primary);
+}
+
+.tone-options {
+    display: flex;
+    gap: 8px;
+}
+
+.tone-option {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tone-option:has(input:checked) {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: var(--primary);
+}
+
+.tone-option input {
+    display: none;
+}
+
+.tone-icon {
+    font-size: 1.25rem;
+}
+
+.tone-option span:last-child {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.tone-option:has(input:checked) span:last-child {
+    color: var(--text-primary);
+}
+
+.letter-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Letters Archive Section */
+.letters-section {
+    margin-top: 32px;
+}
+
+.letters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.letters-title-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.letters-icon {
+    font-size: 1.5rem;
+}
+
+.letters-container {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+}
+
+.letters-empty {
+    text-align: center;
+    padding: 24px;
+    color: var(--text-secondary);
+}
+
+.letters-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.letter-archive-item {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+}
+
+.lai-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.lai-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.lai-badge {
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.lai-badge.delivered {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.lai-badge.pending {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary);
+}
+
+.lai-message {
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+    font-style: italic;
+}
+
+.letters-stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.letters-stat {
+    text-align: center;
+}
+
+.letters-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.letters-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Time Travel Section (Dashboard) */
+.time-travel-section {
+    margin-top: 32px;
+}
+
+.time-travel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+}
+
+.time-travel-title-area {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.time-travel-icon {
+    font-size: 1.5rem;
+}
+
+.time-travel-container {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid var(--border);
+}
+
+.time-travel-prompt {
+    text-align: center;
+    padding: 16px;
+}
+
+.time-travel-prompt p {
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .onboarding-card {

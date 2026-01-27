@@ -519,6 +519,64 @@ function renderProgressTimeline(profile) {
     container.innerHTML = html;
 }
 
+function renderLettersArchive(profile) {
+    const container = document.getElementById('lettersContainer');
+    if (!container) return;
+    
+    const letters = profile.timeTravelLetters || [];
+    
+    if (letters.length === 0) {
+        container.innerHTML = `
+            <div class="letters-empty">
+                <p>No letters yet</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">Write a message to your future self from the dashboard.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const delivered = letters.filter(l => l.delivered);
+    const pending = letters.filter(l => !l.delivered);
+    
+    let html = `
+        <div class="letters-stats">
+            <div class="letters-stat">
+                <div class="letters-stat-value">${letters.length}</div>
+                <div class="letters-stat-label">Letters Written</div>
+            </div>
+            <div class="letters-stat">
+                <div class="letters-stat-value">${delivered.length}</div>
+                <div class="letters-stat-label">Delivered</div>
+            </div>
+            <div class="letters-stat">
+                <div class="letters-stat-value">${pending.length}</div>
+                <div class="letters-stat-label">Waiting</div>
+            </div>
+        </div>
+        <div class="letters-list">
+    `;
+    
+    letters.forEach(letter => {
+        const status = letter.delivered ? 'delivered' : 'pending';
+        const dateText = letter.delivered 
+            ? `Delivered Month ${letter.deliveredAt}` 
+            : `Arrives Month ${letter.deliverMonth}`;
+        
+        html += `
+            <div class="letter-archive-item">
+                <div class="lai-header">
+                    <span class="lai-date">Written Month ${letter.writtenMonth} • ${dateText}</span>
+                    <span class="lai-badge ${status}">${status}</span>
+                </div>
+                <p class="lai-message">"${letter.message}"</p>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
 function updateUI(profile, portfolio) {
     const healthData = calculateHealthScore(profile, portfolio);
     
@@ -589,6 +647,7 @@ function updateUI(profile, portfolio) {
     `).join('');
     
     renderProgressTimeline(profile);
+    renderLettersArchive(profile);
     
     document.getElementById('currentMonth').textContent = `Month ${profile.budget?.month || 1}`;
     document.getElementById('levelBadge').querySelector('span:last-child').textContent = `Level ${profile.level}`;
@@ -632,7 +691,47 @@ async function loadDemoPreset() {
                 { month: 4, needs: 25000, wants: 10000, savings: 15000, totalSaved: 15000, xpEarned: 35 },
                 { month: 5, needs: 25000, wants: 11000, savings: 14000, totalSaved: 14000, xpEarned: 30 }
             ]
-        }
+        },
+        timeTravelLetters: [
+            {
+                id: 'demo_ttl_1',
+                writtenMonth: 1,
+                deliverMonth: 4,
+                trigger: 'month_start',
+                tone: 'encouraging',
+                message: 'Remember why you started. Every small step counts. You are building something meaningful.',
+                delivered: true,
+                deliveredAt: 4
+            },
+            {
+                id: 'demo_ttl_2',
+                writtenMonth: 3,
+                deliverMonth: 9,
+                trigger: 'month_start',
+                tone: 'proud',
+                message: 'If you are reading this, you made it through 6 more months. I hope you kept saving. I believe in you.',
+                delivered: false,
+                deliveredAt: null
+            }
+        ],
+        goalWallets: [
+            {
+                id: 'demo_gw_1',
+                name: 'Emergency Fund',
+                targetAmount: 50000,
+                currentAmount: 35000,
+                totalContributed: 30000,
+                totalGrowth: 5000,
+                monthlyContribution: 5000,
+                investmentType: 'fd',
+                lockInMonths: 12,
+                startMonth: 1,
+                maturityMonth: 13,
+                status: 'active',
+                penaltyApplied: false,
+                history: []
+            }
+        ]
     };
     
     const demoPortfolio = {

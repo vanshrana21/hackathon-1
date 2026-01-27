@@ -1318,6 +1318,242 @@ function showMonthSummary(month, summary, xpEarned, totalSaved, futureWalletCont
 }
 
 // =================================================================
+// TIME-TRAVEL LETTERS
+// =================================================================
+function initializeTimeTravelLetters(profile) {
+    if (!profile.timeTravelLetters) {
+        profile.timeTravelLetters = [];
+        saveProfile(profile);
+    }
+    return profile;
+}
+
+function generateLetterId() {
+    return 'ttl_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function canWriteLetter(profile) {
+    return !profile.budget?.allocated;
+}
+
+function createTimeTravelLetter(profile, { message, trigger, deliverMonth, tone }) {
+    if (message.length > 300) {
+        return { success: false, error: 'Message too long (max 300 characters)' };
+    }
+    
+    const currentMonth = profile.budget?.month || 1;
+    
+    const letter = {
+        id: generateLetterId(),
+        writtenMonth: currentMonth,
+        deliverMonth: deliverMonth || currentMonth + 3,
+        trigger: trigger || 'month_start',
+        tone: tone || 'encouraging',
+        message: message,
+        delivered: false,
+        deliveredAt: null
+    };
+    
+    profile.timeTravelLetters.push(letter);
+    saveProfile(profile);
+    
+    return { success: true, letter };
+}
+
+function getPendingLettersForDelivery(profile, trigger) {
+    const currentMonth = profile.budget?.month || 1;
+    
+    return profile.timeTravelLetters.filter(letter => {
+        if (letter.delivered) return false;
+        
+        if (trigger === 'month_start' && letter.trigger === 'month_start') {
+            return letter.deliverMonth <= currentMonth;
+        }
+        
+        if (trigger === 'goal_milestone' && letter.trigger === 'goal_milestone') {
+            return true;
+        }
+        
+        if (trigger === 'custom' && letter.trigger === 'custom') {
+            return letter.deliverMonth <= currentMonth;
+        }
+        
+        return false;
+    });
+}
+
+function markLetterDelivered(profile, letterId) {
+    const letter = profile.timeTravelLetters.find(l => l.id === letterId);
+    if (letter) {
+        letter.delivered = true;
+        letter.deliveredAt = profile.budget?.month || 1;
+        saveProfile(profile);
+    }
+}
+
+function showLetterDeliveryModal(profile, letter) {
+    const monthsAgo = (profile.budget?.month || 1) - letter.writtenMonth;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay letter-delivery-overlay';
+    
+    const toneClass = letter.tone || 'encouraging';
+    
+    modal.innerHTML = `
+        <div class="modal-content letter-modal letter-tone-${toneClass}">
+            <div class="letter-header">
+                <span class="letter-icon">✉️</span>
+                <span class="letter-from">From: You, ${monthsAgo} month${monthsAgo !== 1 ? 's' : ''} ago</span>
+            </div>
+            <div class="letter-body">
+                <p class="letter-message">"${letter.message}"</p>
+            </div>
+            <div class="letter-footer">
+                <span class="letter-signature">— Your past self</span>
+            </div>
+            <button class="btn btn-primary letter-continue-btn" id="closeLetter">Continue</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    document.getElementById('closeLetter').addEventListener('click', () => {
+        markLetterDelivered(profile, letter.id);
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
+}
+
+function checkAndDeliverLetters(profile, trigger = 'month_start') {
+    const pendingLetters = getPendingLettersForDelivery(profile, trigger);
+    
+    if (pendingLetters.length > 0) {
+        const letterToDeliver = pendingLetters[0];
+        setTimeout(() => {
+            showLetterDeliveryModal(profile, letterToDeliver);
+        }, 1500);
+    }
+}
+
+function showWriteLetterModal(profile, context = 'general') {
+    if (!canWriteLetter(profile) && context === 'general') {
+        showNotification('Letters can only be written at the start of a month', 'info');
+        return;
+    }
+    
+    const currentMonth = profile.budget?.month || 1;
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'writeLetterModal';
+    
+    modal.innerHTML = `
+        <div class="modal-content write-letter-modal">
+            <h2>Write to Your Future Self</h2>
+            <p class="letter-modal-subtitle">Write a note your future self would thank you for.</p>
+            
+            <div class="letter-form">
+                <div class="form-group">
+                    <label>Your Message</label>
+                    <textarea id="letterMessage" maxlength="300" rows="4" placeholder="What would you want to remember when things get hard?"></textarea>
+                    <span class="char-count"><span id="charCount">0</span>/300</span>
+                </div>
+                
+                <div class="form-group">
+                    <label>Deliver after...</label>
+                    <div class="delivery-options">
+                        <label class="delivery-option">
+                            <input type="radio" name="deliveryTime" value="3" checked>
+                            <span>3 months</span>
+                        </label>
+                        <label class="delivery-option">
+                            <input type="radio" name="deliveryTime" value="6">
+                            <span>6 months</span>
+                        </label>
+                        <label class="delivery-option">
+                            <input type="radio" name="deliveryTime" value="12">
+                            <span>12 months</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Tone</label>
+                    <div class="tone-options">
+                        <label class="tone-option">
+                            <input type="radio" name="letterTone" value="encouraging" checked>
+                            <span class="tone-icon">💪</span>
+                            <span>Encouraging</span>
+                        </label>
+                        <label class="tone-option">
+                            <input type="radio" name="letterTone" value="proud">
+                            <span class="tone-icon">🌟</span>
+                            <span>Proud</span>
+                        </label>
+                        <label class="tone-option">
+                            <input type="radio" name="letterTone" value="calm">
+                            <span class="tone-icon">🌊</span>
+                            <span>Calm reminder</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="letter-info">
+                <span class="info-icon">💡</span>
+                <span>People who emotionally connect with their future self save more consistently.</span>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelLetterBtn">Cancel</button>
+                <button class="btn btn-primary" id="sendLetterBtn" disabled>Send to Future</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    const messageInput = document.getElementById('letterMessage');
+    const charCount = document.getElementById('charCount');
+    const sendBtn = document.getElementById('sendLetterBtn');
+    
+    messageInput.addEventListener('input', () => {
+        const len = messageInput.value.length;
+        charCount.textContent = len;
+        sendBtn.disabled = len < 10;
+    });
+    
+    document.getElementById('cancelLetterBtn').addEventListener('click', () => {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
+    
+    document.getElementById('sendLetterBtn').addEventListener('click', () => {
+        const message = messageInput.value.trim();
+        const deliveryMonths = parseInt(modal.querySelector('input[name="deliveryTime"]:checked').value);
+        const tone = modal.querySelector('input[name="letterTone"]:checked').value;
+        
+        const freshProfile = getProfile();
+        const result = createTimeTravelLetter(freshProfile, {
+            message: message,
+            trigger: 'month_start',
+            deliverMonth: currentMonth + deliveryMonths,
+            tone: tone
+        });
+        
+        if (result.success) {
+            showNotification('Letter sent to your future self!', 'success');
+            modal.classList.remove('show');
+            setTimeout(() => modal.remove(), 300);
+        } else {
+            showNotification(result.error, 'error');
+        }
+    });
+}
+
+// =================================================================
 // PAGE INITIALIZATION
 // =================================================================
 async function loadUserData() {
@@ -1340,6 +1576,7 @@ async function loadUserData() {
     profile = initializeBudgetState(profile);
     profile = initializeFutureWallet(profile);
     profile = initializeGoalWallets(profile);
+    profile = initializeTimeTravelLetters(profile);
     
     const walletResult = processFutureWalletContribution(profile);
     if (walletResult.contributed) {
@@ -1347,6 +1584,8 @@ async function loadUserData() {
             showNotification(`${formatCurrency(walletResult.amount)} protected for your future!`, 'xp');
         }, 1000);
     }
+    
+    checkAndDeliverLetters(getProfile(), 'month_start');
     
     displayUserData(getProfile());
 }
@@ -1373,6 +1612,14 @@ document.addEventListener('DOMContentLoaded', () => {
         adjustRateBtn.addEventListener('click', () => {
             const profile = getProfile();
             if (profile) showRateAdjustmentModal(profile);
+        });
+    }
+    
+    const writeLetterBtn = document.getElementById('writeLetterBtn');
+    if (writeLetterBtn) {
+        writeLetterBtn.addEventListener('click', () => {
+            const profile = getProfile();
+            if (profile) showWriteLetterModal(profile);
         });
     }
 });

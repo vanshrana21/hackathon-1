@@ -332,6 +332,25 @@ function generateInsights(profile, portfolio) {
         });
     }
     
+    if (goalWallets.length > 0) {
+        const avgLockIn = goalWallets.reduce((sum, w) => sum + w.lockInMonths, 0) / goalWallets.length;
+        const completionRate = goalWallets.length > 1 ? (completedGoals.length / (completedGoals.length + earlyWithdrawnGoals.length)) * 100 : null;
+        
+        if (avgLockIn >= 12) {
+            insights.push({
+                icon: '⏳',
+                text: `Your average goal timeline is ${Math.round(avgLockIn)} months. Longer timelines tend to increase completion probability.`,
+                type: 'positive'
+            });
+        } else if (goalWallets.length >= 2) {
+            insights.push({
+                icon: '⏳',
+                text: `Most people complete goals by extending timelines, not increasing pressure. Consider longer lock-in periods.`,
+                type: 'neutral'
+            });
+        }
+    }
+    
     return insights;
 }
 

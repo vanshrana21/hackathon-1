@@ -131,9 +131,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = document.getElementById('name');
     const step1Next = document.getElementById('step1Next');
 
+    nameInput.focus();
+
     nameInput.addEventListener('input', () => {
         state.name = nameInput.value.trim();
-        step1Next.disabled = state.name.length === 0;
+        step1Next.disabled = state.name.length < 2;
+    });
+
+    nameInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && state.name.length >= 2) {
+            showStep(2);
+        }
     });
 
     step1Next.addEventListener('click', () => showStep(2));

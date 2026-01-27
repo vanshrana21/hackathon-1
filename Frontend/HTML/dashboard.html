@@ -78,8 +78,8 @@
                             <h2 class="card-title">Current Level</h2>
                         </div>
                         <div class="level-info">
-                            <div class="level-name">Level 1 – Budgeting Basics</div>
-                            <div class="level-description">Learn to allocate your income wisely across needs, wants, and savings.</div>
+                            <div class="level-name" id="levelName">Level 1 – Budgeting Basics</div>
+                            <div class="level-description" id="levelDescription">Learn to allocate your income wisely across needs, wants, and savings.</div>
                         </div>
                         <div class="xp-progress">
                             <div class="xp-bar">
@@ -87,11 +87,11 @@
                             </div>
                             <div class="xp-text">
                                 <span id="currentXp">50 XP</span>
-                                <span>100 XP to Level 2</span>
+                                <span id="xpToNext">100 XP to Level 2</span>
                             </div>
                         </div>
                         <button class="btn btn-primary" style="width: 100%;" id="startLevelBtn">
-                            Start Level 1
+                            Earn Bonus XP
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M5 12h14M12 5l7 7-7 7"/>
                             </svg>
@@ -120,6 +120,34 @@
                         </div>
                     </div>
                 </div>
+
+                <section class="actions-section">
+                    <h2 class="section-title">Financial Actions</h2>
+                    <p class="section-subtitle">Complete actions to earn XP and level up!</p>
+                    <div class="actions-grid">
+                        <div class="action-card">
+                            <div class="action-icon">📊</div>
+                            <h3 class="action-title">Allocate Budget</h3>
+                            <p class="action-desc">Distribute 50% of income to essential expenses</p>
+                            <div class="action-reward">+15 XP</div>
+                            <button class="btn btn-secondary action-btn" id="actionBudget">Complete Action</button>
+                        </div>
+                        <div class="action-card">
+                            <div class="action-icon">🏦</div>
+                            <h3 class="action-title">Save Income</h3>
+                            <p class="action-desc">Set aside 20% of income for savings</p>
+                            <div class="action-reward">+20 XP</div>
+                            <button class="btn btn-secondary action-btn" id="actionSave">Complete Action</button>
+                        </div>
+                        <div class="action-card">
+                            <div class="action-icon">🚫</div>
+                            <h3 class="action-title">Skip Expense</h3>
+                            <p class="action-desc">Avoid an unnecessary expense and save 10%</p>
+                            <div class="action-reward">+10 XP</div>
+                            <button class="btn btn-secondary action-btn" id="actionSkip">Complete Action</button>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>

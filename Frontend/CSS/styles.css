@@ -705,6 +705,110 @@ body {
     }
 }
 
+/* Actions Section */
+.actions-section {
+    margin-top: 48px;
+}
+
+.actions-section .section-title {
+    text-align: left;
+    margin-bottom: 8px;
+}
+
+.section-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+.action-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(16, 185, 129, 0.15);
+}
+
+.action-icon {
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(16, 185, 129, 0.1);
+    border-radius: 12px;
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+}
+
+.action-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.action-desc {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+.action-reward {
+    display: inline-block;
+    padding: 6px 12px;
+    background: var(--gradient-1);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 16px;
+}
+
+.action-btn {
+    width: 100%;
+}
+
+/* Notifications */
+.game-notification {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    padding: 16px 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-weight: 600;
+    z-index: 1000;
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.game-notification.show {
+    transform: translateX(0);
+}
+
+.notification-success {
+    border-color: var(--success);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(34, 197, 94, 0.2) 100%);
+}
+
+.notification-xp {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(16, 185, 129, 0.2) 100%);
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .onboarding-card {

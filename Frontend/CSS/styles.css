@@ -2513,6 +2513,269 @@ body {
     justify-content: flex-end;
 }
 
+/* Temptation Controls Section */
+.temptation-section {
+    margin-top: 32px;
+}
+
+.temptation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.temptation-title-area {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.temptation-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.temptation-controls-container {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+}
+
+.temptation-empty {
+    text-align: center;
+    padding: 32px 16px;
+}
+
+.temptation-empty p {
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+.temptation-locks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.temptation-lock-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+}
+
+.tli-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.tli-icon {
+    font-size: 1.25rem;
+}
+
+.tli-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.tli-progress {
+    margin-bottom: 12px;
+}
+
+.tli-bar {
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.tli-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary), var(--primary));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.tli-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.tli-spent {
+    color: var(--text-secondary);
+}
+
+.tli-remaining {
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.tli-cap {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.locks-frozen-note {
+    display: block;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    padding: 8px 0;
+}
+
+/* Temptation Config Modal */
+.temptation-modal {
+    max-width: 520px;
+}
+
+.temptation-modal-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.temptation-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.temptation-category-config {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.tcc-header {
+    padding: 14px 16px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.tcc-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.tcc-toggle input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary);
+}
+
+.tcc-icon {
+    font-size: 1.25rem;
+}
+
+.tcc-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.tcc-body {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+}
+
+.tcc-body.hidden {
+    display: none;
+}
+
+.tcc-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 12px;
+}
+
+.tcc-cap-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.tcc-cap-input label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.tcc-cap-input input {
+    flex: 1;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.cap-preview {
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 80px;
+    text-align: right;
+}
+
+.temptation-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.temptation-info .info-icon {
+    font-size: 1.1rem;
+}
+
+.temptation-info span:last-child {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+/* Unlock Confirmation Modal */
+.unlock-modal {
+    max-width: 400px;
+    text-align: center;
+}
+
+.unlock-warning {
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.unlock-note {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+/* Expense card temptation blocked state */
+.expense-card.temptation-blocked {
+    opacity: 0.7;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.expense-temptation-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-style: italic;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .onboarding-card {

@@ -267,6 +267,40 @@ function generateInsights(profile, portfolio) {
         });
     }
     
+    // Temptation Controls insight
+    const lockHistory = profile.temptationLocks?.history || [];
+    if (lockHistory.length > 0) {
+        const monthsWithinLimit = lockHistory.filter(h => h.stayedWithinLimit).length;
+        const totalMonths = lockHistory.length;
+        const successRate = Math.round((monthsWithinLimit / totalMonths) * 100);
+        
+        if (monthsWithinLimit === totalMonths) {
+            insights.push({
+                icon: '🛡️',
+                text: `You stayed within your self-set spending limits ${monthsWithinLimit} out of ${totalMonths} month(s). Constraints chosen in advance are more effective than willpower.`,
+                type: 'positive'
+            });
+        } else if (successRate >= 70) {
+            insights.push({
+                icon: '🛡️',
+                text: `You stayed within your temptation limits ${monthsWithinLimit} out of ${totalMonths} months (${successRate}%). Pre-commitment is working!`,
+                type: 'positive'
+            });
+        } else {
+            insights.push({
+                icon: '🛡️',
+                text: `You stayed within limits ${monthsWithinLimit} of ${totalMonths} months. Consider adjusting caps to be more sustainable.`,
+                type: 'neutral'
+            });
+        }
+    } else if (profile.temptationLocks?.enabled) {
+        insights.push({
+            icon: '🛡️',
+            text: `You've enabled Temptation Controls. These voluntary limits teach that discipline is designed, not forced.`,
+            type: 'neutral'
+        });
+    }
+    
     return insights;
 }
 

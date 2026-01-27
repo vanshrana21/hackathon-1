@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FinPlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        <p>Loading your profile...</p>
+    </div>
+
+    <div id="dashboardContent" class="dashboard" style="display: none;">
+        <nav class="dashboard-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <div class="logo">FinPlay</div>
+                    <div class="level-badge" id="levelBadge">
+                        <span>⭐</span>
+                        <span>Level 1</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <header class="dashboard-header">
+            <div class="container">
+                <div class="welcome-section">
+                    <div class="welcome-text">
+                        <h1>Welcome, <span id="userName">User</span>!</h1>
+                        <p>Ready to level up your financial skills?</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <div class="container">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon">💰</div>
+                        </div>
+                        <div class="stat-card-value" id="virtualBalance">₹1,00,000</div>
+                        <div class="stat-card-label">Virtual Balance</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon">📅</div>
+                        </div>
+                        <div class="stat-card-value" id="monthlyIncome">₹30,000</div>
+                        <div class="stat-card-label">Monthly Income</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon">⚡</div>
+                        </div>
+                        <div class="stat-card-value" id="xpValue">50 XP</div>
+                        <div class="stat-card-label">Experience Points</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon">🎯</div>
+                        </div>
+                        <div class="stat-card-value" id="focusGoal">-</div>
+                        <div class="stat-card-label">Focus Goal</div>
+                    </div>
+                </div>
+
+                <div class="dashboard-main">
+                    <div class="card level-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Current Level</h2>
+                        </div>
+                        <div class="level-info">
+                            <div class="level-name">Level 1 – Budgeting Basics</div>
+                            <div class="level-description">Learn to allocate your income wisely across needs, wants, and savings.</div>
+                        </div>
+                        <div class="xp-progress">
+                            <div class="xp-bar">
+                                <div class="xp-fill" id="xpFill" style="width: 50%;"></div>
+                            </div>
+                            <div class="xp-text">
+                                <span id="currentXp">50 XP</span>
+                                <span>100 XP to Level 2</span>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" style="width: 100%;" id="startLevelBtn">
+                            Start Level 1
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="card profile-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Your Profile</h2>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Knowledge Level</span>
+                            <span class="profile-value" id="knowledgeLevel">-</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Life Stage</span>
+                            <span class="profile-value" id="lifeStage">-</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Primary Goal</span>
+                            <span class="profile-value" id="primaryGoal">-</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Current Level</span>
+                            <span class="profile-value" id="currentLevel">Level 1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        async function loadUserData() {
+            const userId = localStorage.getItem('user_id');
+            
+            if (!userId) {
+                window.location.href = '/onboarding';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/users/${userId}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        localStorage.removeItem('user_id');
+                        window.location.href = '/onboarding';
+                        return;
+                    }
+                    throw new Error('Failed to fetch user data');
+                }
+
+                const user = await response.json();
+                displayUserData(user);
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                alert('Failed to load your profile. Please try again.');
+            }
+        }
+
+        function displayUserData(user) {
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('virtualBalance').textContent = `₹${user.virtual_balance.toLocaleString('en-IN')}`;
+            document.getElementById('monthlyIncome').textContent = `₹${user.monthly_income.toLocaleString('en-IN')}`;
+            document.getElementById('xpValue').textContent = `${user.xp} XP`;
+            document.getElementById('focusGoal').textContent = user.goal;
+            document.getElementById('knowledgeLevel').textContent = user.knowledge_level;
+            document.getElementById('lifeStage').textContent = user.life_stage;
+            document.getElementById('primaryGoal').textContent = user.goal;
+            document.getElementById('currentLevel').textContent = `Level ${user.current_level}`;
+            document.getElementById('currentXp').textContent = `${user.xp} XP`;
+            document.getElementById('xpFill').style.width = `${(user.xp / 100) * 100}%`;
+            document.getElementById('levelBadge').querySelector('span:last-child').textContent = `Level ${user.current_level}`;
+
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('dashboardContent').style.display = 'block';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUserData();
+
+            document.getElementById('startLevelBtn').addEventListener('click', () => {
+                alert('Level 1: Budgeting Basics coming soon! This feature will be available in the next phase.');
+            });
+        });
+    </script>
+</body>
+</html>

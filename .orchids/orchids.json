@@ -1,0 +1,8 @@
+{
+  "projectId": "710a4dfe-4316-4be8-ade5-2b5507fff6e5",
+  "createdAt": 1769526591941,
+  "version": "1.0",
+  "startupCommands": [
+    "cd Backend && pip install -r requirments.txt && mkdir -p static && cp -r ../Frontend/HTML/* static/ && cp -r ../Frontend/CSS static/ && cp -r ../Frontend/JS static/ && uvicorn main:app --reload --host 0.0.0.0 --port 8000"
+  ]
+}

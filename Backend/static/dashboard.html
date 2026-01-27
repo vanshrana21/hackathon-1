@@ -80,6 +80,43 @@
                     </div>
                 </div>
 
+                <div id="futureWalletCard" class="card future-wallet-card">
+                    <div class="future-wallet-header">
+                        <div class="fw-badge">🔐</div>
+                        <div class="fw-title">
+                            <h3>Future Self Wallet</h3>
+                            <p class="fw-subtitle">Pay Yourself First — 15% auto-saved before spending</p>
+                        </div>
+                    </div>
+                    <div class="future-wallet-stats">
+                        <div class="fw-stat">
+                            <div class="fw-stat-value" id="futureWalletBalance">₹0</div>
+                            <div class="fw-stat-label">Total Protected</div>
+                        </div>
+                        <div class="fw-stat">
+                            <div class="fw-stat-value" id="futureWalletContribution">₹0</div>
+                            <div class="fw-stat-label">This Month</div>
+                        </div>
+                        <div class="fw-stat">
+                            <div class="fw-stat-value" id="futureWalletTotal">₹0</div>
+                            <div class="fw-stat-label">All-Time Saved</div>
+                        </div>
+                    </div>
+                    <div class="fw-info">
+                        <span class="fw-info-icon">💡</span>
+                        <span>This money is protected from spending. It represents your long-term savings.</span>
+                    </div>
+                    <div class="fw-actions">
+                        <button class="btn btn-secondary btn-sm" id="adjustRateBtn">
+                            Adjust Rate
+                        </button>
+                        <span class="rate-locked-indicator" id="rateLocked" style="display: none;">
+                            <span class="lock-icon">🔒</span>
+                            <span>Rate locked for this month</span>
+                        </span>
+                    </div>
+                </div>
+
                 <div class="dashboard-main">
                     <div class="card level-card">
                         <div class="card-header">
@@ -131,11 +168,14 @@
 
                 <section class="budget-section">
                     <h2 class="section-title">Monthly Budget</h2>
-                    <p class="section-subtitle">Allocate your income wisely using the 50/30/20 rule!</p>
+                    <p class="section-subtitle">Allocate your spendable income (after Future Self Wallet deduction)</p>
 
                     <div id="budgetAllocation" class="card budget-allocation-card">
-                        <h3 class="card-title">Allocate Your Income</h3>
-                        <p class="allocation-hint">Needs (essentials) + Wants (lifestyle) + Savings = Monthly Income</p>
+                        <h3 class="card-title">Allocate Your Spendable Income</h3>
+                        <p class="allocation-hint">
+                            <strong>Spendable: <span id="spendableIncome">₹0</span></strong> (after 15% auto-saved)
+                        </p>
+                        <p class="allocation-hint">Needs (essentials) + Wants (lifestyle) + Savings = Spendable Income</p>
                         
                         <div class="allocation-inputs">
                             <div class="allocation-input-group">

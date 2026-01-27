@@ -255,6 +255,18 @@ function generateInsights(profile, portfolio) {
         });
     }
     
+    // Future Wallet rate insight
+    const futureWalletRate = profile.futureWallet?.rate || 0.15;
+    const ratePercent = Math.round(futureWalletRate * 100);
+    const futureWalletBalance = profile.futureWallet?.balance || 0;
+    if (futureWalletBalance > 0) {
+        insights.push({
+            icon: '🔐',
+            text: `Your Future Self Wallet (${ratePercent}% rate) has protected ${formatCurrency(futureWalletBalance)}. Higher rates increase long-term stability, but consistency matters more than intensity.`,
+            type: 'positive'
+        });
+    }
+    
     return insights;
 }
 

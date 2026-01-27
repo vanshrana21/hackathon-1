@@ -449,6 +449,79 @@ function calculatePortfolioMetrics() {
     return { cash: portfolio.cash, investedValue, totalPortfolio, totalPnL, riskScore };
 }
 
+function isMonthZero() {
+    const profile = getProfile();
+    return (profile?.budget?.monthHistory || []).length === 0;
+}
+
+function updateInvestingCTA() {
+    const ctaContainer = document.getElementById('investingCTA');
+    const ctaIcon = document.getElementById('ctaIcon');
+    const ctaTitle = document.getElementById('ctaTitle');
+    const ctaMessage = document.getElementById('ctaMessage');
+    const ctaButton = document.getElementById('ctaButton');
+    const portfolio = getPortfolio();
+    
+    const monthZero = isMonthZero();
+    
+    if (monthZero) {
+        ctaContainer.style.display = 'flex';
+        ctaContainer.className = 'investing-cta cta-locked';
+        ctaIcon.textContent = '🔒';
+        ctaTitle.textContent = 'Investing Locked';
+        ctaMessage.textContent = 'Complete your first budget to unlock investing.';
+        ctaButton.style.display = 'none';
+    } else if (portfolio && portfolio.cash > 0 && portfolio.positions.length === 0) {
+        ctaContainer.style.display = 'flex';
+        ctaContainer.className = 'investing-cta cta-ready';
+        ctaIcon.textContent = '🚀';
+        ctaTitle.textContent = 'Ready to Invest';
+        ctaMessage.textContent = `You have ${formatCurrency(portfolio.cash)} available to start building your portfolio.`;
+        ctaButton.style.display = 'block';
+        ctaButton.textContent = 'Start Investing';
+    } else {
+        ctaContainer.style.display = 'none';
+    }
+}
+
+function updateMarketButtonStates() {
+    const monthZero = isMonthZero();
+    const portfolio = getPortfolio();
+    
+    document.querySelectorAll('.market-btn').forEach(btn => {
+        if (monthZero) {
+            btn.disabled = true;
+            btn.classList.add('btn-disabled');
+            btn.setAttribute('title', 'Complete your first month to unlock investing');
+        } else if (portfolio && portfolio.cash <= 0) {
+            const assetId = btn.dataset.assetId;
+            const asset = MARKET_ASSETS.find(a => a.id === assetId);
+            const position = portfolio.positions.find(p => p.id === assetId);
+            if (!position && asset && asset.type !== 'fd') {
+                btn.disabled = true;
+                btn.classList.add('btn-disabled');
+                btn.setAttribute('title', 'No cash available');
+            }
+        } else {
+            btn.disabled = false;
+            btn.classList.remove('btn-disabled');
+            btn.removeAttribute('title');
+        }
+    });
+    
+    const advanceBtn = document.getElementById('advanceMonthBtn');
+    const scenarioSelect = document.getElementById('scenarioSelect');
+    if (monthZero) {
+        advanceBtn.disabled = true;
+        advanceBtn.setAttribute('title', 'Complete your first budget month first');
+        scenarioSelect.disabled = true;
+    } else {
+        advanceBtn.disabled = false;
+        advanceBtn.removeAttribute('title');
+        scenarioSelect.disabled = false;
+    }
+}
+
 function updateHeaderUI() {
     const profile = getProfile();
     const portfolio = getPortfolio();
@@ -511,14 +584,29 @@ function renderMarket(filter = 'all') {
 
         container.appendChild(card);
     });
+    
+    updateMarketButtonStates();
 }
 
 function renderHoldings() {
     const portfolio = getPortfolio();
     const container = document.getElementById('holdingsList');
+    const emptyState = document.getElementById('emptyPortfolioState');
 
     if (portfolio.positions.length === 0) {
-        container.innerHTML = '<p class="empty-state">No investments yet</p>';
+        if (emptyState) {
+            emptyState.style.display = 'block';
+        } else {
+            container.innerHTML = `
+                <div id="emptyPortfolioState" class="empty-portfolio-state">
+                    <div class="empty-portfolio-icon">📭</div>
+                    <h4>You haven't invested yet</h4>
+                    <p>Start small — even one decision builds experience.</p>
+                    <button class="btn btn-primary" id="makeFirstInvestmentBtn">Make First Investment</button>
+                </div>
+            `;
+            wireFirstInvestmentButton();
+        }
         return;
     }
 
@@ -788,7 +876,9 @@ function showMonthSummary(month, scenario, changes, matured) {
 function refreshUI() {
     updateHeaderUI();
     updatePortfolioStats();
+    updateInvestingCTA();
     renderMarket();
+    updateMarketButtonStates();
     renderHoldings();
     renderAllocation();
     renderTransactions();
@@ -814,8 +904,29 @@ async function initializePage() {
     refreshUI();
 }
 
+function scrollToMarket() {
+    const marketSection = document.querySelector('.market-section');
+    if (marketSection) {
+        marketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function wireFirstInvestmentButton() {
+    const btn = document.getElementById('makeFirstInvestmentBtn');
+    if (btn) {
+        btn.addEventListener('click', scrollToMarket);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initializePage();
+
+    const ctaButton = document.getElementById('ctaButton');
+    if (ctaButton) {
+        ctaButton.addEventListener('click', scrollToMarket);
+    }
+
+    wireFirstInvestmentButton();
 
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {

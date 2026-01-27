@@ -38,6 +38,22 @@
 
         <header class="dashboard-header">
             <div class="container">
+                <div class="investing-context-block">
+                    <span class="context-icon">📊</span>
+                    <span>This is a simulation. Market outcomes are randomized to teach risk — not predict returns.</span>
+                </div>
+                
+                <div id="investingCTA" class="investing-cta" style="display: none;">
+                    <div class="cta-content">
+                        <span class="cta-icon" id="ctaIcon">🔒</span>
+                        <div class="cta-text">
+                            <h3 id="ctaTitle">Getting Started</h3>
+                            <p id="ctaMessage">Complete your first budget to unlock investing</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="ctaButton" style="display: none;">Start Investing</button>
+                </div>
+
                 <div class="welcome-section">
                     <div class="welcome-text">
                         <h1>Investment Portfolio</h1>
@@ -102,11 +118,16 @@
                         <div id="marketList" class="market-list"></div>
                     </section>
 
-                    <aside class="portfolio-sidebar">
+                        <aside class="portfolio-sidebar">
                         <div class="card">
                             <h3 class="card-title">Your Holdings</h3>
                             <div id="holdingsList" class="holdings-list">
-                                <p class="empty-state">No investments yet. Start by exploring the market.</p>
+                                <div id="emptyPortfolioState" class="empty-portfolio-state">
+                                    <div class="empty-portfolio-icon">📭</div>
+                                    <h4>You haven't invested yet</h4>
+                                    <p>Start small — even one decision builds experience.</p>
+                                    <button class="btn btn-primary" id="makeFirstInvestmentBtn">Make First Investment</button>
+                                </div>
                             </div>
                         </div>
 

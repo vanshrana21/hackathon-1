@@ -30,6 +30,10 @@ def get_supabase() -> Client:
         )
     return _supabase_client
 
+BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
+FRONTEND_DIR = os.path.join(PROJECT_ROOT, "Frontend")
+
 INCOME_BY_LIFE_STAGE = {
     "Student": 15000,
     "Just Started Working": 30000,
@@ -107,16 +111,18 @@ async def get_user(user_id: str):
         current_level=user["current_level"]
     )
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "CSS")), name="css")
+app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "JS")), name="js")
+app.mount("/html", StaticFiles(directory=os.path.join(FRONTEND_DIR, "HTML")), name="html")
 
 @app.get("/")
 async def serve_index():
-    return FileResponse("static/index.html")
+    return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "index.html"))
 
 @app.get("/onboarding")
 async def serve_onboarding():
-    return FileResponse("static/onboarding.html")
+    return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "onboarding.html"))
 
 @app.get("/dashboard")
 async def serve_dashboard():
-    return FileResponse("static/dashboard.html")
+    return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "dashboard.html"))

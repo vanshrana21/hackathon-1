@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../CSS/styles.css">
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
     <div id="loadingState" class="loading">
@@ -20,9 +20,16 @@
             <div class="container">
                 <div class="nav-content">
                     <div class="logo">FinPlay</div>
-                    <div class="level-badge" id="levelBadge">
-                        <span>⭐</span>
-                        <span>Level 1</span>
+                    <div class="nav-links">
+                        <a href="/dashboard" class="nav-link active">Dashboard</a>
+                        <a href="/investing" class="nav-link">Investing</a>
+                    </div>
+                    <div class="nav-right">
+                        <div class="month-badge" id="currentMonth">Month 1</div>
+                        <div class="level-badge" id="levelBadge">
+                            <span>⭐</span>
+                            <span>Level 1</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -78,8 +85,8 @@
                             <h2 class="card-title">Current Level</h2>
                         </div>
                         <div class="level-info">
-                            <div class="level-name">Level 1 – Budgeting Basics</div>
-                            <div class="level-description">Learn to allocate your income wisely across needs, wants, and savings.</div>
+                            <div class="level-name" id="levelName">Level 1 – Budgeting Basics</div>
+                            <div class="level-description" id="levelDescription">Learn to allocate your income wisely across needs, wants, and savings.</div>
                         </div>
                         <div class="xp-progress">
                             <div class="xp-bar">
@@ -87,11 +94,11 @@
                             </div>
                             <div class="xp-text">
                                 <span id="currentXp">50 XP</span>
-                                <span>100 XP to Level 2</span>
+                                <span id="xpToNext">100 XP to Level 2</span>
                             </div>
                         </div>
                         <button class="btn btn-primary" style="width: 100%;" id="startLevelBtn">
-                            Start Level 1
+                            Earn Bonus XP
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M5 12h14M12 5l7 7-7 7"/>
                             </svg>
@@ -120,9 +127,129 @@
                         </div>
                     </div>
                 </div>
+
+                <section class="budget-section">
+                    <h2 class="section-title">Monthly Budget</h2>
+                    <p class="section-subtitle">Allocate your income wisely using the 50/30/20 rule!</p>
+
+                    <div id="budgetAllocation" class="card budget-allocation-card">
+                        <h3 class="card-title">Allocate Your Income</h3>
+                        <p class="allocation-hint">Needs (essentials) + Wants (lifestyle) + Savings = Monthly Income</p>
+                        
+                        <div class="allocation-inputs">
+                            <div class="allocation-input-group">
+                                <label>Needs (50% recommended)</label>
+                                <div class="input-with-icon">
+                                    <span>₹</span>
+                                    <input type="number" id="needsInput" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="allocation-input-group">
+                                <label>Wants (30% recommended)</label>
+                                <div class="input-with-icon">
+                                    <span>₹</span>
+                                    <input type="number" id="wantsInput" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="allocation-input-group">
+                                <label>Savings (20% recommended)</label>
+                                <div class="input-with-icon">
+                                    <span>₹</span>
+                                    <input type="number" id="savingsInput" placeholder="0" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="allocation-summary">
+                            <div class="allocation-row">
+                                <span>Total Allocated:</span>
+                                <span id="allocationTotal">₹0</span>
+                            </div>
+                            <div class="allocation-row">
+                                <span>Remaining:</span>
+                                <span id="allocationRemaining">₹0</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" id="allocateBudgetBtn" disabled style="width: 100%;">
+                            Confirm Allocation
+                        </button>
+                    </div>
+
+                    <div id="budgetOverview" class="budget-overview" style="display: none;">
+                        <div class="budget-category">
+                            <div class="budget-category-header">
+                                <div class="budget-category-icon needs-icon">🏠</div>
+                                <div class="budget-category-info">
+                                    <h4>Needs</h4>
+                                    <p>Allocated: <span id="needsAllocated">₹0</span></p>
+                                </div>
+                                <div class="budget-category-remaining">
+                                    <span id="needsRemaining">₹0</span>
+                                    <small>remaining</small>
+                                </div>
+                            </div>
+                            <div class="budget-bar">
+                                <div class="budget-bar-fill needs-bar" id="needsBar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="budget-category">
+                            <div class="budget-category-header">
+                                <div class="budget-category-icon wants-icon">🎬</div>
+                                <div class="budget-category-info">
+                                    <h4>Wants</h4>
+                                    <p>Allocated: <span id="wantsAllocated">₹0</span></p>
+                                </div>
+                                <div class="budget-category-remaining">
+                                    <span id="wantsRemaining">₹0</span>
+                                    <small>remaining</small>
+                                </div>
+                            </div>
+                            <div class="budget-bar">
+                                <div class="budget-bar-fill wants-bar" id="wantsBar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="budget-category">
+                            <div class="budget-category-header">
+                                <div class="budget-category-icon savings-icon">🏦</div>
+                                <div class="budget-category-info">
+                                    <h4>Savings</h4>
+                                    <p>Allocated: <span id="savingsAllocated">₹0</span></p>
+                                </div>
+                                <div class="budget-category-remaining">
+                                    <span id="savingsRemaining">₹0</span>
+                                    <small>total saved</small>
+                                </div>
+                            </div>
+                            <div class="budget-bar">
+                                <div class="budget-bar-fill savings-bar" id="savingsBar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="expenseSection" class="expense-section" style="display: none;">
+                    <div class="expense-header">
+                        <div>
+                            <h2 class="section-title">Monthly Expenses</h2>
+                            <p class="section-subtitle">Pay your expenses. Needs are mandatory, Wants are optional.</p>
+                        </div>
+                        <button class="btn btn-primary" id="endMonthBtn" disabled>
+                            End Month
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div id="expenseList" class="expense-list"></div>
+                </section>
             </div>
         </main>
     </div>
-    <script src="../JS/dashboard.js"></script>
+    <script src="/js/sync.js"></script>
+    <script src="/js/dashboard.js"></script>
 </body>
 </html>

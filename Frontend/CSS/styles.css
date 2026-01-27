@@ -2388,6 +2388,131 @@ body {
     color: var(--secondary);
 }
 
+/* Future Wallet Actions & Rate Adjustment */
+.fw-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.btn-sm {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+}
+
+.rate-locked-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.lock-icon {
+    font-size: 0.9rem;
+}
+
+/* Rate Adjustment Modal */
+.rate-modal {
+    max-width: 480px;
+}
+
+.rate-modal-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.rate-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.rate-option {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.rate-option:hover {
+    border-color: var(--secondary);
+}
+
+.rate-option.selected {
+    border-color: var(--primary);
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.rate-option input {
+    display: none;
+}
+
+.rate-option-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.rate-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.rate-desc {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.rate-preview {
+    text-align: center;
+    padding: 20px;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.rate-preview-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.rate-preview-amount {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.rate-preview-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.rate-info-text {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .onboarding-card {

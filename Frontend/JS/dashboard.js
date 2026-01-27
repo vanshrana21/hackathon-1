@@ -4,7 +4,16 @@ console.log('[dashboard.js] Script loaded successfully');
 // CONFIGURATION
 // =================================================================
 const XP_PER_LEVEL = 100;
-const FUTURE_WALLET_PERCENT = 0.15; // 15% of income auto-saved
+const DEFAULT_FUTURE_WALLET_RATE = 0.15; // 15% default
+
+const FUTURE_WALLET_RATE_OPTIONS = [
+    { value: 0.05, label: '5%', description: 'Minimal commitment' },
+    { value: 0.10, label: '10%', description: 'Steady progress' },
+    { value: 0.15, label: '15%', description: 'Recommended' },
+    { value: 0.20, label: '20%', description: 'Accelerated savings' },
+    { value: 0.25, label: '25%', description: 'Aggressive saver' },
+    { value: 0.30, label: '30%', description: 'Maximum commitment' }
+];
 
 const LEVEL_DESCRIPTIONS = {
     1: { name: 'Budgeting Basics', desc: 'Learn to allocate your income wisely across needs, wants, and savings.' },
@@ -48,40 +57,69 @@ function saveProfile(profile) {
 // FUTURE SELF WALLET - "Pay Yourself First" System
 // =================================================================
 // The Future Self Wallet implements automatic savings by reserving
-// 15% of monthly income BEFORE the user can budget or spend.
-// This teaches the "Pay Yourself First" principle.
+// a configurable percentage (5-30%) of monthly income BEFORE
+// the user can budget or spend. This teaches "Pay Yourself First".
 // =================================================================
 
 function initializeFutureWallet(profile) {
-    // Initialize futureWallet if it doesn't exist
     if (!profile.futureWallet) {
         profile.futureWallet = {
             balance: 0,
             monthlyContribution: 0,
             totalContributed: 0,
-            lastContributionMonth: 0 // Track which month was last contributed
+            lastContributionMonth: 0,
+            rate: DEFAULT_FUTURE_WALLET_RATE, // User-configurable rate (default 15%)
+            rateLocked: false // Locks after budgeting starts
         };
+        saveProfile(profile);
+    }
+    // Ensure rate field exists for existing profiles
+    if (profile.futureWallet.rate === undefined) {
+        profile.futureWallet.rate = DEFAULT_FUTURE_WALLET_RATE;
         saveProfile(profile);
     }
     return profile;
 }
 
-function processFutureWalletContribution(profile) {
-    // This runs at month START, BEFORE budgeting
-    // Only contribute once per month (idempotent)
+function getFutureWalletRate(profile) {
+    return profile.futureWallet?.rate || DEFAULT_FUTURE_WALLET_RATE;
+}
+
+function canChangeRate(profile) {
+    // Rate can only be changed at the START of a month, BEFORE budgeting
+    return !profile.budget?.allocated;
+}
+
+function updateFutureWalletRate(profile, newRate) {
+    // Validate rate is in allowed range
+    const validRates = FUTURE_WALLET_RATE_OPTIONS.map(o => o.value);
+    if (!validRates.includes(newRate)) {
+        return { success: false, error: 'Invalid rate selected' };
+    }
     
+    // Can only change before budgeting starts
+    if (!canChangeRate(profile)) {
+        return { success: false, error: 'Rate locked for this month' };
+    }
+    
+    profile.futureWallet.rate = newRate;
+    saveProfile(profile);
+    
+    return { success: true };
+}
+
+function processFutureWalletContribution(profile) {
     const currentMonth = profile.budget?.month || 1;
     const lastContributionMonth = profile.futureWallet?.lastContributionMonth || 0;
     
-    // Already contributed for this month - skip
     if (lastContributionMonth >= currentMonth) {
         return { contributed: false, amount: 0 };
     }
     
-    // Calculate 15% of income
-    const contribution = Math.floor(profile.income * FUTURE_WALLET_PERCENT);
+    // Use the user's configured rate
+    const rate = getFutureWalletRate(profile);
+    const contribution = Math.floor(profile.income * rate);
     
-    // Update Future Wallet
     profile.futureWallet.balance += contribution;
     profile.futureWallet.monthlyContribution = contribution;
     profile.futureWallet.totalContributed += contribution;
@@ -93,10 +131,106 @@ function processFutureWalletContribution(profile) {
 }
 
 function getSpendableIncome(profile) {
-    // Spendable income = income - future wallet contribution
-    // This is what the user actually budgets with
-    const contribution = Math.floor(profile.income * FUTURE_WALLET_PERCENT);
+    const rate = getFutureWalletRate(profile);
+    const contribution = Math.floor(profile.income * rate);
     return profile.income - contribution;
+}
+
+// =================================================================
+// RATE ADJUSTMENT UI
+// =================================================================
+function showRateAdjustmentModal(profile) {
+    if (!canChangeRate(profile)) {
+        showNotification('Rate is locked once budgeting begins', 'info');
+        return;
+    }
+    
+    const currentRate = getFutureWalletRate(profile);
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'rateAdjustModal';
+    
+    const optionsHtml = FUTURE_WALLET_RATE_OPTIONS.map(opt => `
+        <label class="rate-option ${opt.value === currentRate ? 'selected' : ''}">
+            <input type="radio" name="walletRate" value="${opt.value}" ${opt.value === currentRate ? 'checked' : ''}>
+            <div class="rate-option-content">
+                <span class="rate-value">${opt.label}</span>
+                <span class="rate-desc">${opt.description}</span>
+            </div>
+        </label>
+    `).join('');
+    
+    const previewAmount = Math.floor(profile.income * currentRate);
+    
+    modal.innerHTML = `
+        <div class="modal-content rate-modal">
+            <h2>Adjust Savings Rate</h2>
+            <p class="rate-modal-subtitle">Choose how much to protect for your future each month</p>
+            
+            <div class="rate-options">
+                ${optionsHtml}
+            </div>
+            
+            <div class="rate-preview">
+                <div class="rate-preview-label">Next month's protection:</div>
+                <div class="rate-preview-amount" id="ratePreviewAmount">${formatCurrency(previewAmount)}</div>
+                <div class="rate-preview-note">of ${formatCurrency(profile.income)} income</div>
+            </div>
+            
+            <p class="rate-info-text">
+                This rate applies starting this month. Consistency matters more than intensity.
+            </p>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelRateBtn">Cancel</button>
+                <button class="btn btn-primary" id="confirmRateBtn">Confirm Rate</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    // Update preview on selection change
+    modal.querySelectorAll('input[name="walletRate"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const newRate = parseFloat(e.target.value);
+            const newAmount = Math.floor(profile.income * newRate);
+            document.getElementById('ratePreviewAmount').textContent = formatCurrency(newAmount);
+            
+            modal.querySelectorAll('.rate-option').forEach(opt => opt.classList.remove('selected'));
+            e.target.closest('.rate-option').classList.add('selected');
+        });
+    });
+    
+    document.getElementById('cancelRateBtn').addEventListener('click', () => {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
+    
+    document.getElementById('confirmRateBtn').addEventListener('click', () => {
+        const selectedRate = parseFloat(modal.querySelector('input[name="walletRate"]:checked').value);
+        const result = updateFutureWalletRate(getProfile(), selectedRate);
+        
+        if (result.success) {
+            const rateLabel = FUTURE_WALLET_RATE_OPTIONS.find(o => o.value === selectedRate)?.label || '15%';
+            showNotification(`Savings rate set to ${rateLabel}`, 'success');
+            
+            // Re-process contribution if rate changed before contribution was made
+            const freshProfile = getProfile();
+            if (freshProfile.futureWallet.lastContributionMonth < freshProfile.budget.month) {
+                processFutureWalletContribution(freshProfile);
+            }
+            
+            displayUserData(getProfile());
+        } else {
+            showNotification(result.error, 'error');
+        }
+        
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
 }
 
 // =================================================================
@@ -212,9 +346,7 @@ function displayUserData(profile) {
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('dashboardContent').style.display = 'block';
     
-    // Update Future Self Wallet display
     updateFutureWalletUI(profile);
-    
     updateBudgetUI(profile);
 }
 
@@ -225,6 +357,32 @@ function updateFutureWalletUI(profile) {
     document.getElementById('futureWalletBalance').textContent = formatCurrency(profile.futureWallet.balance);
     document.getElementById('futureWalletContribution').textContent = formatCurrency(profile.futureWallet.monthlyContribution);
     document.getElementById('futureWalletTotal').textContent = formatCurrency(profile.futureWallet.totalContributed);
+    
+    // Update rate display
+    const ratePercent = Math.round(getFutureWalletRate(profile) * 100);
+    const rateDisplay = document.getElementById('currentRateDisplay');
+    if (rateDisplay) {
+        rateDisplay.textContent = `${ratePercent}%`;
+    }
+    
+    // Update subtitle with current rate
+    const subtitle = walletCard.querySelector('.fw-subtitle');
+    if (subtitle) {
+        subtitle.textContent = `Pay Yourself First — ${ratePercent}% auto-saved before spending`;
+    }
+    
+    // Show/hide adjust button based on whether rate can be changed
+    const adjustBtn = document.getElementById('adjustRateBtn');
+    if (adjustBtn) {
+        const canChange = canChangeRate(profile);
+        adjustBtn.style.display = canChange ? 'inline-flex' : 'none';
+        
+        // Show locked indicator if rate is locked
+        const lockedIndicator = document.getElementById('rateLocked');
+        if (lockedIndicator) {
+            lockedIndicator.style.display = canChange ? 'none' : 'inline-flex';
+        }
+    }
 }
 
 function updateBudgetUI(profile) {
@@ -233,7 +391,6 @@ function updateBudgetUI(profile) {
     
     document.getElementById('currentMonth').textContent = `Month ${budget.month}`;
     
-    // Update spendable income display
     const spendableEl = document.getElementById('spendableIncome');
     if (spendableEl) {
         spendableEl.textContent = formatCurrency(spendableIncome);
@@ -274,7 +431,6 @@ function updateAllocationPreview() {
     const profile = getProfile();
     if (!profile) return;
     
-    // Use SPENDABLE income (after Future Wallet contribution), not full income
     const spendableIncome = getSpendableIncome(profile);
     const needs = parseInt(document.getElementById('needsInput').value) || 0;
     const wants = parseInt(document.getElementById('wantsInput').value) || 0;
@@ -287,7 +443,6 @@ function updateAllocationPreview() {
     document.getElementById('allocationRemaining').textContent = formatCurrency(remaining);
     
     const allocateBtn = document.getElementById('allocateBudgetBtn');
-    // Check against spendable income, not full income
     if (total === spendableIncome && needs > 0 && wants >= 0 && savings >= 0) {
         allocateBtn.disabled = false;
         document.getElementById('allocationRemaining').style.color = 'var(--success)';
@@ -309,7 +464,6 @@ function allocateBudget() {
     const wants = parseInt(document.getElementById('wantsInput').value) || 0;
     const savings = parseInt(document.getElementById('savingsInput').value) || 0;
     
-    // Validate against spendable income
     if (needs + wants + savings !== spendableIncome) {
         showNotification('Allocation must equal your spendable income!', 'error');
         return;
@@ -346,7 +500,6 @@ function renderExpenseEvents(profile) {
     const container = document.getElementById('expenseList');
     container.innerHTML = '';
     
-    // Calculate expense amounts based on SPENDABLE income
     const spendableIncome = getSpendableIncome(profile);
     
     EXPENSE_EVENTS.forEach(expense => {
@@ -426,7 +579,7 @@ function updateMonthEndButton(profile) {
 }
 
 // =================================================================
-// END MONTH - Includes Future Wallet messaging
+// END MONTH
 // =================================================================
 function endMonth() {
     const profile = getProfile();
@@ -443,8 +596,8 @@ function endMonth() {
     let xpBonus = 0;
     let summary = [];
     
-    // Calculate Future Wallet contribution for summary display
     const futureWalletContribution = profile.futureWallet?.monthlyContribution || 0;
+    const currentRate = getFutureWalletRate(profile);
     
     if (profile.budget.needsRemaining > 0) {
         profile.budget.savingsRemaining += profile.budget.needsRemaining;
@@ -468,7 +621,6 @@ function endMonth() {
         summary.push('Good savings rate bonus!');
     }
     
-    // Store month history with future wallet contribution
     profile.budget.monthHistory.push({
         month: profile.budget.month,
         needs: profile.budget.needs,
@@ -476,12 +628,12 @@ function endMonth() {
         savings: profile.budget.savings,
         totalSaved: profile.budget.savingsRemaining,
         futureWalletContribution: futureWalletContribution,
+        futureWalletRate: currentRate,
         xpEarned: xpBonus
     });
     
     profile.balance += profile.budget.savingsRemaining;
     
-    // Advance to next month
     profile.budget.month += 1;
     profile.budget.allocated = false;
     profile.budget.needs = 0;
@@ -497,16 +649,15 @@ function endMonth() {
         addXp(xpBonus);
     }
     
-    // Show month summary with Future Wallet info
     showMonthSummary(
         profile.budget.month - 1, 
         summary, 
         xpBonus, 
         profile.budget.savingsRemaining,
-        futureWalletContribution
+        futureWalletContribution,
+        currentRate
     );
     
-    // Process Future Wallet contribution for the NEW month
     const freshProfile = getProfile();
     const walletResult = processFutureWalletContribution(freshProfile);
     if (walletResult.contributed) {
@@ -518,16 +669,17 @@ function endMonth() {
     displayUserData(getProfile());
 }
 
-function showMonthSummary(month, summary, xpEarned, totalSaved, futureWalletContribution) {
+function showMonthSummary(month, summary, xpEarned, totalSaved, futureWalletContribution, rate) {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
     
-    // Educational message about Future Wallet
+    const ratePercent = Math.round(rate * 100);
+    
     const futureWalletMessage = futureWalletContribution > 0 
         ? `<div class="future-wallet-summary">
              <div class="fw-icon">🔐</div>
              <div class="fw-text">
-               <strong>${formatCurrency(futureWalletContribution)}</strong> was automatically protected for your future before you spent anything.
+               <strong>${formatCurrency(futureWalletContribution)}</strong> (${ratePercent}%) was automatically protected for your future before you spent anything.
              </div>
            </div>`
         : '';
@@ -580,14 +732,9 @@ async function loadUserData() {
         saveProfile(profile);
     }
     
-    // Initialize budget state
     profile = initializeBudgetState(profile);
-    
-    // Initialize Future Self Wallet
     profile = initializeFutureWallet(profile);
     
-    // Process Future Wallet contribution for current month
-    // This is idempotent - won't run twice for the same month
     const walletResult = processFutureWalletContribution(profile);
     if (walletResult.contributed) {
         setTimeout(() => {
@@ -614,4 +761,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('savingsInput').addEventListener('input', updateAllocationPreview);
     document.getElementById('allocateBudgetBtn').addEventListener('click', allocateBudget);
     document.getElementById('endMonthBtn').addEventListener('click', endMonth);
+    
+    // Rate adjustment button
+    const adjustRateBtn = document.getElementById('adjustRateBtn');
+    if (adjustRateBtn) {
+        adjustRateBtn.addEventListener('click', () => {
+            const profile = getProfile();
+            if (profile) showRateAdjustmentModal(profile);
+        });
+    }
 });

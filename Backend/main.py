@@ -3,9 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
-from supabase import create_client, Client
+from supabase import Client
+from supabase._sync.client import SyncClient
 from dotenv import load_dotenv
 import os
+import httpx
 
 load_dotenv()
 
@@ -24,10 +26,9 @@ _supabase_client: Client | None = None
 def get_supabase() -> Client:
     global _supabase_client
     if _supabase_client is None:
-        _supabase_client = create_client(
-            os.getenv("SUPABASE_URL"),
-            os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-        )
+        url = os.getenv("SUPABASE_URL")
+        key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        _supabase_client = SyncClient(url, key)
     return _supabase_client
 
 BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))

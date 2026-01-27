@@ -19,10 +19,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-supabase: Client = create_client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-)
+_supabase_client: Client | None = None
+
+def get_supabase() -> Client:
+    global _supabase_client
+    if _supabase_client is None:
+        _supabase_client = create_client(
+            os.getenv("SUPABASE_URL"),
+            os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        )
+    return _supabase_client
 
 INCOME_BY_LIFE_STAGE = {
     "Student": 15000,
@@ -63,7 +69,7 @@ async def onboard_user(data: OnboardingData):
         "current_level": 1
     }
     
-    result = supabase.table("users").insert(user_data).execute()
+    result = get_supabase().table("users").insert(user_data).execute()
     
     if not result.data:
         raise HTTPException(status_code=500, detail="Failed to create user")
@@ -83,7 +89,7 @@ async def onboard_user(data: OnboardingData):
 
 @app.get("/users/{user_id}", response_model=UserResponse)
 async def get_user(user_id: str):
-    result = supabase.table("users").select("*").eq("id", user_id).execute()
+    result = get_supabase().table("users").select("*").eq("id", user_id).execute()
     
     if not result.data:
         raise HTTPException(status_code=404, detail="User not found")

@@ -249,6 +249,144 @@ function getSpendableIncome(profile) {
 }
 
 // =================================================================
+// TEMPTATION LOCK WALLETS - Voluntary Self-Control
+// =================================================================
+const TEMPTATION_CATEGORIES = [
+    { id: 'dining', name: 'Dining Out', icon: '🍕', description: 'Food delivery & restaurants' },
+    { id: 'entertainment', name: 'Entertainment', icon: '🎬', description: 'Movies, games, streaming' },
+    { id: 'shopping', name: 'Shopping', icon: '🛍️', description: 'Clothing, gadgets, impulse buys' }
+];
+
+function initializeTemptationLocks(profile) {
+    if (!profile.temptationLocks) {
+        profile.temptationLocks = {
+            enabled: false,
+            locks: [],
+            lastConfiguredMonth: 0
+        };
+        saveProfile(profile);
+    }
+    return profile;
+}
+
+function canConfigureTemptationLocks(profile) {
+    return !profile.budget?.allocated;
+}
+
+function getTemptationLock(profile, categoryId) {
+    if (!profile.temptationLocks?.enabled) return null;
+    return profile.temptationLocks.locks.find(l => l.category === categoryId && l.active);
+}
+
+function getRemainingCap(profile, categoryId) {
+    const lock = getTemptationLock(profile, categoryId);
+    if (!lock) return Infinity;
+    return Math.max(0, lock.monthlyCap - lock.spentThisMonth);
+}
+
+function recordTemptationSpending(profile, categoryId, amount) {
+    const lock = getTemptationLock(profile, categoryId);
+    if (!lock) return { allowed: true, amount: amount };
+    
+    const remaining = lock.monthlyCap - lock.spentThisMonth;
+    
+    if (amount <= remaining) {
+        lock.spentThisMonth += amount;
+        saveProfile(profile);
+        return { allowed: true, amount: amount };
+    }
+    
+    const allowedAmount = remaining;
+    const blockedAmount = amount - remaining;
+    
+    lock.spentThisMonth = lock.monthlyCap;
+    lock.lockedAmount += blockedAmount;
+    saveProfile(profile);
+    
+    return { 
+        allowed: false, 
+        amount: allowedAmount, 
+        blocked: blockedAmount,
+        message: `You set a ${formatCurrency(lock.monthlyCap)} limit for ${lock.category}. This keeps future-you safe.`
+    };
+}
+
+function setTemptationLock(profile, categoryId, monthlyCap) {
+    if (!canConfigureTemptationLocks(profile)) {
+        return { success: false, error: 'Can only configure locks before budgeting' };
+    }
+    
+    if (!profile.temptationLocks) {
+        initializeTemptationLocks(profile);
+    }
+    
+    profile.temptationLocks.enabled = true;
+    
+    const existingIndex = profile.temptationLocks.locks.findIndex(l => l.category === categoryId);
+    
+    const lockData = {
+        category: categoryId,
+        monthlyCap: monthlyCap,
+        spentThisMonth: 0,
+        lockedAmount: 0,
+        active: true,
+        configuredMonth: profile.budget?.month || 1
+    };
+    
+    if (existingIndex >= 0) {
+        profile.temptationLocks.locks[existingIndex] = lockData;
+    } else {
+        profile.temptationLocks.locks.push(lockData);
+    }
+    
+    profile.temptationLocks.lastConfiguredMonth = profile.budget?.month || 1;
+    saveProfile(profile);
+    
+    return { success: true };
+}
+
+function removeTemptationLock(profile, categoryId) {
+    if (!profile.temptationLocks?.locks) return { success: false };
+    
+    const index = profile.temptationLocks.locks.findIndex(l => l.category === categoryId);
+    if (index >= 0) {
+        profile.temptationLocks.locks.splice(index, 1);
+        if (profile.temptationLocks.locks.length === 0) {
+            profile.temptationLocks.enabled = false;
+        }
+        saveProfile(profile);
+    }
+    
+    return { success: true };
+}
+
+function resetTemptationLocksForNewMonth(profile) {
+    if (!profile.temptationLocks?.locks) return;
+    
+    profile.temptationLocks.locks.forEach(lock => {
+        lock.spentThisMonth = 0;
+        lock.lockedAmount = 0;
+    });
+    
+    saveProfile(profile);
+}
+
+function getTemptationLockStats(profile) {
+    if (!profile.temptationLocks?.enabled) {
+        return { enabled: false, locks: [] };
+    }
+    
+    return {
+        enabled: true,
+        locks: profile.temptationLocks.locks.map(lock => ({
+            ...lock,
+            remaining: Math.max(0, lock.monthlyCap - lock.spentThisMonth),
+            percentUsed: lock.monthlyCap > 0 ? (lock.spentThisMonth / lock.monthlyCap) * 100 : 0
+        }))
+    };
+}
+
+// =================================================================
 // GOAL-LOCKED INVESTMENT WALLETS
 // =================================================================
 function initializeGoalWallets(profile) {
@@ -1021,6 +1159,213 @@ function showRateAdjustmentModal(profile) {
 }
 
 // =================================================================
+// TEMPTATION LOCKS UI
+// =================================================================
+function updateTemptationLocksUI(profile) {
+    const container = document.getElementById('temptationLocksContainer');
+    if (!container) return;
+    
+    const canConfigure = canConfigureTemptationLocks(profile);
+    const stats = getTemptationLockStats(profile);
+    
+    if (!stats.enabled || stats.locks.length === 0) {
+        container.innerHTML = `
+            <div class="temptation-empty">
+                <p>No spending limits set</p>
+                <p class="empty-subtitle">You can set limits on high-temptation categories to help control spending</p>
+                ${canConfigure ? `<button class="btn btn-secondary btn-sm" id="configureTemptationBtn">Set Limits</button>` : 
+                    `<span class="temptation-frozen-note">Limits can only be set before budgeting</span>`}
+            </div>
+        `;
+        
+        const configBtn = document.getElementById('configureTemptationBtn');
+        if (configBtn) {
+            configBtn.addEventListener('click', () => showTemptationConfigModal(profile));
+        }
+        return;
+    }
+    
+    const locksHtml = stats.locks.map(lock => {
+        const category = TEMPTATION_CATEGORIES.find(c => c.id === lock.category);
+        const barWidth = Math.min(100, lock.percentUsed);
+        
+        return `
+            <div class="temptation-lock-item">
+                <div class="tl-header">
+                    <span class="tl-icon">${category?.icon || '📦'}</span>
+                    <span class="tl-name">${category?.name || lock.category}</span>
+                    <span class="tl-cap">Limit: ${formatCurrency(lock.monthlyCap)}</span>
+                </div>
+                <div class="tl-progress">
+                    <div class="tl-bar">
+                        <div class="tl-bar-fill ${lock.percentUsed >= 100 ? 'tl-bar-full' : ''}" style="width: ${barWidth}%"></div>
+                    </div>
+                </div>
+                <div class="tl-stats">
+                    <span>Spent: ${formatCurrency(lock.spentThisMonth)}</span>
+                    <span>Remaining: ${formatCurrency(lock.remaining)}</span>
+                </div>
+                ${lock.lockedAmount > 0 ? `<div class="tl-locked-note">Protected: ${formatCurrency(lock.lockedAmount)}</div>` : ''}
+            </div>
+        `;
+    }).join('');
+    
+    container.innerHTML = `
+        <div class="temptation-locks-list">
+            ${locksHtml}
+        </div>
+        ${canConfigure ? `<button class="btn btn-secondary btn-sm" id="editTemptationBtn">Edit Limits</button>` : ''}
+    `;
+    
+    const editBtn = document.getElementById('editTemptationBtn');
+    if (editBtn) {
+        editBtn.addEventListener('click', () => showTemptationConfigModal(profile));
+    }
+}
+
+function showTemptationConfigModal(profile) {
+    if (!canConfigureTemptationLocks(profile)) {
+        showNotification('Limits can only be configured before budgeting', 'info');
+        return;
+    }
+    
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'temptationConfigModal';
+    
+    const existingLocks = profile.temptationLocks?.locks || [];
+    
+    const categoriesHtml = TEMPTATION_CATEGORIES.map(cat => {
+        const existingLock = existingLocks.find(l => l.category === cat.id);
+        const isActive = existingLock?.active || false;
+        const currentCap = existingLock?.monthlyCap || 0;
+        
+        return `
+            <div class="temptation-config-item" data-category="${cat.id}">
+                <div class="tci-header">
+                    <label class="tci-toggle">
+                        <input type="checkbox" class="tci-checkbox" data-category="${cat.id}" ${isActive ? 'checked' : ''}>
+                        <span class="tci-icon">${cat.icon}</span>
+                        <span class="tci-name">${cat.name}</span>
+                    </label>
+                    <span class="tci-desc">${cat.description}</span>
+                </div>
+                <div class="tci-limit ${isActive ? '' : 'tci-limit-disabled'}">
+                    <label>Monthly Limit:</label>
+                    <div class="input-with-icon">
+                        <span>₹</span>
+                        <input type="number" class="tci-cap-input" data-category="${cat.id}" 
+                            value="${currentCap}" min="0" placeholder="0" ${isActive ? '' : 'disabled'}>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    modal.innerHTML = `
+        <div class="modal-content temptation-modal">
+            <h2>Temptation Controls</h2>
+            <p class="temptation-modal-subtitle">Set spending limits for high-temptation categories. These limits help you stay within bounds you choose.</p>
+            
+            <div class="temptation-config-list">
+                ${categoriesHtml}
+            </div>
+            
+            <div class="temptation-config-info">
+                <span class="info-icon">💡</span>
+                <span>You can always unlock early if needed, but a small friction helps build discipline.</span>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelTemptationBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveTemptationBtn">Save Limits</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    modal.querySelectorAll('.tci-checkbox').forEach(checkbox => {
+        checkbox.addEventListener('change', (e) => {
+            const category = e.target.dataset.category;
+            const limitDiv = modal.querySelector(`.tci-limit input[data-category="${category}"]`).closest('.tci-limit');
+            const capInput = modal.querySelector(`.tci-cap-input[data-category="${category}"]`);
+            
+            if (e.target.checked) {
+                limitDiv.classList.remove('tci-limit-disabled');
+                capInput.disabled = false;
+            } else {
+                limitDiv.classList.add('tci-limit-disabled');
+                capInput.disabled = true;
+            }
+        });
+    });
+    
+    document.getElementById('cancelTemptationBtn').addEventListener('click', () => {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
+    
+    document.getElementById('saveTemptationBtn').addEventListener('click', () => {
+        const freshProfile = getProfile();
+        let savedCount = 0;
+        
+        TEMPTATION_CATEGORIES.forEach(cat => {
+            const checkbox = modal.querySelector(`.tci-checkbox[data-category="${cat.id}"]`);
+            const capInput = modal.querySelector(`.tci-cap-input[data-category="${cat.id}"]`);
+            
+            if (checkbox.checked && capInput.value > 0) {
+                setTemptationLock(freshProfile, cat.id, parseInt(capInput.value));
+                savedCount++;
+            } else {
+                removeTemptationLock(freshProfile, cat.id);
+            }
+        });
+        
+        if (savedCount > 0) {
+            showNotification(`${savedCount} spending limit${savedCount > 1 ? 's' : ''} set`, 'success');
+        } else {
+            showNotification('Spending limits cleared', 'info');
+        }
+        
+        displayUserData(getProfile());
+        
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
+}
+
+function showTemptationBlockedModal(lockInfo) {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'temptationBlockedModal';
+    
+    modal.innerHTML = `
+        <div class="modal-content temptation-blocked-modal">
+            <div class="blocked-icon">🛡️</div>
+            <h2>Spending Limit Reached</h2>
+            <p class="blocked-message">${lockInfo.message}</p>
+            <div class="blocked-details">
+                <p>You protected yourself from overspending by setting this limit in advance.</p>
+                <p class="blocked-amount">Amount protected: ${formatCurrency(lockInfo.blocked)}</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="acceptBlockBtn">I Understand</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.classList.add('show'), 10);
+    
+    document.getElementById('acceptBlockBtn').addEventListener('click', () => {
+        modal.classList.remove('show');
+        setTimeout(() => modal.remove(), 300);
+    });
+}
+
+// =================================================================
 // BUDGET STATE INITIALIZATION
 // =================================================================
 function initializeBudgetState(profile) {
@@ -1163,6 +1508,7 @@ function displayUserData(profile) {
     
     updateFutureWalletUI(profile);
     updateGoalWalletsUI(profile);
+    updateTemptationLocksUI(profile);
     updateBudgetUI(profile);
 }
 
@@ -1369,6 +1715,15 @@ function payExpense(expenseId) {
             showNotification('Insufficient funds in Wants budget!', 'error');
             return;
         }
+        
+        const lockResult = recordTemptationSpending(profile, expense.id, amount);
+        
+        if (!lockResult.allowed) {
+            showTemptationBlockedModal(lockResult);
+            displayUserData(getProfile());
+            return;
+        }
+        
         profile.budget.wantsRemaining -= amount;
     }
     
@@ -1452,6 +1807,8 @@ function endMonth() {
     profile.balance += profile.budget.savingsRemaining;
     
     processGoalWalletMonth(profile);
+    
+    resetTemptationLocksForNewMonth(profile);
     
     profile.budget.month += 1;
     profile.budget.allocated = false;
@@ -2409,6 +2766,7 @@ async function loadUserData() {
     profile = initializeBudgetState(profile);
     profile = initializeFutureWallet(profile);
     profile = initializeGoalWallets(profile);
+    profile = initializeTemptationLocks(profile);
     profile = initializeTimeTravelLetters(profile);
     profile = initializeReflectionLogs(profile);
     profile = initializeLifeEvents(profile);

@@ -105,14 +105,44 @@
             <div class="container">
                 <div class="welcome-section">
                     <div class="welcome-text">
-                        <h1>Welcome, <span id="userName">User</span>!</h1>
-                        <p class="flow-clarifier">Each month is a fresh decision cycle. Some money carries forward only if you choose to protect it.</p>
-                    </div>
-                </div>
-            </div>
-        </header>
+                          <h1>Welcome, <span id="userName">User</span>!</h1>
+                      </div>
+                  </div>
+              </div>
+          </header>
 
-        <main class="dashboard-content">
+          <main class="dashboard-content">
+              <div class="container">
+                  <div class="monthly-flow-explainer" id="monthlyFlowExplainer">
+                      <div class="flow-steps">
+                          <div class="flow-step">
+                              <span class="flow-icon">💵</span>
+                              <span class="flow-label">Income</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">🛡️</span>
+                              <span class="flow-label">Protected</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">📊</span>
+                              <span class="flow-label">Budgeted</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">📈</span>
+                              <span class="flow-label">Invested</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">✓</span>
+                              <span class="flow-label">Reviewed</span>
+                          </div>
+                      </div>
+                      <p class="flow-note">Each month is a fresh decision cycle. Money only carries forward when you choose to protect or invest it.</p>
+                  </div>
+              </div>
             <div class="container">
                 <section class="money-overview-section">
                     <div class="section-header-bar">
@@ -196,6 +226,22 @@
                             <span class="lock-icon">🔒</span>
                             <span>Rate locked for this month</span>
                         </span>
+                    </div>
+                </div>
+
+                <div id="temptationControlsCard" class="card temptation-controls-card">
+                    <div class="temptation-header">
+                        <div class="temptation-badge">🛡️</div>
+                        <div class="temptation-title">
+                            <h3>Temptation Controls</h3>
+                            <p class="temptation-subtitle">Set spending limits on high-temptation categories before the month begins</p>
+                        </div>
+                    </div>
+                    <div id="temptationLocksContainer" class="temptation-locks-container">
+                    </div>
+                    <div class="temptation-info">
+                        <span class="temptation-info-icon">💡</span>
+                        <span>Constraints chosen in advance are more effective than willpower in the moment.</span>
                     </div>
                 </div>
 

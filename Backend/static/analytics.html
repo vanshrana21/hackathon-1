@@ -106,9 +106,40 @@
             </div>
         </header>
 
-        <main class="dashboard-content">
-            <div class="container">
-                <section class="health-score-section">
+          <main class="dashboard-content">
+              <div class="container">
+                  <div class="monthly-flow-explainer" id="monthlyFlowExplainer">
+                      <div class="flow-steps">
+                          <div class="flow-step">
+                              <span class="flow-icon">💵</span>
+                              <span class="flow-label">Income</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">🛡️</span>
+                              <span class="flow-label">Protected</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">📊</span>
+                              <span class="flow-label">Budgeted</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">📈</span>
+                              <span class="flow-label">Invested</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">✓</span>
+                              <span class="flow-label">Reviewed</span>
+                          </div>
+                      </div>
+                      <p class="flow-note">Each month is a fresh decision cycle. Money only carries forward when you choose to protect or invest it.</p>
+                  </div>
+              </div>
+              <div class="container">
+                  <section class="health-score-section">
                     <div class="health-score-card">
                         <div class="health-score-main">
                             <div class="health-score-ring">
@@ -128,6 +159,7 @@
                                 <p id="healthDesc" class="health-score-desc">
                                     This reflects your decision patterns — not a grade, just a snapshot of where you are now.
                                 </p>
+                                <p id="scoreNote" class="health-score-note" style="display: none;"></p>
                             </div>
                         </div>
                         <div class="health-score-breakdown">

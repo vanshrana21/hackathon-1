@@ -1,6 +1,11 @@
 console.log('[dashboard.js] Script loaded successfully');
 
+// =================================================================
+// CONFIGURATION
+// =================================================================
 const XP_PER_LEVEL = 100;
+const FUTURE_WALLET_PERCENT = 0.15; // 15% of income auto-saved
+
 const LEVEL_DESCRIPTIONS = {
     1: { name: 'Budgeting Basics', desc: 'Learn to allocate your income wisely across needs, wants, and savings.' },
     2: { name: 'Savings Starter', desc: 'Build the habit of setting aside money for emergencies and goals.' },
@@ -19,6 +24,9 @@ const EXPENSE_EVENTS = [
     { id: 'shopping', name: 'Shopping', category: 'wants', percentage: 7, icon: '🛍️' }
 ];
 
+// =================================================================
+// PROFILE & STORAGE
+// =================================================================
 function getProfile() {
     const data = localStorage.getItem('finplay_profile');
     if (!data) return null;
@@ -36,6 +44,64 @@ function saveProfile(profile) {
     }
 }
 
+// =================================================================
+// FUTURE SELF WALLET - "Pay Yourself First" System
+// =================================================================
+// The Future Self Wallet implements automatic savings by reserving
+// 15% of monthly income BEFORE the user can budget or spend.
+// This teaches the "Pay Yourself First" principle.
+// =================================================================
+
+function initializeFutureWallet(profile) {
+    // Initialize futureWallet if it doesn't exist
+    if (!profile.futureWallet) {
+        profile.futureWallet = {
+            balance: 0,
+            monthlyContribution: 0,
+            totalContributed: 0,
+            lastContributionMonth: 0 // Track which month was last contributed
+        };
+        saveProfile(profile);
+    }
+    return profile;
+}
+
+function processFutureWalletContribution(profile) {
+    // This runs at month START, BEFORE budgeting
+    // Only contribute once per month (idempotent)
+    
+    const currentMonth = profile.budget?.month || 1;
+    const lastContributionMonth = profile.futureWallet?.lastContributionMonth || 0;
+    
+    // Already contributed for this month - skip
+    if (lastContributionMonth >= currentMonth) {
+        return { contributed: false, amount: 0 };
+    }
+    
+    // Calculate 15% of income
+    const contribution = Math.floor(profile.income * FUTURE_WALLET_PERCENT);
+    
+    // Update Future Wallet
+    profile.futureWallet.balance += contribution;
+    profile.futureWallet.monthlyContribution = contribution;
+    profile.futureWallet.totalContributed += contribution;
+    profile.futureWallet.lastContributionMonth = currentMonth;
+    
+    saveProfile(profile);
+    
+    return { contributed: true, amount: contribution };
+}
+
+function getSpendableIncome(profile) {
+    // Spendable income = income - future wallet contribution
+    // This is what the user actually budgets with
+    const contribution = Math.floor(profile.income * FUTURE_WALLET_PERCENT);
+    return profile.income - contribution;
+}
+
+// =================================================================
+// BUDGET STATE INITIALIZATION
+// =================================================================
 function initializeBudgetState(profile) {
     if (!profile.budget) {
         profile.budget = {
@@ -55,6 +121,9 @@ function initializeBudgetState(profile) {
     return profile;
 }
 
+// =================================================================
+// XP & LEVEL SYSTEM
+// =================================================================
 function calculateLevel(xp) {
     return Math.floor(xp / XP_PER_LEVEL) + 1;
 }
@@ -90,6 +159,9 @@ function addXp(amount, silent = false) {
     return profile;
 }
 
+// =================================================================
+// UI HELPERS
+// =================================================================
 function showNotification(message, type = 'info') {
     const existing = document.querySelector('.game-notification');
     if (existing) existing.remove();
@@ -110,6 +182,9 @@ function formatCurrency(amount) {
     return `₹${amount.toLocaleString('en-IN')}`;
 }
 
+// =================================================================
+// DISPLAY FUNCTIONS
+// =================================================================
 function displayUserData(profile) {
     document.getElementById('userName').textContent = profile.name;
     document.getElementById('virtualBalance').textContent = formatCurrency(profile.balance);
@@ -137,13 +212,32 @@ function displayUserData(profile) {
     document.getElementById('loadingState').style.display = 'none';
     document.getElementById('dashboardContent').style.display = 'block';
     
+    // Update Future Self Wallet display
+    updateFutureWalletUI(profile);
+    
     updateBudgetUI(profile);
+}
+
+function updateFutureWalletUI(profile) {
+    const walletCard = document.getElementById('futureWalletCard');
+    if (!walletCard || !profile.futureWallet) return;
+    
+    document.getElementById('futureWalletBalance').textContent = formatCurrency(profile.futureWallet.balance);
+    document.getElementById('futureWalletContribution').textContent = formatCurrency(profile.futureWallet.monthlyContribution);
+    document.getElementById('futureWalletTotal').textContent = formatCurrency(profile.futureWallet.totalContributed);
 }
 
 function updateBudgetUI(profile) {
     const budget = profile.budget;
+    const spendableIncome = getSpendableIncome(profile);
     
     document.getElementById('currentMonth').textContent = `Month ${budget.month}`;
+    
+    // Update spendable income display
+    const spendableEl = document.getElementById('spendableIncome');
+    if (spendableEl) {
+        spendableEl.textContent = formatCurrency(spendableIncome);
+    }
     
     if (budget.allocated) {
         document.getElementById('budgetAllocation').style.display = 'none';
@@ -180,19 +274,21 @@ function updateAllocationPreview() {
     const profile = getProfile();
     if (!profile) return;
     
-    const income = profile.income;
+    // Use SPENDABLE income (after Future Wallet contribution), not full income
+    const spendableIncome = getSpendableIncome(profile);
     const needs = parseInt(document.getElementById('needsInput').value) || 0;
     const wants = parseInt(document.getElementById('wantsInput').value) || 0;
     const savings = parseInt(document.getElementById('savingsInput').value) || 0;
     
     const total = needs + wants + savings;
-    const remaining = income - total;
+    const remaining = spendableIncome - total;
     
     document.getElementById('allocationTotal').textContent = formatCurrency(total);
     document.getElementById('allocationRemaining').textContent = formatCurrency(remaining);
     
     const allocateBtn = document.getElementById('allocateBudgetBtn');
-    if (total === income && needs > 0 && wants >= 0 && savings >= 0) {
+    // Check against spendable income, not full income
+    if (total === spendableIncome && needs > 0 && wants >= 0 && savings >= 0) {
         allocateBtn.disabled = false;
         document.getElementById('allocationRemaining').style.color = 'var(--success)';
     } else {
@@ -201,16 +297,21 @@ function updateAllocationPreview() {
     }
 }
 
+// =================================================================
+// BUDGET ALLOCATION
+// =================================================================
 function allocateBudget() {
     const profile = getProfile();
     if (!profile) return;
     
+    const spendableIncome = getSpendableIncome(profile);
     const needs = parseInt(document.getElementById('needsInput').value) || 0;
     const wants = parseInt(document.getElementById('wantsInput').value) || 0;
     const savings = parseInt(document.getElementById('savingsInput').value) || 0;
     
-    if (needs + wants + savings !== profile.income) {
-        showNotification('Allocation must equal monthly income!', 'error');
+    // Validate against spendable income
+    if (needs + wants + savings !== spendableIncome) {
+        showNotification('Allocation must equal your spendable income!', 'error');
         return;
     }
     
@@ -225,7 +326,7 @@ function allocateBudget() {
     
     saveProfile(profile);
     
-    const savingsPercent = (savings / profile.income) * 100;
+    const savingsPercent = (savings / spendableIncome) * 100;
     if (savingsPercent >= 20) {
         addXp(25);
         showNotification('Great savings allocation! +25 XP', 'success');
@@ -238,12 +339,18 @@ function allocateBudget() {
     displayUserData(getProfile());
 }
 
+// =================================================================
+// EXPENSE HANDLING
+// =================================================================
 function renderExpenseEvents(profile) {
     const container = document.getElementById('expenseList');
     container.innerHTML = '';
     
+    // Calculate expense amounts based on SPENDABLE income
+    const spendableIncome = getSpendableIncome(profile);
+    
     EXPENSE_EVENTS.forEach(expense => {
-        const amount = Math.floor(profile.income * (expense.percentage / 100));
+        const amount = Math.floor(spendableIncome * (expense.percentage / 100));
         const isPaid = profile.budget.expensesPaid.includes(expense.id);
         const canAfford = expense.category === 'needs' 
             ? profile.budget.needsRemaining >= amount 
@@ -278,7 +385,8 @@ function payExpense(expenseId) {
     const expense = EXPENSE_EVENTS.find(e => e.id === expenseId);
     if (!expense) return;
     
-    const amount = Math.floor(profile.income * (expense.percentage / 100));
+    const spendableIncome = getSpendableIncome(profile);
+    const amount = Math.floor(spendableIncome * (expense.percentage / 100));
     
     if (expense.category === 'needs') {
         if (profile.budget.needsRemaining < amount) {
@@ -317,6 +425,9 @@ function updateMonthEndButton(profile) {
     }
 }
 
+// =================================================================
+// END MONTH - Includes Future Wallet messaging
+// =================================================================
 function endMonth() {
     const profile = getProfile();
     if (!profile) return;
@@ -332,6 +443,9 @@ function endMonth() {
     let xpBonus = 0;
     let summary = [];
     
+    // Calculate Future Wallet contribution for summary display
+    const futureWalletContribution = profile.futureWallet?.monthlyContribution || 0;
+    
     if (profile.budget.needsRemaining > 0) {
         profile.budget.savingsRemaining += profile.budget.needsRemaining;
         summary.push(`Needs surplus: ${formatCurrency(profile.budget.needsRemaining)} → Savings`);
@@ -344,7 +458,8 @@ function endMonth() {
         xpBonus += 15;
     }
     
-    const savingsRate = (profile.budget.savingsRemaining / profile.income) * 100;
+    const spendableIncome = getSpendableIncome(profile);
+    const savingsRate = (profile.budget.savingsRemaining / spendableIncome) * 100;
     if (savingsRate >= 30) {
         xpBonus += 20;
         summary.push('Excellent savings rate bonus!');
@@ -353,17 +468,20 @@ function endMonth() {
         summary.push('Good savings rate bonus!');
     }
     
+    // Store month history with future wallet contribution
     profile.budget.monthHistory.push({
         month: profile.budget.month,
         needs: profile.budget.needs,
         wants: profile.budget.wants,
         savings: profile.budget.savings,
         totalSaved: profile.budget.savingsRemaining,
+        futureWalletContribution: futureWalletContribution,
         xpEarned: xpBonus
     });
     
     profile.balance += profile.budget.savingsRemaining;
     
+    // Advance to next month
     profile.budget.month += 1;
     profile.budget.allocated = false;
     profile.budget.needs = 0;
@@ -379,16 +497,45 @@ function endMonth() {
         addXp(xpBonus);
     }
     
-    showMonthSummary(profile.budget.month - 1, summary, xpBonus, profile.budget.savingsRemaining);
+    // Show month summary with Future Wallet info
+    showMonthSummary(
+        profile.budget.month - 1, 
+        summary, 
+        xpBonus, 
+        profile.budget.savingsRemaining,
+        futureWalletContribution
+    );
+    
+    // Process Future Wallet contribution for the NEW month
+    const freshProfile = getProfile();
+    const walletResult = processFutureWalletContribution(freshProfile);
+    if (walletResult.contributed) {
+        setTimeout(() => {
+            showNotification(`${formatCurrency(walletResult.amount)} protected for your future!`, 'xp');
+        }, 500);
+    }
+    
     displayUserData(getProfile());
 }
 
-function showMonthSummary(month, summary, xpEarned, totalSaved) {
+function showMonthSummary(month, summary, xpEarned, totalSaved, futureWalletContribution) {
     const modal = document.createElement('div');
     modal.className = 'modal-overlay';
+    
+    // Educational message about Future Wallet
+    const futureWalletMessage = futureWalletContribution > 0 
+        ? `<div class="future-wallet-summary">
+             <div class="fw-icon">🔐</div>
+             <div class="fw-text">
+               <strong>${formatCurrency(futureWalletContribution)}</strong> was automatically protected for your future before you spent anything.
+             </div>
+           </div>`
+        : '';
+    
     modal.innerHTML = `
         <div class="modal-content">
             <h2>Month ${month} Complete!</h2>
+            ${futureWalletMessage}
             <div class="summary-stats">
                 <div class="summary-stat">
                     <span class="summary-stat-value">${formatCurrency(totalSaved)}</span>
@@ -413,6 +560,9 @@ function showMonthSummary(month, summary, xpEarned, totalSaved) {
     });
 }
 
+// =================================================================
+// PAGE INITIALIZATION
+// =================================================================
 async function loadUserData() {
     if (window.SyncService) {
         await window.SyncService.initializeFromServer();
@@ -430,8 +580,22 @@ async function loadUserData() {
         saveProfile(profile);
     }
     
+    // Initialize budget state
     profile = initializeBudgetState(profile);
-    displayUserData(profile);
+    
+    // Initialize Future Self Wallet
+    profile = initializeFutureWallet(profile);
+    
+    // Process Future Wallet contribution for current month
+    // This is idempotent - won't run twice for the same month
+    const walletResult = processFutureWalletContribution(profile);
+    if (walletResult.contributed) {
+        setTimeout(() => {
+            showNotification(`${formatCurrency(walletResult.amount)} protected for your future!`, 'xp');
+        }, 1000);
+    }
+    
+    displayUserData(getProfile());
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -351,6 +351,30 @@ function generateInsights(profile, portfolio) {
         }
     }
     
+    if (profile.temptationLocks?.enabled && profile.temptationLocks.locks.length > 0) {
+        const activeLocks = profile.temptationLocks.locks.filter(l => l.active);
+        const monthHistory = profile.budget?.monthHistory || [];
+        const monthsWithLocks = monthHistory.filter(m => m.month >= (profile.temptationLocks.lastConfiguredMonth || 1)).length;
+        
+        if (activeLocks.length > 0) {
+            const totalLocked = activeLocks.reduce((sum, l) => sum + l.lockedAmount, 0);
+            
+            if (totalLocked > 0) {
+                insights.push({
+                    icon: '🛡️',
+                    text: `Your temptation controls protected ${formatCurrency(totalLocked)} from impulsive spending.`,
+                    type: 'positive'
+                });
+            } else {
+                insights.push({
+                    icon: '🛡️',
+                    text: `You've been staying within your self-set spending limits. Pre-commitment works!`,
+                    type: 'positive'
+                });
+            }
+        }
+    }
+    
     return insights;
 }
 

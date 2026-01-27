@@ -4480,3 +4480,278 @@ body {
     line-height: 1.5;
     font-style: italic;
 }
+
+/* Temptation Controls Card */
+.temptation-controls-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(168, 85, 247, 0.05));
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    margin-bottom: 24px;
+}
+
+.temptation-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.temptation-badge {
+    font-size: 2rem;
+    background: rgba(99, 102, 241, 0.15);
+    border-radius: 12px;
+    padding: 12px;
+    line-height: 1;
+}
+
+.temptation-title h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 6px 0;
+    color: var(--text-primary);
+}
+
+.temptation-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+.temptation-locks-container {
+    margin-bottom: 16px;
+}
+
+.temptation-empty {
+    text-align: center;
+    padding: 20px;
+}
+
+.temptation-empty p {
+    margin: 0 0 8px 0;
+    color: var(--text-secondary);
+}
+
+.temptation-empty .empty-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.temptation-frozen-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.temptation-locks-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.temptation-lock-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tl-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.tl-icon {
+    font-size: 1.2rem;
+}
+
+.tl-name {
+    font-weight: 500;
+    flex: 1;
+}
+
+.tl-cap {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.tl-progress {
+    margin-bottom: 8px;
+}
+
+.tl-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.tl-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #a855f7);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.tl-bar-full {
+    background: linear-gradient(90deg, #f59e0b, #ef4444);
+}
+
+.tl-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.tl-locked-note {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: #6366f1;
+    font-style: italic;
+}
+
+.temptation-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.temptation-info-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Temptation Config Modal */
+.temptation-modal {
+    max-width: 500px;
+}
+
+.temptation-modal-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.temptation-config-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.temptation-config-item {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tci-header {
+    margin-bottom: 12px;
+}
+
+.tci-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-bottom: 4px;
+}
+
+.tci-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: #6366f1;
+}
+
+.tci-icon {
+    font-size: 1.2rem;
+}
+
+.tci-name {
+    font-weight: 500;
+    flex: 1;
+}
+
+.tci-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: 28px;
+}
+
+.tci-limit {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-left: 28px;
+}
+
+.tci-limit label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.tci-limit .input-with-icon {
+    flex: 1;
+    max-width: 150px;
+}
+
+.tci-limit-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+}
+
+.temptation-config-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+/* Temptation Blocked Modal */
+.temptation-blocked-modal {
+    text-align: center;
+    max-width: 400px;
+}
+
+.blocked-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.blocked-message {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 1rem;
+}
+
+.blocked-details {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.blocked-details p {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.blocked-amount {
+    font-weight: 600;
+    color: #6366f1 !important;
+    font-size: 1rem !important;
+}

@@ -88,3 +88,7 @@ async def serve_onboarding():
 @app.get("/dashboard")
 async def serve_dashboard():
     return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "dashboard.html"))
+
+@app.get("/investing")
+async def serve_investing():
+    return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "investing.html"))

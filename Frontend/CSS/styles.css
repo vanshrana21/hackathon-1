@@ -747,6 +747,14 @@ body {
     margin-bottom: 24px;
 }
 
+/* Flow Clarifier - Calming mental model hint */
+.flow-clarifier {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-style: italic;
+    margin-top: 4px;
+}
+
 .actions-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

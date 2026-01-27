@@ -51,6 +51,7 @@ class OnboardingData(BaseModel):
     knowledge_level: str
     life_stage: str
     primary_goal: str
+    income: Optional[int] = None
 
 class ProfileResponse(BaseModel):
     name: str
@@ -144,7 +145,10 @@ async def onboard_user(data: OnboardingData):
             content={"error": "Invalid onboarding data"}
         )
     
-    income = INCOME_BY_LIFE_STAGE.get(data.life_stage, 15000)
+    if data.income and data.income >= 5000 and data.income <= 200000:
+        income = data.income
+    else:
+        income = INCOME_BY_LIFE_STAGE.get(data.life_stage, 25000)
     xp = XP_BY_KNOWLEDGE.get(data.knowledge_level, 50)
     user_id = str(uuid.uuid4())
     

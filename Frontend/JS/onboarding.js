@@ -5,15 +5,13 @@ const state = {
     name: '',
     knowledge_level: '',
     life_stage: '',
-    goal: ''
+    goal: '',
+    income: 0
 };
 
-const incomeMap = {
-    'Student': 15000,
-    'Just Started Working': 30000,
-    'Young Professional': 50000,
-    'Independent Adult': 75000
-};
+const INCOME_PRESETS = [10000, 15000, 25000, 40000, 60000, 100000];
+const MIN_INCOME = 5000;
+const MAX_INCOME = 200000;
 
 function updateProgressBar() {
     document.querySelectorAll('.progress-step').forEach((step, index) => {
@@ -65,8 +63,7 @@ function updateSummary() {
     document.getElementById('summaryLifeStage').textContent = state.life_stage;
     document.getElementById('summaryGoal').textContent = state.goal;
     
-    const income = incomeMap[state.life_stage] || 15000;
-    document.getElementById('summaryIncome').textContent = `₹${income.toLocaleString('en-IN')}`;
+    document.getElementById('summaryIncome').textContent = `₹${state.income.toLocaleString('en-IN')}`;
 }
 
 function validateOnboarding() {
@@ -81,6 +78,9 @@ function validateOnboarding() {
     }
     if (!state.goal) {
         return { valid: false, message: 'Please select your primary goal' };
+    }
+    if (!state.income || state.income < MIN_INCOME || state.income > MAX_INCOME) {
+        return { valid: false, message: 'Please select a valid income' };
     }
     return { valid: true };
 }
@@ -106,7 +106,8 @@ async function submitOnboarding() {
                 name: state.name,
                 knowledge_level: state.knowledge_level,
                 life_stage: state.life_stage,
-                primary_goal: state.goal
+                primary_goal: state.goal,
+                income: state.income
             })
         });
 
@@ -145,11 +146,55 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('step2Next').addEventListener('click', () => showStep(3));
 
     document.getElementById('step3Back').addEventListener('click', () => showStep(2));
-    document.getElementById('step3Next').addEventListener('click', () => {
-        updateSummary();
-        showStep(4);
+    document.getElementById('step3Next').addEventListener('click', () => showStep(4));
+
+    const incomePresets = document.getElementById('incomePresets');
+    const customIncomeContainer = document.getElementById('customIncomeContainer');
+    const customIncomeInput = document.getElementById('customIncome');
+    const step4Next = document.getElementById('step4Next');
+
+    incomePresets.querySelectorAll('.income-preset').forEach(preset => {
+        preset.addEventListener('click', () => {
+            incomePresets.querySelectorAll('.income-preset').forEach(p => p.classList.remove('selected'));
+            preset.classList.add('selected');
+            
+            const value = preset.dataset.value;
+            if (value === 'custom') {
+                customIncomeContainer.style.display = 'block';
+                customIncomeInput.focus();
+                const customVal = parseInt(customIncomeInput.value);
+                if (customVal >= MIN_INCOME && customVal <= MAX_INCOME) {
+                    state.income = customVal;
+                    step4Next.disabled = false;
+                } else {
+                    state.income = 0;
+                    step4Next.disabled = true;
+                }
+            } else {
+                customIncomeContainer.style.display = 'none';
+                state.income = parseInt(value);
+                step4Next.disabled = false;
+            }
+        });
+    });
+
+    customIncomeInput.addEventListener('input', () => {
+        const value = parseInt(customIncomeInput.value);
+        if (value >= MIN_INCOME && value <= MAX_INCOME) {
+            state.income = value;
+            step4Next.disabled = false;
+        } else {
+            state.income = 0;
+            step4Next.disabled = true;
+        }
     });
 
     document.getElementById('step4Back').addEventListener('click', () => showStep(3));
+    document.getElementById('step4Next').addEventListener('click', () => {
+        updateSummary();
+        showStep(5);
+    });
+
+    document.getElementById('step5Back').addEventListener('click', () => showStep(4));
     document.getElementById('submitBtn').addEventListener('click', submitOnboarding);
 });

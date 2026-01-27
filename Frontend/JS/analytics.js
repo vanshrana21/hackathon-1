@@ -301,6 +301,37 @@ function generateInsights(profile, portfolio) {
         });
     }
     
+    // Goal Wallets insight
+    const goalWallets = profile.goalWallets || [];
+    const activeGoals = goalWallets.filter(w => w.status === 'active');
+    const completedGoals = goalWallets.filter(w => w.status === 'completed');
+    const earlyWithdrawnGoals = goalWallets.filter(w => w.status === 'withdrawn_early');
+    
+    if (completedGoals.length > 0) {
+        const totalCompleted = completedGoals.length;
+        const totalGoals = goalWallets.length;
+        insights.push({
+            icon: '🎯',
+            text: `You've completed ${totalCompleted} of ${totalGoals} goal wallet(s). Goal-linked saving increases follow-through by separating intention from impulse.`,
+            type: 'positive'
+        });
+    } else if (activeGoals.length > 0) {
+        const totalLocked = activeGoals.reduce((sum, w) => sum + w.currentAmount, 0);
+        insights.push({
+            icon: '🎯',
+            text: `You have ${activeGoals.length} active goal wallet(s) with ${formatCurrency(totalLocked)} locked toward future goals. Naming money changes behavior.`,
+            type: 'positive'
+        });
+    }
+    
+    if (earlyWithdrawnGoals.length > 0) {
+        insights.push({
+            icon: '💭',
+            text: `${earlyWithdrawnGoals.length} goal(s) withdrawn early. Each early withdrawal is a learning opportunity about commitment.`,
+            type: 'neutral'
+        });
+    }
+    
     return insights;
 }
 

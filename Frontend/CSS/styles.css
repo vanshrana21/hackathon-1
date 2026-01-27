@@ -2776,6 +2776,483 @@ body {
     font-style: italic;
 }
 
+/* Goal Wallets Section */
+.goal-wallets-section {
+    margin-top: 32px;
+}
+
+.goal-wallets-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.goal-wallets-title-area {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.goal-wallets-icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.goal-wallets-container {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid var(--border);
+}
+
+.goal-wallets-empty {
+    text-align: center;
+    padding: 32px 16px;
+}
+
+.goal-wallets-empty p {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.goal-wallets-empty .empty-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.goal-wallets-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.goal-wallet-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.goal-wallet-card:hover {
+    border-color: var(--primary);
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.gwc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.gwc-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.gwc-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.gwc-badge.status-active {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary);
+}
+
+.gwc-badge.status-completed {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.gwc-progress {
+    margin-bottom: 8px;
+}
+
+.gwc-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.gwc-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary), var(--primary));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.gwc-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.gwc-type {
+    font-size: 1rem;
+}
+
+.goals-frozen-note {
+    display: block;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    padding: 8px 0;
+}
+
+/* Goal Create Modal */
+.goal-modal {
+    max-width: 560px;
+}
+
+.goal-modal-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+}
+
+.goal-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+}
+
+.goal-preset-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.goal-preset-btn:hover {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--primary);
+}
+
+.goal-preset-btn.selected {
+    background: rgba(99, 102, 241, 0.2);
+    border-color: var(--primary);
+    color: var(--text-primary);
+}
+
+.preset-icon {
+    font-size: 1rem;
+}
+
+.goal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"] {
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.form-group input[type="range"] {
+    width: 100%;
+    accent-color: var(--primary);
+}
+
+.form-hint {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.lockin-display {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.investment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.investment-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.investment-option:has(input:checked) {
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--primary);
+}
+
+.investment-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+}
+
+.investment-option-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.investment-icon {
+    font-size: 1.25rem;
+}
+
+.investment-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.investment-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.investment-risk {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.goal-preview {
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 16px;
+}
+
+.goal-preview-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.preview-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.preview-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.goal-info {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+/* Goal Details Modal */
+.goal-details-modal {
+    max-width: 480px;
+}
+
+.goal-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.goal-details-header h2 {
+    margin: 0;
+}
+
+.goal-status-badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.goal-status-badge.status-active {
+    background: rgba(99, 102, 241, 0.2);
+    color: var(--primary);
+}
+
+.goal-status-badge.status-completed {
+    background: rgba(16, 185, 129, 0.2);
+    color: var(--success);
+}
+
+.goal-status-badge.status-withdrawn_early {
+    background: rgba(245, 158, 11, 0.2);
+    color: #f59e0b;
+}
+
+.goal-progress-section {
+    margin-bottom: 20px;
+}
+
+.goal-progress-bar {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.goal-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary), var(--primary));
+    border-radius: 6px;
+}
+
+.goal-progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.goal-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.goal-stat {
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.goal-stat-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.goal-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.goal-penalty-note {
+    background: rgba(245, 158, 11, 0.1);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #f59e0b;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Early Withdrawal Modal */
+.early-withdraw-modal {
+    max-width: 440px;
+}
+
+.withdraw-warning {
+    margin-bottom: 20px;
+}
+
+.withdraw-warning p {
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.withdraw-philosophy {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.withdraw-breakdown {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+
+.withdraw-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.withdraw-line.penalty {
+    color: #f59e0b;
+}
+
+.withdraw-line.final {
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+    padding-top: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.withdraw-note {
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
     .onboarding-card {

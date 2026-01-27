@@ -694,7 +694,7 @@ function updateGoalWalletsUI(profile) {
         container.innerHTML = `
             <div class="goal-wallets-empty">
                 <p>No goal wallets yet</p>
-                <p class="empty-subtitle">Lock money toward meaningful future goals</p>
+                <p class="empty-subtitle">When you're ready, create a goal to commit money toward something meaningful</p>
                 ${canCreate ? `<button class="btn btn-secondary btn-sm" id="createGoalBtnEmpty">Create Goal Wallet</button>` : ''}
             </div>
         `;
@@ -938,8 +938,19 @@ function displayUserData(profile) {
     document.getElementById('userName').textContent = profile.name;
     document.getElementById('virtualBalance').textContent = formatCurrency(profile.balance);
     document.getElementById('monthlyIncome').textContent = formatCurrency(profile.income);
-    document.getElementById('xpValue').textContent = `${profile.xp} XP`;
-    document.getElementById('focusGoal').textContent = profile.focus_goal;
+    
+    const activeGoals = (profile.goalWallets || []).filter(w => w.status === 'active').length;
+    document.getElementById('focusGoal').textContent = activeGoals > 0 ? activeGoals : '-';
+    
+    const futureWalletBalance = profile.futureWallet?.balance || 0;
+    const goalWalletTotal = (profile.goalWallets || [])
+        .filter(w => w.status === 'active')
+        .reduce((sum, w) => sum + (w.currentAmount || 0), 0);
+    const totalProtectedEl = document.getElementById('totalProtected');
+    if (totalProtectedEl) {
+        totalProtectedEl.textContent = formatCurrency(futureWalletBalance + goalWalletTotal);
+    }
+    
     document.getElementById('knowledgeLevel').textContent = profile.knowledge_level;
     document.getElementById('lifeStage').textContent = profile.life_stage;
     document.getElementById('primaryGoal').textContent = profile.focus_goal;
@@ -970,11 +981,16 @@ function updateFutureWalletUI(profile) {
     const walletCard = document.getElementById('futureWalletCard');
     if (!walletCard || !profile.futureWallet) return;
     
+    const ratePercent = Math.round(getFutureWalletRate(profile) * 100);
+    
     document.getElementById('futureWalletBalance').textContent = formatCurrency(profile.futureWallet.balance);
     document.getElementById('futureWalletContribution').textContent = formatCurrency(profile.futureWallet.monthlyContribution);
-    document.getElementById('futureWalletTotal').textContent = formatCurrency(profile.futureWallet.totalContributed);
     
-    const ratePercent = Math.round(getFutureWalletRate(profile) * 100);
+    const rateEl = document.getElementById('futureWalletRate');
+    if (rateEl) {
+        rateEl.textContent = `${ratePercent}%`;
+    }
+    
     const rateDisplay = document.getElementById('currentRateDisplay');
     if (rateDisplay) {
         rateDisplay.textContent = `${ratePercent}%`;
@@ -982,7 +998,7 @@ function updateFutureWalletUI(profile) {
     
     const subtitle = walletCard.querySelector('.fw-subtitle');
     if (subtitle) {
-        subtitle.textContent = `Pay Yourself First — ${ratePercent}% auto-saved before spending`;
+        subtitle.textContent = `Automatically saves ${ratePercent}% of your income before you can spend it`;
     }
     
     const adjustBtn = document.getElementById('adjustRateBtn');
@@ -2219,14 +2235,6 @@ async function loadUserData() {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadUserData();
-
-    document.getElementById('startLevelBtn').addEventListener('click', () => {
-        const profile = getProfile();
-        if (profile) {
-            addXp(5);
-            displayUserData(getProfile());
-        }
-    });
 
     document.getElementById('needsInput').addEventListener('input', updateAllocationPreview);
     document.getElementById('wantsInput').addEventListener('input', updateAllocationPreview);

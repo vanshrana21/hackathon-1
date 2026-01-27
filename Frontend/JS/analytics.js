@@ -498,7 +498,7 @@ function renderProgressTimeline(profile) {
     const monthHistory = profile.budget?.monthHistory || [];
     
     if (monthHistory.length === 0) {
-        container.innerHTML = '<p class="empty-state">Complete more months to see your progress</p>';
+        container.innerHTML = '<p class="empty-state">Your progress timeline will appear as you complete months</p>';
         return;
     }
     
@@ -529,7 +529,7 @@ function renderLettersArchive(profile) {
         container.innerHTML = `
             <div class="letters-empty">
                 <p>No letters yet</p>
-                <p style="font-size: 0.85rem; margin-top: 8px;">Write a message to your future self from the dashboard.</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">When you write a letter to your future self, it will appear here.</p>
             </div>
         `;
         return;
@@ -587,10 +587,7 @@ function renderLessonsLearned(profile) {
         container.innerHTML = `
             <div class="lessons-empty">
                 <p>No reflections yet</p>
-                <p style="font-size: 0.85rem; margin-top: 8px;">Reflections appear when there's an opportunity to learn from a decision.</p>
-            </div>
-            <div class="lessons-educational">
-                <p>People who reflect improve outcomes faster than those who avoid review.</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">When outcomes differ from expectations, you'll see observations here — not judgments.</p>
             </div>
         `;
         return;
@@ -655,10 +652,7 @@ function renderLifeEvents(profile) {
         container.innerHTML = `
             <div class="life-events-empty">
                 <p>No life events yet</p>
-                <p style="font-size: 0.85rem; margin-top: 8px;">Life events will occur randomly as you progress through months.</p>
-            </div>
-            <div class="life-events-insight">
-                <p>Good financial behavior is not about avoiding shocks — it's about recovering from them.</p>
+                <p style="font-size: 0.85rem; margin-top: 8px;">Unexpected events happen naturally as months pass. You'll navigate them when they arrive.</p>
             </div>
         `;
         return;

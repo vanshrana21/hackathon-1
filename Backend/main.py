@@ -488,3 +488,7 @@ async def serve_dashboard():
 @app.get("/investing")
 async def serve_investing():
     return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "investing.html"))
+
+@app.get("/analytics")
+async def serve_analytics():
+    return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "analytics.html"))

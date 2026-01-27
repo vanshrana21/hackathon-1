@@ -4357,3 +4357,40 @@ body {
 .market-card {
     border-radius: 16px;
 }
+
+/* XP Reframing Styles */
+.xp-explainer {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 12px;
+    text-align: center;
+}
+
+.xp-explainer-block {
+    background: rgba(99, 102, 241, 0.06);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.xp-explainer-block p {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.card-helper {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+    font-weight: 400;
+}
+
+.metric-helper {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}

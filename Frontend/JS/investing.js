@@ -249,7 +249,7 @@ function checkDiversificationBonus() {
         portfolio.achievements.diversified = true;
         savePortfolio(portfolio);
         addXp(XP_REWARDS.diversification);
-        showNotification('Diversification bonus! You invested in 3+ sectors', 'success');
+        showNotification('+15 Experience — you explored diversification', 'success');
     }
 }
 
@@ -261,7 +261,7 @@ function checkYearHoldingBonus(currentMonth) {
         portfolio.achievements.yearHeld = true;
         savePortfolio(portfolio);
         addXp(XP_REWARDS.yearHolding);
-        showNotification('Long-term investor bonus! Held portfolio for 12 months', 'success');
+        showNotification('+50 Experience — you practiced patience over 12 months', 'success');
     }
 }
 
@@ -319,7 +319,7 @@ function buyAsset(assetId, amount) {
         portfolio.achievements.firstInvestment = true;
         savePortfolio(portfolio);
         addXp(XP_REWARDS.firstInvestment);
-        showNotification('First investment! +25 XP', 'success');
+        showNotification('+25 Experience — you made your first investment decision', 'success');
     } else {
         savePortfolio(portfolio);
     }

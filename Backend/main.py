@@ -492,3 +492,7 @@ async def serve_investing():
 @app.get("/analytics")
 async def serve_analytics():
     return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "analytics.html"))
+
+@app.get("/story")
+async def serve_story():
+    return FileResponse(os.path.join(FRONTEND_DIR, "HTML", "story.html"))

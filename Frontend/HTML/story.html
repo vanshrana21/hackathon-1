@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Financial Story - FinPlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 50%, #0f1419 100%);
+            min-height: 100vh;
+        }
+        
+        .story-container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 60px 24px 80px;
+        }
+        
+        .story-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .story-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+        
+        .story-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+        }
+        
+        .story-subtitle {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        .story-section {
+            margin-bottom: 48px;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.6s ease forwards;
+        }
+        
+        .story-section:nth-child(1) { animation-delay: 0.1s; }
+        .story-section:nth-child(2) { animation-delay: 0.2s; }
+        .story-section:nth-child(3) { animation-delay: 0.3s; }
+        .story-section:nth-child(4) { animation-delay: 0.4s; }
+        .story-section:nth-child(5) { animation-delay: 0.5s; }
+        .story-section:nth-child(6) { animation-delay: 0.6s; }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .story-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .story-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+        
+        .story-highlight {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+        
+        .story-quote {
+            font-style: italic;
+            color: var(--text-muted);
+            padding-left: 20px;
+            border-left: 3px solid var(--primary);
+            margin: 20px 0;
+        }
+        
+        .story-identity {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(16, 185, 129, 0.1) 100%);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            margin: 40px 0;
+        }
+        
+        .identity-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+        
+        .identity-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+        }
+        
+        .identity-desc {
+            color: var(--text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .story-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 16px;
+            margin-top: 40px;
+            padding: 24px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        
+        .summary-item {
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .summary-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .story-closing {
+            text-align: center;
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+            margin-top: 48px;
+        }
+        
+        .closing-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            max-width: 540px;
+            margin: 0 auto 32px;
+            line-height: 1.7;
+        }
+        
+        .story-actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .story-actions .btn {
+            min-width: 160px;
+        }
+        
+        .restart-warning {
+            display: none;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 24px;
+            text-align: center;
+        }
+        
+        .restart-warning.show {
+            display: block;
+        }
+        
+        .restart-warning p {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+        
+        .back-link {
+            position: fixed;
+            top: 24px;
+            left: 24px;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: var(--text-primary);
+        }
+        
+        @media (max-width: 600px) {
+            .story-title {
+                font-size: 2rem;
+            }
+            
+            .story-container {
+                padding: 40px 20px 60px;
+            }
+            
+            .back-link {
+                position: static;
+                margin-bottom: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/analytics" class="back-link">
+        <span>←</span>
+        <span>Back to Insights</span>
+    </a>
+    
+    <div class="story-container">
+        <header class="story-header">
+            <span class="story-icon">📖</span>
+            <h1 class="story-title">Your Financial Story</h1>
+            <p class="story-subtitle">A reflection on your journey</p>
+        </header>
+        
+        <div id="storyContent">
+        </div>
+        
+        <div class="story-closing">
+            <p id="closingText" class="closing-text"></p>
+            
+            <div class="story-actions">
+                <a href="/dashboard" class="btn btn-primary">Return to Dashboard</a>
+                <button class="btn btn-secondary" id="showRestartBtn">Start New Journey</button>
+            </div>
+            
+            <div id="restartWarning" class="restart-warning">
+                <p>This will reset all your progress and start fresh. Your story will be lost.</p>
+                <button class="btn btn-secondary" id="cancelRestartBtn">Cancel</button>
+                <button class="btn" id="confirmRestartBtn" style="background: #ef4444;">Restart Journey</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/js/sync.js"></script>
+    <script src="/js/story.js"></script>
+</body>
+</html>

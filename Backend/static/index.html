@@ -8,6 +8,36 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .demo-divider {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 24px 0;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        .demo-divider::before, .demo-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .btn-demo {
+            background: rgba(99, 102, 241, 0.2);
+            border: 2px solid var(--secondary);
+            color: var(--text-primary);
+        }
+        .btn-demo:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        .demo-note {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+        }
+    </style>
 </head>
 <body>
     <div class="landing">
@@ -34,6 +64,12 @@
                             <path d="M5 12h14M12 5l7 7-7 7"/>
                         </svg>
                     </a>
+                    <div class="demo-divider">or</div>
+                    <button class="btn btn-demo" id="startDemoBtn">
+                        Start Demo Mode
+                        <span>⚡</span>
+                    </button>
+                    <p class="demo-note">Pre-loaded with 5 months of gameplay data</p>
                 </div>
                 <div class="hero-stats">
                     <div class="stat">
@@ -75,5 +111,97 @@
             </div>
         </section>
     </div>
+
+    <script>
+        document.getElementById('startDemoBtn').addEventListener('click', async function() {
+            const btn = this;
+            btn.disabled = true;
+            btn.textContent = 'Loading Demo...';
+
+            const demoProfile = {
+                user_id: `demo_${Date.now()}`,
+                name: 'Demo User',
+                income: 50000,
+                life_stage: 'Young Professional',
+                knowledge_level: 'Intermediate',
+                focus_goal: 'Build Wealth',
+                balance: 165000,
+                xp: 275,
+                level: 3,
+                demoMode: true,
+                budget: {
+                    month: 6,
+                    allocated: false,
+                    needs: 0,
+                    wants: 0,
+                    savings: 0,
+                    needsRemaining: 0,
+                    wantsRemaining: 0,
+                    savingsRemaining: 0,
+                    expensesPaid: [],
+                    monthHistory: [
+                        { month: 1, needs: 25000, wants: 15000, savings: 10000, totalSaved: 10000, xpEarned: 25 },
+                        { month: 2, needs: 25000, wants: 12000, savings: 13000, totalSaved: 13000, xpEarned: 30 },
+                        { month: 3, needs: 24000, wants: 14000, savings: 12000, totalSaved: 12000, xpEarned: 25 },
+                        { month: 4, needs: 25000, wants: 10000, savings: 15000, totalSaved: 15000, xpEarned: 35 },
+                        { month: 5, needs: 25000, wants: 11000, savings: 14000, totalSaved: 14000, xpEarned: 30 }
+                    ]
+                }
+            };
+            
+            const demoPortfolio = {
+                cash: 45000,
+                positions: [
+                    { id: 'STK_ALPHA', type: 'stock', name: 'AlphaTech', quantity: 50, avg_price: 240, current_price: 285, buy_month: 2 },
+                    { id: 'MF_INDEX', type: 'mutual', name: 'Nifty Index Fund', quantity: 300, avg_price: 100, current_price: 112, buy_month: 1 },
+                    { id: 'ETF_BANK', type: 'etf', name: 'Bank ETF', quantity: 80, avg_price: 120, current_price: 128, buy_month: 3 },
+                    { id: 'FD_DEMO1', type: 'fd', name: 'FD 1Y @6%', quantity: 1, principal: 25000, rate: 0.06, tenure: 12, maturity_month: 14, current_price: 25000 }
+                ],
+                transactions: [
+                    { tx_id: 'tx_1', date: 'Month 1', type: 'buy', asset_id: 'MF_INDEX', asset_type: 'mutual', quantity: 300, price: 100, cash_change: -30000 },
+                    { tx_id: 'tx_2', date: 'Month 2', type: 'buy', asset_id: 'STK_ALPHA', asset_type: 'stock', quantity: 50, price: 240, cash_change: -12024 },
+                    { tx_id: 'tx_3', date: 'Month 3', type: 'buy', asset_id: 'ETF_BANK', asset_type: 'etf', quantity: 80, price: 120, cash_change: -9610 },
+                    { tx_id: 'tx_4', date: 'Month 3', type: 'fd_open', asset_id: 'FD_DEMO1', asset_type: 'fd', quantity: 1, price: 25000, cash_change: -25000 }
+                ],
+                market_scenario: 'bull',
+                investMonth: 5,
+                startMonth: 1,
+                achievements: { firstInvestment: true, diversified: true, fdMatured: false, yearHeld: false }
+            };
+            
+            const demoMarket = [
+                { id: 'STK_ALPHA', type: 'stock', name: 'AlphaTech', sector: 'Technology', basePrice: 240, price: 285, volatility: 0.08, icon: '💻', description: 'High growth tech stock' },
+                { id: 'STK_BETA', type: 'stock', name: 'BetaFinance', sector: 'Finance', basePrice: 180, price: 195, volatility: 0.06, icon: '🏦', description: 'Finance sector stock' },
+                { id: 'STK_GAMMA', type: 'stock', name: 'GammaHealth', sector: 'Healthcare', basePrice: 320, price: 340, volatility: 0.05, icon: '🏥', description: 'Healthcare stock' },
+                { id: 'STK_DELTA', type: 'stock', name: 'DeltaEnergy', sector: 'Energy', basePrice: 150, price: 158, volatility: 0.07, icon: '⚡', description: 'Energy stock' },
+                { id: 'MF_INDEX', type: 'mutual', name: 'Nifty Index Fund', sector: 'Diversified', basePrice: 100, price: 112, volatility: 0.03, icon: '📊', description: 'Index tracking fund' },
+                { id: 'MF_GROWTH', type: 'mutual', name: 'Growth Fund', sector: 'Growth', basePrice: 85, price: 94, volatility: 0.04, icon: '🌱', description: 'Growth focused fund' },
+                { id: 'ETF_BANK', type: 'etf', name: 'Bank ETF', sector: 'Finance', basePrice: 120, price: 128, volatility: 0.04, icon: '🏛️', description: 'Banking sector ETF' },
+                { id: 'ETF_IT', type: 'etf', name: 'IT Sector ETF', sector: 'Technology', basePrice: 200, price: 220, volatility: 0.05, icon: '🖥️', description: 'IT sector ETF' },
+                { id: 'FD_1Y', type: 'fd', name: '1-Year FD', sector: 'Fixed Income', basePrice: 0, price: 0, rate: 0.06, tenure: 12, icon: '🔒', description: '6% guaranteed return' },
+                { id: 'FD_3Y', type: 'fd', name: '3-Year FD', sector: 'Fixed Income', basePrice: 0, price: 0, rate: 0.07, tenure: 36, icon: '🔐', description: '7% guaranteed return' }
+            ];
+            
+            localStorage.setItem('finplay_profile', JSON.stringify(demoProfile));
+            localStorage.setItem('finplay_portfolio', JSON.stringify(demoPortfolio));
+            localStorage.setItem('finplay_market', JSON.stringify(demoMarket));
+
+            try {
+                await fetch('/sync/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        profile: demoProfile,
+                        portfolio: demoPortfolio,
+                        market: demoMarket
+                    })
+                });
+            } catch (e) {
+                console.log('Sync error (non-blocking):', e);
+            }
+
+            window.location.href = '/analytics';
+        });
+    </script>
 </body>
 </html>

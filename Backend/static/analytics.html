@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insights - FinPlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .demo-banner {
+            display: none;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            padding: 12px 24px;
+            text-align: center;
+            font-weight: 600;
+        }
+        .demo-banner.show { display: block; }
+        .demo-controls {
+            display: none;
+            gap: 12px;
+            margin-left: auto;
+        }
+        .demo-controls.show { display: flex; }
+        .demo-btn {
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            border-radius: 8px;
+        }
+        .takeaway-section {
+            margin: 32px 0;
+            padding: 32px;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%);
+            border: 2px solid var(--primary);
+            border-radius: 24px;
+            text-align: center;
+        }
+        .takeaway-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            background: var(--gradient-1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .takeaway-text {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        .trend-arrow { 
+            font-size: 1.2rem; 
+            margin-left: 4px;
+        }
+        .trend-up { color: var(--success); }
+        .trend-down { color: var(--error); }
+        .trend-flat { color: var(--text-muted); }
+    </style>
+</head>
+<body>
+    <div id="demoBanner" class="demo-banner">
+        Demo Mode Active - Experience simulated years of financial decisions
+    </div>
+
+    <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        <p>Analyzing your financial journey...</p>
+    </div>
+
+    <div id="analyticsContent" class="dashboard" style="display: none;">
+        <nav class="dashboard-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <div class="logo">FinPlay</div>
+                    <div class="nav-links">
+                        <a href="/dashboard" class="nav-link">Dashboard</a>
+                        <a href="/investing" class="nav-link">Investing</a>
+                        <a href="/analytics" class="nav-link active">Insights</a>
+                    </div>
+                    <div class="nav-right">
+                        <div class="month-badge" id="currentMonth">Month 1</div>
+                        <div class="level-badge" id="levelBadge">
+                            <span>⭐</span>
+                            <span>Level 1</span>
+                        </div>
+                        <div id="demoControls" class="demo-controls">
+                            <button class="btn btn-secondary demo-btn" id="resetDemoBtn">Reset Demo</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <header class="dashboard-header">
+            <div class="container">
+                <div class="welcome-section">
+                    <div class="welcome-text">
+                        <h1>Financial Insights</h1>
+                        <p>Your learning journey, quantified and explained</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="dashboard-content">
+            <div class="container">
+                <section class="health-score-section">
+                    <div class="health-score-card">
+                        <div class="health-score-main">
+                            <div class="health-score-ring">
+                                <svg viewBox="0 0 120 120">
+                                    <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+                                    <circle class="ring-fill" id="scoreRing" cx="60" cy="60" r="52" 
+                                        stroke-dasharray="327" stroke-dashoffset="327"></circle>
+                                </svg>
+                                <div class="health-score-value">
+                                    <span id="healthScore">0</span>
+                                    <small>/100</small>
+                                </div>
+                            </div>
+                            <div class="health-score-info">
+                                <h2>Financial Health Score</h2>
+                                <div id="healthLabel" class="health-score-label score-fair">Fair</div>
+                                <p id="healthDesc" class="health-score-desc">
+                                    This score reflects your overall financial decision-making across budgeting, saving, investing, and risk management.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="health-score-breakdown">
+                            <div class="score-component">
+                                <div class="component-header">
+                                    <span class="component-name">Savings Rate</span>
+                                    <span class="component-weight">30%</span>
+                                </div>
+                                <div class="component-bar">
+                                    <div class="component-fill" id="savingsRateBar" style="width: 0%"></div>
+                                </div>
+                                <div class="component-value" id="savingsRateValue">0%</div>
+                            </div>
+                            <div class="score-component">
+                                <div class="component-header">
+                                    <span class="component-name">Budget Discipline</span>
+                                    <span class="component-weight">20%</span>
+                                </div>
+                                <div class="component-bar">
+                                    <div class="component-fill" id="budgetDisciplineBar" style="width: 0%"></div>
+                                </div>
+                                <div class="component-value" id="budgetDisciplineValue">0%</div>
+                            </div>
+                            <div class="score-component">
+                                <div class="component-header">
+                                    <span class="component-name">Diversification</span>
+                                    <span class="component-weight">25%</span>
+                                </div>
+                                <div class="component-bar">
+                                    <div class="component-fill" id="diversificationBar" style="width: 0%"></div>
+                                </div>
+                                <div class="component-value" id="diversificationValue">0/5</div>
+                            </div>
+                            <div class="score-component">
+                                <div class="component-header">
+                                    <span class="component-name">Risk Balance</span>
+                                    <span class="component-weight">15%</span>
+                                </div>
+                                <div class="component-bar">
+                                    <div class="component-fill" id="riskBalanceBar" style="width: 0%"></div>
+                                </div>
+                                <div class="component-value" id="riskBalanceValue">-</div>
+                            </div>
+                            <div class="score-component">
+                                <div class="component-header">
+                                    <span class="component-name">Consistency</span>
+                                    <span class="component-weight">10%</span>
+                                </div>
+                                <div class="component-bar">
+                                    <div class="component-fill" id="consistencyBar" style="width: 0%"></div>
+                                </div>
+                                <div class="component-value" id="consistencyValue">0 months</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="metrics-section">
+                    <div class="metrics-grid">
+                        <div class="metric-card">
+                            <div class="metric-icon">⚡</div>
+                            <div class="metric-value" id="totalXp">0</div>
+                            <div class="metric-label">Total XP Earned</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">📅</div>
+                            <div class="metric-value" id="monthsPlayed">0</div>
+                            <div class="metric-label">Months Completed</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon">💰</div>
+                            <div class="metric-value" id="totalSavings">₹0</div>
+                            <div class="metric-label">Total Savings</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon" id="returnIcon">📈</div>
+                            <div class="metric-value" id="portfolioReturn">0%</div>
+                            <div class="metric-label">Portfolio Return</div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="analytics-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Behavior Insights</h2>
+                        </div>
+                        <div class="insights-list" id="insightsList"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Decision History</h2>
+                        </div>
+                        <div class="decisions-list" id="decisionsList"></div>
+                    </div>
+                </div>
+
+                <section class="learnings-section">
+                    <div class="card learnings-card">
+                        <div class="learnings-header">
+                            <div class="learnings-icon">🎓</div>
+                            <div>
+                                <h2 class="card-title">What You've Learned</h2>
+                                <p class="learnings-subtitle">Financial lessons demonstrated through your gameplay</p>
+                            </div>
+                        </div>
+                        <div class="learnings-list" id="learningsList"></div>
+                    </div>
+                </section>
+
+                <section class="comparison-section">
+                    <div class="card">
+                        <div class="card-header">
+                            <h2 class="card-title">Your Progress Over Time</h2>
+                        </div>
+                        <div class="progress-timeline" id="progressTimeline"></div>
+                    </div>
+                </section>
+
+                <section class="why-better-section">
+                    <div class="why-better-card">
+                        <h3>Why is FinPlay better than a normal finance app?</h3>
+                        <div class="why-better-content">
+                            <div class="why-point">
+                                <div class="why-icon">🎮</div>
+                                <div>
+                                    <strong>Learn by Doing</strong>
+                                    <p>Make real financial decisions in a risk-free environment. Experience consequences of choices without losing real money.</p>
+                                </div>
+                            </div>
+                            <div class="why-point">
+                                <div class="why-icon">⏩</div>
+                                <div>
+                                    <strong>Compressed Time</strong>
+                                    <p>Simulate years of financial decisions in minutes. See how compounding and long-term strategies actually work.</p>
+                                </div>
+                            </div>
+                            <div class="why-point">
+                                <div class="why-icon">📊</div>
+                                <div>
+                                    <strong>Quantified Learning</strong>
+                                    <p>Your Financial Health Score shows exactly how your decisions impact your financial wellbeing.</p>
+                                </div>
+                            </div>
+                            <div class="why-point">
+                                <div class="why-icon">🧠</div>
+                                <div>
+                                    <strong>Behavioral Insights</strong>
+                                    <p>Understand WHY certain financial strategies work, not just what they are. Build intuition through experience.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="takeawaySection" class="takeaway-section">
+                    <div class="takeaway-title">Your Financial Journey</div>
+                    <p id="takeawayText" class="takeaway-text">
+                        You've simulated financial decisions in a compressed timeframe. The insights above represent real financial lessons that typically take years to learn.
+                    </p>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="/js/sync.js"></script>
+    <script src="/js/analytics.js"></script>
+</body>
+</html>

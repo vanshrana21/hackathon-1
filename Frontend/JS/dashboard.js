@@ -1,6 +1,112 @@
 console.log('[dashboard.js] Script loaded successfully');
 
 // =================================================================
+// FIRST MONTH GUIDE SYSTEM
+// =================================================================
+let currentGuideStep = 1;
+
+function shouldShowFirstMonthGuide(profile) {
+    if (!profile) return false;
+    const currentMonth = profile.budget?.month || 1;
+    return currentMonth === 1 && !profile.hasCompletedFirstMonth;
+}
+
+function initializeFirstMonthGuide(profile) {
+    if (!shouldShowFirstMonthGuide(profile)) {
+        hideFirstMonthGuide();
+        return;
+    }
+    
+    const guideContainer = document.getElementById('firstMonthGuide');
+    if (!guideContainer) return;
+    
+    guideContainer.style.display = 'block';
+    showGuideStep(1);
+    wireGuideEvents();
+}
+
+function showGuideStep(step) {
+    currentGuideStep = step;
+    
+    document.querySelectorAll('.guide-step').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.guide-step-dot').forEach(d => {
+        d.classList.remove('active');
+        const dotStep = parseInt(d.dataset.step);
+        if (dotStep < step) d.classList.add('completed');
+    });
+    
+    const activeStep = document.querySelector(`.guide-step[data-step="${step}"]`);
+    const activeDot = document.querySelector(`.guide-step-dot[data-step="${step}"]`);
+    
+    if (activeStep) activeStep.classList.add('active');
+    if (activeDot) activeDot.classList.add('active');
+    
+    applyGuideHighlights(step);
+}
+
+function applyGuideHighlights(step) {
+    document.querySelectorAll('.guide-highlight').forEach(el => el.classList.remove('guide-highlight'));
+    
+    switch(step) {
+        case 2:
+            const budgetSection = document.getElementById('budgetAllocation');
+            if (budgetSection) budgetSection.classList.add('guide-highlight');
+            break;
+        case 3:
+            const walletCard = document.getElementById('futureWalletCard');
+            if (walletCard) walletCard.classList.add('guide-highlight');
+            break;
+        case 4:
+            const endBtn = document.getElementById('endMonthBtn');
+            if (endBtn) endBtn.classList.add('guide-highlight');
+            break;
+    }
+}
+
+function wireGuideEvents() {
+    document.querySelectorAll('.guide-next-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const nextStep = btn.dataset.next;
+            if (nextStep) {
+                showGuideStep(parseInt(nextStep));
+            }
+        });
+    });
+    
+    const dismissBtn = document.getElementById('dismissGuideBtn');
+    if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => {
+            hideFirstMonthGuide();
+        });
+    }
+    
+    const completeBtn = document.getElementById('completeGuideBtn');
+    if (completeBtn) {
+        completeBtn.addEventListener('click', () => {
+            hideFirstMonthGuide();
+            const budgetSection = document.getElementById('budgetAllocation');
+            if (budgetSection) {
+                budgetSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+}
+
+function hideFirstMonthGuide() {
+    const guideContainer = document.getElementById('firstMonthGuide');
+    if (guideContainer) {
+        guideContainer.style.display = 'none';
+    }
+    document.querySelectorAll('.guide-highlight').forEach(el => el.classList.remove('guide-highlight'));
+}
+
+function markFirstMonthCompleted(profile) {
+    profile.hasCompletedFirstMonth = true;
+    saveProfile(profile);
+    hideFirstMonthGuide();
+}
+
+// =================================================================
 // CONFIGURATION
 // =================================================================
 const XP_PER_LEVEL = 100;
@@ -1713,6 +1819,10 @@ function endMonth() {
     profile.budget.wantsRemaining = 0;
     profile.budget.expensesPaid = [];
     
+    if (!profile.hasCompletedFirstMonth) {
+        markFirstMonthCompleted(profile);
+    }
+    
     saveProfile(profile);
     
     if (xpBonus > 0) {
@@ -2683,6 +2793,8 @@ async function loadUserData() {
     checkAndTriggerLifeEvent(getProfile());
     
     displayUserData(getProfile());
+    
+    initializeFirstMonthGuide(getProfile());
 }
 
 document.addEventListener('DOMContentLoaded', () => {

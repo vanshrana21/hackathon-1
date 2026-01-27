@@ -15,6 +15,71 @@
         <p>Loading your profile...</p>
     </div>
 
+    <div id="firstMonthGuide" class="first-month-guide" style="display: none;">
+        <div class="guide-panel">
+            <div class="guide-header">
+                <div class="guide-step-indicator">
+                    <span class="guide-step-dot active" data-step="1"></span>
+                    <span class="guide-step-dot" data-step="2"></span>
+                    <span class="guide-step-dot" data-step="3"></span>
+                    <span class="guide-step-dot" data-step="4"></span>
+                </div>
+                <button class="guide-dismiss-btn" id="dismissGuideBtn" title="Dismiss guide">×</button>
+            </div>
+            <div class="guide-content">
+                <div class="guide-step active" data-step="1">
+                    <div class="guide-icon">🌱</div>
+                    <h3>Welcome to Your Practice Space</h3>
+                    <p>This is a simulation. There's no right or wrong — only decisions and learning.</p>
+                    <div class="guide-details">
+                        <p>Each month is a decision cycle:</p>
+                        <ul>
+                            <li>Your income arrives</li>
+                            <li>You decide how to allocate it</li>
+                            <li>You observe the results</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary guide-next-btn" data-next="2">Let's make your first plan</button>
+                </div>
+                <div class="guide-step" data-step="2">
+                    <div class="guide-icon">📊</div>
+                    <h3>Budget Allocation</h3>
+                    <p>Most people start with the 50/30/20 rule — but you can adapt it to your style.</p>
+                    <div class="guide-details">
+                        <ul>
+                            <li><strong>Needs (50%):</strong> Essentials like rent, food, utilities</li>
+                            <li><strong>Wants (30%):</strong> Things you enjoy but don't strictly need</li>
+                            <li><strong>Savings (20%):</strong> Building your safety net</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-secondary guide-next-btn" data-next="3">Got it</button>
+                </div>
+                <div class="guide-step" data-step="3">
+                    <div class="guide-icon">🛡️</div>
+                    <h3>Protected Money</h3>
+                    <p>Your Future Self Wallet protects money first — so you don't have to rely on willpower later.</p>
+                    <div class="guide-details">
+                        <p>This is intentional friction, not punishment. The money is yours — just harder to spend impulsively.</p>
+                    </div>
+                    <button class="btn btn-secondary guide-next-btn" data-next="4">Makes sense</button>
+                </div>
+                <div class="guide-step" data-step="4">
+                    <div class="guide-icon">⏭️</div>
+                    <h3>Ending Your Month</h3>
+                    <p>When you "End Month," time advances and you see the impact of your decisions.</p>
+                    <div class="guide-details">
+                        <ul>
+                            <li>Insights will appear based on your choices</li>
+                            <li>Your experience will grow</li>
+                            <li>Nothing bad happens — it's all learning</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary guide-next-btn" id="completeGuideBtn">Complete Month 1</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="dashboardContent" class="dashboard" style="display: none;">
         <nav class="dashboard-nav">
             <div class="container">

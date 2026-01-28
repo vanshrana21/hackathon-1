@@ -873,7 +873,7 @@ function renderTransactions() {
 let selectedAsset = null;
 
 function openTradeModal(asset) {
-    console.log('🟢 Clicked: Trade Button', { assetId: asset.id, assetName: asset.name });
+    console.log('🟢 OPENING TRADE MODAL', { assetId: asset.id, assetName: asset.name });
     if (!isInvestingUnlocked()) {
         showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
         return;
@@ -903,10 +903,11 @@ function openTradeModal(asset) {
     document.getElementById('sellForm').style.display = 'none';
 
     document.getElementById('tradeModal').classList.add('show');
+    console.log('🟢 Trade modal now visible');
 }
 
 function openFDModal() {
-    console.log('🟢 Clicked: Open FD Modal');
+    console.log('🟢 OPENING FD MODAL');
     if (!isInvestingUnlocked()) {
         showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
         return;
@@ -916,6 +917,7 @@ function openFDModal() {
     document.querySelector('input[name="fdTenure"][value="12"]').checked = true;
     updateFDPreview();
     document.getElementById('fdModal').classList.add('show');
+    console.log('🟢 FD modal now visible');
 }
 
 function closeModals() {
@@ -1015,7 +1017,9 @@ function updateFDPreview() {
 // ========== MONTH ADVANCEMENT ==========
 
 function advanceMonth() {
+    console.log('🟢 ADVANCE MONTH: Starting');
     if (!isInvestingUnlocked()) {
+        console.log('🟢 ADVANCE MONTH: Blocked - investing locked');
         showNotification('Complete your monthly budget on the Dashboard first.', 'error');
         return;
     }
@@ -1023,6 +1027,7 @@ function advanceMonth() {
     const portfolio = getPortfolio();
     const dashState = getDashboardState();
     const currentMonth = getCurrentMonth();
+    console.log('🟢 ADVANCE MONTH: Current month', currentMonth, 'Scenario', portfolio.market_scenario);
 
     // Simulate market changes
     const changes = simulateMarketMonth(portfolio.market_scenario);
@@ -1051,6 +1056,7 @@ function advanceMonth() {
     addXp(XP_REWARDS.monthAdvance, true);
     checkYearHoldingBonus(newMonth);
 
+    console.log('🟢 ADVANCE MONTH: Complete. New month:', newMonth);
     showMonthSummary(currentMonth, portfolio.market_scenario, changes, matured);
     refreshUI();
 }
@@ -1160,21 +1166,26 @@ async function initializePage() {
 
 // ========== EVENT BINDINGS ==========
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('🟢 DOMContentLoaded: Wiring all event handlers');
-    initializePage();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('🟢 DOMContentLoaded: Starting initialization');
+    
+    // Initialize page first (async) - this renders all dynamic content
+    await initializePage();
+    
+    console.log('🟢 DOMContentLoaded: Page initialized, now wiring event handlers');
 
     // CTA Button
     const ctaButton = document.getElementById('ctaButton');
     if (ctaButton) {
         ctaButton.addEventListener('click', () => {
-            console.log('🟢 Clicked: CTA Button');
+            console.log('🟢 CLICKED: CTA Button (Start Investing)');
             if (!isInvestingUnlocked()) {
                 showNotification('Complete your monthly budget on the Dashboard first.', 'error');
                 return;
             }
             scrollToMarket();
         });
+        console.log('🟢 Wired: CTA Button');
     }
 
     wireFirstInvestmentButton();
@@ -1183,18 +1194,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const filter = btn.dataset.filter;
-            console.log('🟢 Clicked: Filter', { filter });
+            console.log('🟢 CLICKED: Filter Button', { filter });
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             renderMarket(filter);
         });
     });
+    console.log('🟢 Wired: Filter Buttons', document.querySelectorAll('.filter-btn').length);
 
     // Scenario selector
     const scenarioSelect = document.getElementById('scenarioSelect');
     if (scenarioSelect) {
         scenarioSelect.addEventListener('change', (e) => {
-            console.log('🟢 Clicked: Scenario Change', { scenario: e.target.value });
+            console.log('🟢 CLICKED: Scenario Change', { scenario: e.target.value });
             if (!isInvestingUnlocked()) {
                 showNotification('Complete your monthly budget to change market scenario.', 'error');
                 e.target.value = getPortfolio()?.market_scenario || 'bull';
@@ -1205,28 +1217,31 @@ document.addEventListener('DOMContentLoaded', () => {
             savePortfolio(portfolio);
             showNotification(`Market scenario changed to ${SCENARIO_LABELS[e.target.value]}`, 'info');
         });
+        console.log('🟢 Wired: Scenario Select');
     }
 
     // Advance month
     const advanceBtn = document.getElementById('advanceMonthBtn');
     if (advanceBtn) {
         advanceBtn.addEventListener('click', () => {
-            console.log('🟢 Clicked: Advance Month');
+            console.log('🟢 CLICKED: Advance Month Button');
             advanceMonth();
         });
+        console.log('🟢 Wired: Advance Month Button');
     }
 
     // Trade tabs
     document.querySelectorAll('.trade-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             const action = tab.dataset.action;
-            console.log('🟢 Clicked: Trade Tab', { action });
+            console.log('🟢 CLICKED: Trade Tab', { action });
             document.querySelectorAll('.trade-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
             document.getElementById('buyForm').style.display = action === 'buy' ? 'block' : 'none';
             document.getElementById('sellForm').style.display = action === 'sell' ? 'block' : 'none';
         });
     });
+    console.log('🟢 Wired: Trade Tabs', document.querySelectorAll('.trade-tab').length);
 
     // Input previews
     const buyAmountInput = document.getElementById('buyAmount');
@@ -1243,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirmBuyBtn) {
         confirmBuyBtn.addEventListener('click', () => {
             const amount = parseFloat(document.getElementById('buyAmount').value);
-            console.log('🟢 Clicked: Buy', { assetId: selectedAsset?.id, amount });
+            console.log('🟢 CLICKED: Confirm Buy Button', { assetId: selectedAsset?.id, amount });
             if (!selectedAsset) {
                 showNotification('No asset selected', 'error');
                 return;
@@ -1257,6 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification(result.error, 'error');
             }
         });
+        console.log('🟢 Wired: Confirm Buy Button');
     }
 
     // Confirm sell
@@ -1264,7 +1280,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (confirmSellBtn) {
         confirmSellBtn.addEventListener('click', () => {
             const units = parseFloat(document.getElementById('sellUnits').value);
-            console.log('🟢 Clicked: Sell', { assetId: selectedAsset?.id, units });
+            console.log('🟢 CLICKED: Confirm Sell Button', { assetId: selectedAsset?.id, units });
             if (!selectedAsset) {
                 showNotification('No asset selected', 'error');
                 return;
@@ -1278,6 +1294,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification(result.error, 'error');
             }
         });
+        console.log('🟢 Wired: Confirm Sell Button');
     }
 
     // Confirm FD
@@ -1286,7 +1303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         confirmFdBtn.addEventListener('click', () => {
             const amount = parseFloat(document.getElementById('fdAmount').value);
             const tenure = parseInt(document.querySelector('input[name="fdTenure"]:checked').value);
-            console.log('🟢 Clicked: Open FD', { amount, tenure });
+            console.log('🟢 CLICKED: Confirm FD Button', { amount, tenure });
             const result = openFD(tenure, amount);
             if (result.success) {
                 showNotification(`FD opened! Matures at Month ${result.maturityMonth}`, 'success');
@@ -1296,6 +1313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showNotification(result.error, 'error');
             }
         });
+        console.log('🟢 Wired: Confirm FD Button');
     }
 
     // Close modals
@@ -1303,16 +1321,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeFdModalBtn = document.getElementById('closeFdModalBtn');
     const closeSummaryBtn = document.getElementById('closeSummaryBtn');
     
-    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModals);
-    if (closeFdModalBtn) closeFdModalBtn.addEventListener('click', closeModals);
-    if (closeSummaryBtn) closeSummaryBtn.addEventListener('click', closeModals);
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            console.log('🟢 CLICKED: Close Trade Modal');
+            closeModals();
+        });
+    }
+    if (closeFdModalBtn) {
+        closeFdModalBtn.addEventListener('click', () => {
+            console.log('🟢 CLICKED: Close FD Modal');
+            closeModals();
+        });
+    }
+    if (closeSummaryBtn) {
+        closeSummaryBtn.addEventListener('click', () => {
+            console.log('🟢 CLICKED: Close Summary Modal');
+            closeModals();
+        });
+    }
 
     // Backdrop close
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModals();
+            if (e.target === modal) {
+                console.log('🟢 CLICKED: Modal Backdrop');
+                closeModals();
+            }
         });
     });
 
-    console.log('🟢 All event handlers wired successfully');
+    console.log('🟢 ALL EVENT HANDLERS WIRED SUCCESSFULLY');
+    console.log('🟢 Summary:');
+    console.log('   - Market buttons:', document.querySelectorAll('.market-btn').length);
+    console.log('   - Filter buttons:', document.querySelectorAll('.filter-btn').length);
+    console.log('   - Trade tabs:', document.querySelectorAll('.trade-tab').length);
+    console.log('   - Modals:', document.querySelectorAll('.modal-overlay').length);
 });

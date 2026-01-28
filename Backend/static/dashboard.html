@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en" class="antialiased">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>FinPlay Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-deep: #020617;
+            --card-glass: rgba(15, 23, 42, 0.55);
+            --border-subtle: rgba(255, 255, 255, 0.05);
+            --accent-teal: #2dd4bf;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: #e2e8f0;
+            background-image:
+                radial-gradient(circle at 15% 0%, rgba(45, 212, 191, 0.04) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.04) 0%, transparent 25%);
+            background-attachment: fixed;
+        }
+
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        .glass-panel {
+            background: var(--card-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-subtle);
+        }
+
+        .glass-nav {
+            background: rgba(2, 6, 23, 0.9);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .input-clean {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: white;
+            transition: all 0.2s ease;
+            border-radius: 0;
+            padding: 6px 0;
+        }
+        .input-clean:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+        }
+        .input-clean:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%), #1e293b;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.15s;
+            cursor: pointer;
+        }
+        .btn-primary:hover:not(:disabled) {
+            background: #334155;
+            transform: translateY(-1px);
+        }
+        .btn-primary:active:not(:disabled) { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-confirm {
+            background: #f1f5f9;
+            color: #0f172a;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+        .btn-confirm:hover:not(:disabled) { background: #fff; }
+        .btn-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .text-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .text-value {
+            font-feature-settings: "tnum";
+            font-variant-numeric: tabular-nums;
+        }
+
+        .flow-step { transition: all 0.2s; }
+        .flow-step.active .flow-icon { 
+            background: rgba(45, 212, 191, 0.15); 
+            border-color: rgba(45, 212, 191, 0.4);
+        }
+        .flow-step.active .flow-label { color: #2dd4bf; }
+        .flow-step.completed .flow-icon { 
+            background: rgba(45, 212, 191, 0.1); 
+            border-color: rgba(45, 212, 191, 0.3);
+        }
+        .flow-step.completed .flow-label { color: #94a3b8; }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="glass-nav sticky top-0 z-50 w-full">
+        <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 flex items-center justify-center text-white">
+                        <span class="font-bold text-sm">F</span>
+                    </div>
+                    <span class="text-white font-medium text-sm tracking-tight">FinPlay</span>
+                </div>
+                <div class="hidden md:flex items-center gap-1">
+                    <a href="dashboard.html" class="px-3 py-1.5 rounded-full bg-white/5 text-white text-xs font-medium border border-white/5">Dashboard</a>
+                    <a href="investing" class="px-3 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 text-xs font-medium transition-colors">Investing</a>
+                    <a href="analytics" class="px-3 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 text-xs font-medium transition-colors">Insights</a>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="px-2.5 py-1 rounded-md border border-slate-800 bg-slate-900/50 flex items-center gap-1.5">
+                    <iconify-icon icon="solar:calendar-linear" class="text-slate-500 text-xs"></iconify-icon>
+                    <span class="text-[10px] font-medium text-slate-300" id="month-badge">Month 1</span>
+                </div>
+                <div class="px-2.5 py-1 rounded-md border border-slate-800 bg-slate-900/50 flex items-center gap-1.5">
+                    <iconify-icon icon="solar:medal-ribbon-linear" class="text-teal-500/70 text-xs"></iconify-icon>
+                    <span class="text-[10px] font-medium text-slate-300" id="level-badge">Level 1</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-1 max-w-7xl mx-auto px-6 py-10 w-full space-y-10">
+
+        <!-- Welcome -->
+        <section>
+            <h1 class="text-2xl font-medium text-white tracking-tight mb-1">Welcome, <span id="user-name">User</span></h1>
+            <p class="text-slate-500 text-sm font-light">Your financial simulation is active. Review your position.</p>
+        </section>
+
+        <!-- Monthly Flow Strip -->
+        <section>
+            <div class="glass-panel rounded-xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 md:gap-6">
+                    <div class="flow-step active flex flex-col items-center gap-1" data-step="income">
+                        <span class="flow-icon w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-teal-400">
+                            <iconify-icon icon="solar:wallet-money-linear" width="14"></iconify-icon>
+                        </span>
+                        <span class="flow-label text-[10px] font-medium text-slate-400">Income</span>
+                    </div>
+                    <iconify-icon icon="solar:arrow-right-linear" class="text-slate-700 hidden md:block" width="12"></iconify-icon>
+                    <div class="flow-step flex flex-col items-center gap-1" data-step="protected">
+                        <span class="flow-icon w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-blue-400">
+                            <iconify-icon icon="solar:shield-check-linear" width="14"></iconify-icon>
+                        </span>
+                        <span class="flow-label text-[10px] font-medium text-slate-500">Protected</span>
+                    </div>
+                    <iconify-icon icon="solar:arrow-right-linear" class="text-slate-700 hidden md:block" width="12"></iconify-icon>
+                    <div class="flow-step flex flex-col items-center gap-1" data-step="budgeted">
+                        <span class="flow-icon w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                            <iconify-icon icon="solar:pie-chart-2-linear" width="14"></iconify-icon>
+                        </span>
+                        <span class="flow-label text-[10px] font-medium text-slate-500">Budgeted</span>
+                    </div>
+                    <iconify-icon icon="solar:arrow-right-linear" class="text-slate-700 hidden md:block" width="12"></iconify-icon>
+                    <div class="flow-step flex flex-col items-center gap-1" data-step="invested">
+                        <span class="flow-icon w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                            <iconify-icon icon="solar:graph-up-linear" width="14"></iconify-icon>
+                        </span>
+                        <span class="flow-label text-[10px] font-medium text-slate-500">Invested</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-600 max-w-xs leading-relaxed text-center md:text-right">
+                    Each month is a fresh decision cycle. Money only carries forward when protected or invested.
+                </p>
+            </div>
+        </section>
+
+        <!-- Money Overview Cards -->
+        <section>
+            <div class="flex items-end justify-between mb-4">
+                <div>
+                    <h2 class="text-base font-medium text-white tracking-tight">Your Money This Month</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">What's available to allocate and what's committed.</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="glass-panel p-4 rounded-xl flex flex-col justify-between h-28">
+                    <div class="flex justify-between items-start">
+                        <span class="text-label">Spendable</span>
+                        <iconify-icon icon="solar:wad-of-money-linear" class="text-slate-600 text-sm"></iconify-icon>
+                    </div>
+                    <div>
+                        <span class="text-xl font-medium text-white text-value" id="val-spendable">₹0</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">After protection</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex flex-col justify-between h-28">
+                    <div class="flex justify-between items-start">
+                        <span class="text-label">Total Income</span>
+                        <iconify-icon icon="solar:calendar-mark-linear" class="text-slate-600 text-sm"></iconify-icon>
+                    </div>
+                    <div>
+                        <span class="text-xl font-medium text-slate-300 text-value" id="val-income">₹0</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Monthly recurring</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex flex-col justify-between h-28">
+                    <div class="flex justify-between items-start">
+                        <span class="text-label text-teal-500/80">Protected</span>
+                        <iconify-icon icon="solar:lock-password-linear" class="text-teal-500/50 text-sm"></iconify-icon>
+                    </div>
+                    <div>
+                        <span class="text-xl font-medium text-teal-400 text-value" id="val-protected">₹0</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5"><span id="val-rate-hint">0%</span> secured</p>
+                    </div>
+                </div>
+                <div class="glass-panel p-4 rounded-xl flex flex-col justify-between h-28">
+                    <div class="flex justify-between items-start">
+                        <span class="text-label">Commitments</span>
+                        <iconify-icon icon="solar:bill-list-linear" class="text-slate-600 text-sm"></iconify-icon>
+                    </div>
+                    <div>
+                        <span class="text-xl font-medium text-slate-300 text-value" id="val-commitments">₹0</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Bills / EMI</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Left Column (Actions) -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- Monthly Budget (Primary Task Area) -->
+                <section>
+                    <div class="mb-3">
+                        <h2 class="text-base font-medium text-white tracking-tight">Monthly Budget</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Allocate your spendable income — reversible until confirmed.</p>
+                    </div>
+                    <div class="glass-panel rounded-xl overflow-hidden">
+                        <div class="p-5 space-y-4">
+                            <div class="flex items-center gap-3 group">
+                                <div class="w-7 h-7 rounded-full bg-slate-800/40 flex items-center justify-center text-slate-500 group-hover:text-white transition-colors">
+                                    <iconify-icon icon="solar:home-smile-linear" width="14"></iconify-icon>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Needs & Living</label>
+                                    <input id="input-needs" type="number" placeholder="0" class="input-clean w-full text-sm font-medium placeholder-slate-600">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 group">
+                                <div class="w-7 h-7 rounded-full bg-slate-800/40 flex items-center justify-center text-slate-500 group-hover:text-white transition-colors">
+                                    <iconify-icon icon="solar:bag-heart-linear" width="14"></iconify-icon>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Wants & Lifestyle</label>
+                                    <input id="input-wants" type="number" placeholder="0" class="input-clean w-full text-sm font-medium placeholder-slate-600">
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-3 group">
+                                <div class="w-7 h-7 rounded-full bg-slate-800/40 flex items-center justify-center text-slate-500 group-hover:text-white transition-colors">
+                                    <iconify-icon icon="solar:bolt-linear" width="14"></iconify-icon>
+                                </div>
+                                <div class="flex-1">
+                                    <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Unexpected</label>
+                                    <input id="input-unexpected" type="number" placeholder="0" class="input-clean w-full text-sm font-medium placeholder-slate-600">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-5 py-3 bg-slate-900/40 border-t border-white/5 flex justify-between items-center">
+                            <div class="flex gap-4 text-xs">
+                                <span class="text-slate-500">Total: <span id="val-budgeted" class="text-white font-medium ml-0.5">₹0</span></span>
+                                <span class="text-slate-500">Remaining: <span id="val-remaining" class="text-teal-400 font-medium ml-0.5">₹0</span></span>
+                            </div>
+                            <button id="btn-confirm-budget" class="btn-confirm px-4 py-1.5 rounded-lg text-xs disabled:opacity-40" disabled>
+                                Confirm Budget
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Protected Money -->
+                <section>
+                    <div class="mb-3">
+                        <h2 class="text-base font-medium text-white tracking-tight">Protected Money</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Money set aside intentionally — harder to spend.</p>
+                    </div>
+                    <div class="glass-panel rounded-xl p-5 border-teal-500/10">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-teal-400">
+                                    <iconify-icon icon="solar:safe-square-linear" width="20"></iconify-icon>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-white">Future Self Wallet</h3>
+                                    <p class="text-[10px] text-slate-500 mt-0.5 max-w-xs">This money is protected. Think of it as paying your future self first.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-5">
+                                <div class="text-right">
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-wide">Rate</p>
+                                    <p class="text-base font-semibold text-white text-value" id="val-rate">20%</p>
+                                </div>
+                                <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
+                                <div class="text-right">
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-wide">Balance</p>
+                                    <p class="text-base font-semibold text-teal-400 text-value" id="val-protected-balance">₹0</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-white/5 flex justify-end">
+                            <button id="btn-adjust-rate" class="btn-primary px-3 py-1.5 rounded-lg text-xs text-slate-300 hover:text-white flex items-center gap-1.5">
+                                <iconify-icon icon="solar:settings-minimalistic-linear" width="12"></iconify-icon>
+                                Adjust Rate
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Goal Wallets -->
+                <section>
+                    <div class="mb-3">
+                        <h2 class="text-base font-medium text-white tracking-tight">Goal Wallets</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Commit money to specific goals — withdrawing early has trade-offs.</p>
+                    </div>
+                    <div id="goal-wallets-container">
+                        <div id="goal-wallets-empty" class="glass-panel rounded-xl p-8 flex flex-col items-center justify-center text-center border-dashed border-slate-700/30">
+                            <div class="w-10 h-10 rounded-full bg-slate-800/40 flex items-center justify-center text-slate-500 mb-3">
+                                <iconify-icon icon="solar:folder-with-files-linear" width="20"></iconify-icon>
+                            </div>
+                            <h3 class="text-xs font-medium text-slate-400">No Goal Wallets Active</h3>
+                            <p class="text-[10px] text-slate-600 mt-1 max-w-xs mb-4">Create a wallet to separate funds for travel, gadgets, or emergencies.</p>
+                            <button id="btn-create-goal" class="btn-primary px-3 py-1.5 rounded-lg text-xs text-slate-300 hover:text-white">
+                                Create Goal Wallet
+                            </button>
+                        </div>
+                        <div id="goal-wallets-list" class="space-y-3 hidden"></div>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Right Column (Status & Reflection) -->
+            <div class="space-y-6">
+
+                <!-- Temptation Controls -->
+                <section>
+                    <div class="mb-3">
+                        <h2 class="text-sm font-medium text-white tracking-tight">Temptation Controls</h2>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Set spending limits on high-temptation categories.</p>
+                    </div>
+                    <div class="glass-panel rounded-xl p-5">
+                        <div class="flex flex-col items-center text-center py-2">
+                            <div class="w-8 h-8 rounded-full bg-slate-800/30 flex items-center justify-center text-slate-500 mb-2">
+                                <iconify-icon icon="solar:shield-warning-linear" width="16"></iconify-icon>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mb-3">No active limits set for this month.</p>
+                            <button id="btn-set-limits" class="text-[10px] font-medium text-teal-400 hover:text-teal-300 border-b border-teal-500/30 pb-0.5 hover:border-teal-400 transition-all">
+                                Set Limits
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Learning Progress -->
+                <section>
+                    <div class="mb-3 flex items-center justify-between">
+                        <h2 class="text-sm font-medium text-white tracking-tight">Learning Progress</h2>
+                        <span id="level-pill" class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">LEVEL 1</span>
+                    </div>
+                    <div class="glass-panel rounded-xl p-4">
+                        <div class="flex justify-between text-[10px] text-slate-500 mb-1.5">
+                            <span>Experience</span>
+                            <span class="text-white" id="val-xp">0 / 100 XP</span>
+                        </div>
+                        <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden mb-2">
+                            <div id="xp-bar" class="h-full w-0 bg-gradient-to-r from-teal-600 to-blue-600 rounded-full transition-all duration-300"></div>
+                        </div>
+                        <p class="text-[9px] text-slate-600 leading-relaxed">
+                            Levels reflect experience through decision making, not just financial success.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Profile Summary -->
+                <section>
+                    <div class="mb-3">
+                        <h2 class="text-sm font-medium text-white tracking-tight">Your Profile</h2>
+                    </div>
+                    <div class="glass-panel rounded-xl overflow-hidden">
+                        <div class="divide-y divide-white/5">
+                            <div class="flex justify-between items-center px-4 py-3">
+                                <span class="text-[10px] text-slate-500 font-medium">Knowledge</span>
+                                <span class="text-[10px] text-slate-300" id="val-knowledge">-</span>
+                            </div>
+                            <div class="flex justify-between items-center px-4 py-3">
+                                <span class="text-[10px] text-slate-500 font-medium">Life Stage</span>
+                                <span class="text-[10px] text-slate-300" id="val-lifestage">-</span>
+                            </div>
+                            <div class="flex justify-between items-center px-4 py-3">
+                                <span class="text-[10px] text-slate-500 font-medium">Primary Goal</span>
+                                <span class="text-[10px] text-slate-300" id="val-goal">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Time-Travel Letters -->
+                <section>
+                    <div id="btn-write-letter" class="glass-panel rounded-xl p-4 group hover:border-slate-700 transition-colors cursor-pointer">
+                        <div class="flex items-start gap-2.5">
+                            <iconify-icon icon="solar:letter-linear" class="text-slate-400 mt-0.5" width="14"></iconify-icon>
+                            <div>
+                                <h3 class="text-xs font-medium text-white">Time-Travel Letters</h3>
+                                <p class="text-[10px] text-slate-600 mt-0.5 mb-2 leading-relaxed">Write a note to your future self — it arrives at a moment you choose.</p>
+                                <span class="text-[10px] font-medium text-slate-400 group-hover:text-white transition-colors flex items-center gap-1">
+                                    Write Letter <iconify-icon icon="solar:arrow-right-linear" width="10"></iconify-icon>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="max-w-7xl mx-auto px-6 py-6 text-center">
+        <p class="text-[9px] text-slate-700 uppercase tracking-widest font-semibold">FinPlay Simulation • Educational Use Only</p>
+    </footer>
+
+    <!-- ==================== DASHBOARD LOGIC ==================== -->
+    <script>
+        /**
+         * FinPlay Dashboard - State Management & Logic
+         * 
+         * Architecture:
+         * 1. appState - Single source of truth for all data
+         * 2. loadState() - Hydrates state from localStorage/onboarding
+         * 3. saveState() - Persists state to localStorage
+         * 4. render() - Updates all UI elements from state
+         * 5. Event bindings - All interactive elements
+         */
+
+        // ========== STORAGE KEYS ==========
+        const PROFILE_KEY = 'finplay_profile';
+        const STATE_KEY = 'finplay_dashboard_state';
+        const GOALS_KEY = 'finplay_goals';
+        const LETTERS_KEY = 'finplay_letters';
+
+        // ========== CENTRAL STATE OBJECT ==========
+        const appState = {
+            user: {
+                name: '',
+                knowledgeLevel: '',
+                lifeStage: '',
+                primaryGoal: ''
+            },
+            finance: {
+                monthlyIncome: 0,
+                protectedRate: 0.20,
+                protectedAmount: 0,
+                commitments: 0,
+                budget: {
+                    needs: 0,
+                    wants: 0,
+                    unexpected: 0
+                },
+                confirmedBudget: false
+            },
+            experience: {
+                xp: 0,
+                level: 1,
+                month: 1
+            },
+            goals: [],
+            flowStep: 'income'
+        };
+
+        // ========== STATE PERSISTENCE ==========
+        
+        function loadState() {
+            // 1. Load saved dashboard state
+            const savedState = localStorage.getItem(STATE_KEY);
+            if (savedState) {
+                const parsed = JSON.parse(savedState);
+                Object.assign(appState.finance, parsed.finance || {});
+                Object.assign(appState.experience, parsed.experience || {});
+                appState.flowStep = parsed.flowStep || 'income';
+            }
+
+            // 2. Load profile from onboarding (always sync)
+            const profile = localStorage.getItem(PROFILE_KEY);
+            if (profile) {
+                const p = JSON.parse(profile);
+                appState.user.name = p.name || '';
+                appState.user.knowledgeLevel = p.knowledge_level || '';
+                appState.user.lifeStage = p.life_stage || '';
+                appState.user.primaryGoal = p.primary_goal || '';
+                
+                // Income from onboarding takes priority
+                if (p.income) {
+                    appState.finance.monthlyIncome = Number(p.income);
+                }
+            }
+
+            // 3. Load goals
+            const goals = localStorage.getItem(GOALS_KEY);
+            if (goals) {
+                appState.goals = JSON.parse(goals);
+            }
+
+            // 4. Calculate protected amount
+            appState.finance.protectedAmount = Math.round(
+                appState.finance.monthlyIncome * appState.finance.protectedRate
+            );
+
+            console.log('State loaded:', appState);
+        }
+
+        function saveState() {
+            localStorage.setItem(STATE_KEY, JSON.stringify({
+                finance: appState.finance,
+                experience: appState.experience,
+                flowStep: appState.flowStep
+            }));
+            localStorage.setItem(GOALS_KEY, JSON.stringify(appState.goals));
+        }
+
+        // ========== CALCULATIONS ==========
+
+        function getSpendable() {
+            return appState.finance.monthlyIncome - appState.finance.protectedAmount;
+        }
+
+        function getTotalBudgeted() {
+            const b = appState.finance.budget;
+            return (Number(b.needs) || 0) + (Number(b.wants) || 0) + (Number(b.unexpected) || 0);
+        }
+
+        function getRemaining() {
+            return getSpendable() - getTotalBudgeted();
+        }
+
+        function isBudgetValid() {
+            return getTotalBudgeted() > 0 && getRemaining() >= 0;
+        }
+
+        // ========== FORMATTING ==========
+
+        function formatCurrency(num) {
+            return '₹' + Math.round(num).toLocaleString('en-IN');
+        }
+
+        // ========== RENDER FUNCTION ==========
+
+        function render() {
+            const spendable = getSpendable();
+            const totalBudgeted = getTotalBudgeted();
+            const remaining = getRemaining();
+            const ratePercent = Math.round(appState.finance.protectedRate * 100);
+
+            // Navigation badges
+            document.getElementById('month-badge').textContent = `Month ${appState.experience.month}`;
+            document.getElementById('level-badge').textContent = `Level ${appState.experience.level}`;
+
+            // Welcome
+            document.getElementById('user-name').textContent = appState.user.name || 'User';
+
+            // Money overview cards
+            document.getElementById('val-spendable').textContent = formatCurrency(spendable);
+            document.getElementById('val-income').textContent = formatCurrency(appState.finance.monthlyIncome);
+            document.getElementById('val-protected').textContent = formatCurrency(appState.finance.protectedAmount);
+            document.getElementById('val-rate-hint').textContent = ratePercent + '%';
+            document.getElementById('val-commitments').textContent = formatCurrency(appState.finance.commitments);
+
+            // Protected money section
+            document.getElementById('val-rate').textContent = ratePercent + '%';
+            document.getElementById('val-protected-balance').textContent = formatCurrency(appState.finance.protectedAmount);
+
+            // Budget section
+            document.getElementById('val-budgeted').textContent = formatCurrency(totalBudgeted);
+            
+            const remEl = document.getElementById('val-remaining');
+            remEl.textContent = formatCurrency(remaining);
+            remEl.classList.toggle('text-teal-400', remaining >= 0);
+            remEl.classList.toggle('text-red-400', remaining < 0);
+
+            // Budget inputs (preserve focus)
+            const inputs = {
+                needs: document.getElementById('input-needs'),
+                wants: document.getElementById('input-wants'),
+                unexpected: document.getElementById('input-unexpected')
+            };
+
+            Object.keys(inputs).forEach(key => {
+                if (document.activeElement !== inputs[key]) {
+                    inputs[key].value = appState.finance.budget[key] || '';
+                }
+                inputs[key].disabled = appState.finance.confirmedBudget;
+            });
+
+            // Confirm button state
+            const confirmBtn = document.getElementById('btn-confirm-budget');
+            if (appState.finance.confirmedBudget) {
+                confirmBtn.textContent = 'Budget Confirmed';
+                confirmBtn.disabled = true;
+            } else {
+                confirmBtn.textContent = 'Confirm Budget';
+                confirmBtn.disabled = !isBudgetValid();
+            }
+
+            // Profile section
+            document.getElementById('val-knowledge').textContent = appState.user.knowledgeLevel || '-';
+            document.getElementById('val-lifestage').textContent = appState.user.lifeStage || '-';
+            document.getElementById('val-goal').textContent = appState.user.primaryGoal || '-';
+
+            // Experience section
+            const xpInLevel = appState.experience.xp % 100;
+            const xpNeeded = 100;
+            document.getElementById('val-xp').textContent = `${xpInLevel} / ${xpNeeded} XP`;
+            document.getElementById('xp-bar').style.width = `${(xpInLevel / xpNeeded) * 100}%`;
+            document.getElementById('level-pill').textContent = `LEVEL ${appState.experience.level}`;
+
+            // Flow steps
+            updateFlowSteps();
+
+            // Goal wallets
+            renderGoalWallets();
+        }
+
+        function updateFlowSteps() {
+            const steps = ['income', 'protected', 'budgeted', 'invested'];
+            const currentIndex = steps.indexOf(appState.flowStep);
+            
+            steps.forEach((step, index) => {
+                const el = document.querySelector(`.flow-step[data-step="${step}"]`);
+                if (!el) return;
+                
+                el.classList.remove('active', 'completed');
+                if (index < currentIndex) {
+                    el.classList.add('completed');
+                } else if (index === currentIndex) {
+                    el.classList.add('active');
+                }
+            });
+        }
+
+        function renderGoalWallets() {
+            const empty = document.getElementById('goal-wallets-empty');
+            const list = document.getElementById('goal-wallets-list');
+            
+            if (appState.goals.length === 0) {
+                empty.classList.remove('hidden');
+                list.classList.add('hidden');
+            } else {
+                empty.classList.add('hidden');
+                list.classList.remove('hidden');
+                list.innerHTML = appState.goals.map((goal, i) => `
+                    <div class="glass-panel rounded-xl p-4 flex justify-between items-center">
+                        <div>
+                            <h4 class="text-sm font-medium text-white">${goal.name}</h4>
+                            <p class="text-[10px] text-slate-500">Target: ${formatCurrency(goal.target)}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-teal-400">${formatCurrency(goal.saved)}</p>
+                            <p class="text-[10px] text-slate-500">${Math.round((goal.saved / goal.target) * 100)}%</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ========== MODALS ==========
+
+        function openRateModal() {
+            if (document.getElementById('rate-modal')) return;
+
+            const currentRate = Math.round(appState.finance.protectedRate * 100);
+            const modal = document.createElement('div');
+            modal.id = 'rate-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="glass-panel p-5 rounded-xl w-full max-w-xs m-4 space-y-5">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-white font-medium text-sm">Adjust Protection Rate</h3>
+                        <button class="text-slate-500 hover:text-white text-lg close-modal">×</button>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-2 text-slate-400">
+                            <span>5%</span>
+                            <span class="text-teal-400 font-bold text-base" id="modal-rate-val">${currentRate}%</span>
+                            <span>50%</span>
+                        </div>
+                        <input type="range" min="5" max="50" step="5" value="${currentRate}"
+                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-400" id="modal-slider">
+                    </div>
+                    <div class="text-center space-y-1">
+                        <p class="text-[10px] text-slate-500">Protected Amount</p>
+                        <p class="text-lg text-teal-400 font-semibold" id="modal-amt">${formatCurrency(appState.finance.protectedAmount)}</p>
+                        <p class="text-[10px] text-slate-500">Spendable: <span id="modal-spend">${formatCurrency(getSpendable())}</span></p>
+                    </div>
+                    <p class="text-[10px] text-slate-600 leading-relaxed">
+                        Higher protection reduces spendable income but builds your safety net faster.
+                    </p>
+                    <button id="modal-save" class="btn-confirm w-full py-2 rounded-lg text-xs">Update Rate</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            const slider = document.getElementById('modal-slider');
+            const rateVal = document.getElementById('modal-rate-val');
+            const amtEl = document.getElementById('modal-amt');
+            const spendEl = document.getElementById('modal-spend');
+
+            slider.addEventListener('input', () => {
+                const newRate = parseInt(slider.value) / 100;
+                const newProtected = Math.round(appState.finance.monthlyIncome * newRate);
+                const newSpendable = appState.finance.monthlyIncome - newProtected;
+                rateVal.textContent = slider.value + '%';
+                amtEl.textContent = formatCurrency(newProtected);
+                spendEl.textContent = formatCurrency(newSpendable);
+            });
+
+            document.getElementById('modal-save').addEventListener('click', () => {
+                appState.finance.protectedRate = parseInt(slider.value) / 100;
+                appState.finance.protectedAmount = Math.round(
+                    appState.finance.monthlyIncome * appState.finance.protectedRate
+                );
+                
+                // Reset budget if over limit
+                if (getTotalBudgeted() > getSpendable()) {
+                    appState.finance.budget = { needs: 0, wants: 0, unexpected: 0 };
+                    appState.finance.confirmedBudget = false;
+                }
+                
+                appState.flowStep = 'protected';
+                saveState();
+                render();
+                modal.remove();
+                console.log('Rate updated to', appState.finance.protectedRate * 100 + '%');
+            });
+
+            modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+
+        function openGoalModal() {
+            if (document.getElementById('goal-modal')) return;
+
+            const modal = document.createElement('div');
+            modal.id = 'goal-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="glass-panel p-5 rounded-xl w-full max-w-xs m-4 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-white font-medium text-sm">Create Goal Wallet</h3>
+                        <button class="text-slate-500 hover:text-white text-lg close-modal">×</button>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Goal Name</label>
+                        <input type="text" id="goal-name" placeholder="e.g., Emergency Fund" 
+                            class="input-clean w-full text-sm placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Target Amount</label>
+                        <input type="number" id="goal-target" placeholder="10000" 
+                            class="input-clean w-full text-sm placeholder-slate-600">
+                    </div>
+                    <button id="goal-save" class="btn-confirm w-full py-2 rounded-lg text-xs">Create Wallet</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('goal-save').addEventListener('click', () => {
+                const name = document.getElementById('goal-name').value.trim();
+                const target = parseInt(document.getElementById('goal-target').value) || 0;
+                
+                if (!name || target < 1000) {
+                    alert('Please enter a valid name and target (min ₹1,000)');
+                    return;
+                }
+
+                appState.goals.push({ name, target, saved: 0 });
+                saveState();
+                render();
+                modal.remove();
+                console.log('Goal created:', name);
+            });
+
+            modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+
+        function openLetterModal() {
+            if (document.getElementById('letter-modal')) return;
+
+            const modal = document.createElement('div');
+            modal.id = 'letter-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="glass-panel p-5 rounded-xl w-full max-w-sm m-4 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-white font-medium text-sm">Write to Your Future Self</h3>
+                        <button class="text-slate-500 hover:text-white text-lg close-modal">×</button>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Your Message</label>
+                        <textarea id="letter-text" rows="4" placeholder="Dear future me..." 
+                            class="input-clean w-full text-sm placeholder-slate-600 resize-none border border-slate-800 rounded-lg p-2"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Deliver After Month</label>
+                        <select id="letter-month" class="input-clean w-full text-sm bg-slate-900 border border-slate-800 rounded-lg p-2">
+                            <option value="3">Month 3</option>
+                            <option value="6">Month 6</option>
+                            <option value="12">Month 12</option>
+                        </select>
+                    </div>
+                    <button id="letter-save" class="btn-confirm w-full py-2 rounded-lg text-xs">Send to Future</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('letter-save').addEventListener('click', () => {
+                const text = document.getElementById('letter-text').value.trim();
+                const deliverMonth = parseInt(document.getElementById('letter-month').value);
+                
+                if (!text) {
+                    alert('Please write a message');
+                    return;
+                }
+
+                const letters = JSON.parse(localStorage.getItem(LETTERS_KEY) || '[]');
+                letters.push({ text, deliverMonth, createdMonth: appState.experience.month });
+                localStorage.setItem(LETTERS_KEY, JSON.stringify(letters));
+                
+                modal.remove();
+                alert('Letter saved! It will arrive at Month ' + deliverMonth);
+                console.log('Letter saved for Month', deliverMonth);
+            });
+
+            modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+
+        function openLimitsModal() {
+            if (document.getElementById('limits-modal')) return;
+
+            const modal = document.createElement('div');
+            modal.id = 'limits-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="glass-panel p-5 rounded-xl w-full max-w-xs m-4 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-white font-medium text-sm">Set Temptation Limits</h3>
+                        <button class="text-slate-500 hover:text-white text-lg close-modal">×</button>
+                    </div>
+                    <p class="text-[10px] text-slate-500">This feature helps you control impulse spending by setting category-specific limits.</p>
+                    <div class="py-4 text-center">
+                        <iconify-icon icon="solar:lock-keyhole-minimalistic-linear" class="text-slate-600 text-3xl mb-2"></iconify-icon>
+                        <p class="text-xs text-slate-400">Unlocks at Level 2</p>
+                    </div>
+                    <button class="btn-primary w-full py-2 rounded-lg text-xs text-slate-400 close-modal">Got it</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            modal.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => modal.remove());
+            });
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+
+        // ========== EVENT BINDINGS ==========
+
+        function bindEvents() {
+            // Budget inputs
+            ['needs', 'wants', 'unexpected'].forEach(key => {
+                document.getElementById(`input-${key}`).addEventListener('input', (e) => {
+                    appState.finance.budget[key] = parseFloat(e.target.value) || 0;
+                    saveState();
+                    render();
+                });
+            });
+
+            // Confirm budget
+            document.getElementById('btn-confirm-budget').addEventListener('click', () => {
+                if (!isBudgetValid()) return;
+                
+                appState.finance.confirmedBudget = true;
+                appState.flowStep = 'budgeted';
+                
+                // Award XP
+                appState.experience.xp += 25;
+                if (appState.experience.xp >= 100) {
+                    appState.experience.level += 1;
+                    appState.experience.xp = appState.experience.xp % 100;
+                }
+                
+                saveState();
+                render();
+                console.log('Budget confirmed. XP awarded.');
+            });
+
+            // Adjust rate
+            document.getElementById('btn-adjust-rate').addEventListener('click', openRateModal);
+
+            // Set limits
+            document.getElementById('btn-set-limits').addEventListener('click', openLimitsModal);
+
+            // Create goal
+            document.getElementById('btn-create-goal').addEventListener('click', openGoalModal);
+
+            // Write letter
+            document.getElementById('btn-write-letter').addEventListener('click', openLetterModal);
+
+            // Navigation links
+            document.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    console.log('Navigation:', link.href);
+                });
+            });
+        }
+
+        // ========== INITIALIZATION ==========
+
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('FinPlay Dashboard initializing...');
+            loadState();
+            bindEvents();
+            render();
+            console.log('Dashboard ready. State:', appState);
+        });
+    </script>
+</body>
+
+</html>

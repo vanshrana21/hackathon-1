@@ -83,11 +83,18 @@
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%), #1e293b;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.2s;
+            cursor: pointer;
         }
 
         .btn-primary:hover {
             background: #334155;
             transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
 
         /* Typography Utilities */
@@ -260,7 +267,8 @@
                         <iconify-icon icon="solar:lock-password-linear" class="text-teal-500/50"></iconify-icon>
                     </div>
                     <div>
-                        <span class="text-2xl font-medium text-teal-400 text-value tracking-tight">₹8,000</span>
+                        <span class="text-2xl font-medium text-teal-400 text-value tracking-tight"
+                            id="val-protected-now">₹8,000</span>
                         <p class="text-xs text-slate-500 mt-1">20% of income secured</p>
                     </div>
                 </div>
@@ -318,18 +326,20 @@
                                 <div class="flex items-center gap-6">
                                     <div class="text-right">
                                         <p class="text-label mb-1">Current Rate</p>
-                                        <p class="text-lg font-semibold text-white text-value">20%</p>
+                                        <p class="text-lg font-semibold text-white text-value" id="val-protected-rate">
+                                            20%</p>
                                     </div>
                                     <div class="h-8 w-px bg-slate-700 hidden sm:block"></div>
                                     <div class="text-right">
                                         <p class="text-label mb-1">Balance</p>
-                                        <p class="text-lg font-semibold text-teal-400 text-value">₹8,000</p>
+                                        <p class="text-lg font-semibold text-teal-400 text-value"
+                                            id="val-protected-balance">₹8,000</p>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="mt-6 pt-5 border-t border-white/5 flex justify-end">
-                                <button
+                                <button id="btn-adjust-rate"
                                     class="btn-primary px-4 py-2 rounded-lg text-sm text-slate-300 hover:text-white flex items-center gap-2">
                                     <iconify-icon icon="solar:settings-minimalistic-linear"></iconify-icon>
                                     Adjust Rate
@@ -357,7 +367,7 @@
                                 </div>
                                 <div class="flex-1">
                                     <label class="block text-xs font-medium text-slate-400 mb-1">Needs & Living</label>
-                                    <input type="text" placeholder="₹0"
+                                    <input id="input-needs" type="text" placeholder="₹0"
                                         class="input-clean w-full text-base font-medium placeholder-slate-600">
                                 </div>
                             </div>
@@ -371,7 +381,7 @@
                                 <div class="flex-1">
                                     <label class="block text-xs font-medium text-slate-400 mb-1">Wants &
                                         Lifestyle</label>
-                                    <input type="text" placeholder="₹0"
+                                    <input id="input-wants" type="text" placeholder="₹0"
                                         class="input-clean w-full text-base font-medium placeholder-slate-600">
                                 </div>
                             </div>
@@ -385,7 +395,7 @@
                                 <div class="flex-1">
                                     <label class="block text-xs font-medium text-slate-400 mb-1">Unexpected
                                         Expenses</label>
-                                    <input type="text" placeholder="₹0"
+                                    <input id="input-unexpected" type="text" placeholder="₹0"
                                         class="input-clean w-full text-base font-medium placeholder-slate-600">
                                 </div>
                             </div>
@@ -394,13 +404,13 @@
                         <div
                             class="px-6 py-4 bg-slate-900/50 border-t border-white/5 flex justify-between items-center">
                             <div class="flex gap-4 text-sm">
-                                <span class="text-slate-500">Total Budgeted: <span
+                                <span class="text-slate-500">Total Budgeted: <span id="val-total-budgeted"
                                         class="text-white font-medium ml-1">₹0</span></span>
-                                <span class="text-slate-500">Remaining: <span
+                                <span class="text-slate-500">Remaining: <span id="val-remaining"
                                         class="text-teal-400 font-medium ml-1">₹32,000</span></span>
                             </div>
-                            <button
-                                class="bg-slate-100 hover:bg-white text-slate-900 px-5 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-white/5">
+                            <button id="btn-confirm-budget"
+                                class="bg-slate-100 hover:bg-white text-slate-900 px-5 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed">
                                 Confirm Budget
                             </button>
                         </div>
@@ -424,7 +434,7 @@
                         <h3 class="text-sm font-medium text-slate-300">No Goal Wallets Active</h3>
                         <p class="text-xs text-slate-500 mt-2 max-w-xs mb-6">Creating a wallet separates funds for
                             specific outcomes like travel, gadgets, or emergency funds.</p>
-                        <button
+                        <button id="btn-create-goal"
                             class="btn-primary px-4 py-2 rounded-lg text-sm text-slate-300 hover:text-white transition-colors">
                             Create Goal Wallet
                         </button>
@@ -450,7 +460,7 @@
                                 <iconify-icon icon="solar:shield-warning-linear" width="20"></iconify-icon>
                             </div>
                             <p class="text-sm text-slate-400 mb-4">No active limits set for this month.</p>
-                            <button
+                            <button id="btn-set-limits"
                                 class="text-xs font-medium text-teal-400 hover:text-teal-300 border-b border-teal-500/30 pb-0.5 hover:border-teal-400 transition-all">
                                 Set Limits
                             </button>
@@ -507,7 +517,7 @@
 
                 <!-- 11. Time-Travel Letters Section -->
                 <section>
-                    <div
+                    <div id="btn-write-letter"
                         class="glass-panel rounded-xl p-6 relative overflow-hidden group hover:border-slate-700 transition-colors cursor-pointer">
                         <div
                             class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl -mr-5 -mt-5 transition-opacity opacity-50 group-hover:opacity-100">
@@ -539,6 +549,269 @@
             Use Only</p>
     </footer>
 
+    <script>
+        /**
+         * FinPlay Dashboard Logic
+         * Handles budget calculations, protected money rate adjustments, and state persistence.
+         * Pure Vanilla JS + LocalStorage. No frameworks.
+         */
+
+        const STATE_KEY = 'finplay_dashboard_state';
+        const DEFAULT_INCOME = 40000;
+
+        // Default State
+        const defaultState = {
+            income: DEFAULT_INCOME,
+            protectedRate: 0.20, // 20%
+            budget: {
+                needs: 0,
+                wants: 0,
+                unexpected: 0
+            },
+            confirmedBudget: false
+        };
+
+        // Initialize State
+        let state = JSON.parse(localStorage.getItem(STATE_KEY)) || defaultState;
+
+        // DOM Elements
+        const els = {
+            inputs: {
+                needs: document.getElementById('input-needs'),
+                wants: document.getElementById('input-wants'),
+                unexpected: document.getElementById('input-unexpected'),
+            },
+            displays: {
+                totalBudgeted: document.getElementById('val-total-budgeted'),
+                remaining: document.getElementById('val-remaining'),
+                protectedRate: document.getElementById('val-protected-rate'),
+                protectedBalance: document.getElementById('val-protected-balance'),
+                protectedOverview: document.getElementById('val-protected-now'),
+            },
+            buttons: {
+                adjustRate: document.getElementById('btn-adjust-rate'),
+                confirmBudget: document.getElementById('btn-confirm-budget'),
+                setLimits: document.getElementById('btn-set-limits'),
+                createGoal: document.getElementById('btn-create-goal'),
+                writeLetter: document.getElementById('btn-write-letter'),
+            }
+        };
+
+        // --- Core Logic & Helpers ---
+
+        function formatCurrency(amount) {
+            return '₹' + amount.toLocaleString('en-IN');
+        }
+
+        function parseCurrency(str) {
+            if (!str) return 0;
+            // Remove non-numeric chars except dot? Integer for this simulation usually.
+            const clean = str.toString().replace(/[^0-9.]/g, '');
+            return parseFloat(clean) || 0;
+        }
+
+        function saveState() {
+            localStorage.setItem(STATE_KEY, JSON.stringify(state));
+        }
+
+        function getProtectedAmount() {
+            return Math.round(state.income * state.protectedRate);
+        }
+
+        function getSpendableIncome() {
+            return state.income - getProtectedAmount();
+        }
+
+        function getTotalBudgeted() {
+            return state.budget.needs + state.budget.wants + state.budget.unexpected;
+        }
+
+        // --- UI Updates ---
+
+        function updateUI() {
+            // Protected Money
+            const protectedAmt = getProtectedAmount();
+            const formattedProtected = formatCurrency(protectedAmt);
+            els.displays.protectedRate.textContent = Math.round(state.protectedRate * 100) + '%';
+            els.displays.protectedBalance.textContent = formattedProtected;
+            els.displays.protectedOverview.textContent = formattedProtected;
+
+            // Budget
+            const spendable = getSpendableIncome();
+            const totalBudgeted = getTotalBudgeted();
+            const remaining = spendable - totalBudgeted;
+
+            els.displays.totalBudgeted.textContent = formatCurrency(totalBudgeted);
+            els.displays.remaining.textContent = formatCurrency(remaining);
+
+            // Validate Budget
+            const isValid = remaining >= 0; // Negative remaining means over budget
+
+            // Visual feedback for calculation
+            els.displays.remaining.classList.toggle('text-teal-400', isValid);
+            els.displays.remaining.classList.toggle('text-red-400', !isValid);
+
+            // Input fields sync (if not focused, to avoid jumping cursor, but here we just set values on load)
+            if (document.activeElement !== els.inputs.needs) els.inputs.needs.value = state.budget.needs > 0 ? state.budget.needs : '';
+            if (document.activeElement !== els.inputs.wants) els.inputs.wants.value = state.budget.wants > 0 ? state.budget.wants : '';
+            if (document.activeElement !== els.inputs.unexpected) els.inputs.unexpected.value = state.budget.unexpected > 0 ? state.budget.unexpected : '';
+
+            // Confirm Button State
+            if (state.confirmedBudget) {
+                els.buttons.confirmBudget.textContent = "Budget Confirmed";
+                els.buttons.confirmBudget.disabled = true;
+                els.buttons.confirmBudget.classList.add('opacity-50', 'cursor-not-allowed');
+                disableInputs(true);
+            } else {
+                els.buttons.confirmBudget.textContent = "Confirm Budget";
+                // Enable valid budget (Total > 0 and Remaining >= 0)
+                const hasEntry = totalBudgeted > 0;
+                els.buttons.confirmBudget.disabled = !(isValid && hasEntry);
+                disableInputs(false);
+            }
+        }
+
+        function disableInputs(disabled) {
+            Object.values(els.inputs).forEach(input => {
+                input.disabled = disabled;
+                if (disabled) input.classList.add('opacity-50');
+                else input.classList.remove('opacity-50');
+            });
+        }
+
+        // --- Event Handlers ---
+
+        function handleBudgetInput(e) {
+            const field = e.target.id.replace('input-', ''); // needs, wants, unexpected
+            const val = parseCurrency(e.target.value);
+
+            state.budget[field] = val;
+            saveState();
+            updateUI();
+        }
+
+        function handleAdjustRate() {
+            // Minimal Modal Construction
+            const existingModal = document.getElementById('rate-modal');
+            if (existingModal) return;
+
+            const modalOverlay = document.createElement('div');
+            modalOverlay.id = 'rate-modal';
+            modalOverlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm fade-in';
+
+            const modalContent = document.createElement('div');
+            modalContent.className = 'glass-panel p-6 rounded-xl w-full max-w-sm space-y-6 m-4';
+
+            modalContent.innerHTML = `
+                <div class="flex justify-between items-center">
+                    <h3 class="text-white font-medium">Adjust Protection Rate</h3>
+                    <button class="text-slate-400 hover:text-white" onclick="document.getElementById('rate-modal').remove()">✕</button>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-slate-400">Survival</span>
+                        <span class="text-teal-400 font-bold" id="modal-rate-val">${Math.round(state.protectedRate * 100)}%</span>
+                        <span class="text-slate-400">Aggressive</span>
+                    </div>
+                    <input type="range" min="5" max="50" step="5" value="${Math.round(state.protectedRate * 100)}" 
+                        class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500">
+                </div>
+                <p class="text-xs text-slate-500">
+                    Higher protection reduces your spendable income but builds your safety net faster.
+                </p>
+                <button id="modal-save-rate" class="btn-primary w-full py-2 rounded-lg text-sm text-white">
+                    Update Rate
+                </button>
+            `;
+
+            modalOverlay.appendChild(modalContent);
+            document.body.appendChild(modalOverlay);
+
+            // Logic for Modal
+            const rangeInput = modalContent.querySelector('input[type="range"]');
+            const rateValDisplay = modalContent.querySelector('#modal-rate-val');
+            const saveBtn = modalContent.querySelector('#modal-save-rate');
+
+            rangeInput.addEventListener('input', (e) => {
+                rateValDisplay.textContent = e.target.value + '%';
+            });
+
+            saveBtn.addEventListener('click', () => {
+                const newRate = parseInt(rangeInput.value) / 100;
+                state.protectedRate = newRate;
+
+                // If budget exceeds new spendable, reset budget or warn? 
+                // For this sim, we just update math.
+                saveState();
+                updateUI();
+                modalOverlay.remove();
+                console.log(`Protected rate updated to ${newRate * 100}%`);
+            });
+
+            // Close on click outside
+            modalOverlay.addEventListener('click', (e) => {
+                if (e.target === modalOverlay) modalOverlay.remove();
+            });
+        }
+
+        // --- Event Listeners Binding ---
+
+        // Budget Inputs
+        Object.values(els.inputs).forEach(input => {
+            input.addEventListener('input', handleBudgetInput);
+        });
+
+        // Main Buttons
+        if (els.buttons.adjustRate) {
+            els.buttons.adjustRate.addEventListener('click', () => {
+                console.log('Action: Adjust Rate');
+                handleAdjustRate();
+            });
+        } else console.warn("Adjust Rate button not found");
+
+        if (els.buttons.confirmBudget) {
+            els.buttons.confirmBudget.addEventListener('click', () => {
+                console.log('Action: Confirm Budget');
+                state.confirmedBudget = true;
+                saveState();
+                updateUI();
+            });
+        }
+
+        if (els.buttons.setLimits) {
+            els.buttons.setLimits.addEventListener('click', () => {
+                console.log('Action: Set Limits (Placeholder)');
+                // Visual feedback
+                const originalText = els.buttons.setLimits.textContent;
+                els.buttons.setLimits.textContent = "Coming Soon";
+                setTimeout(() => els.buttons.setLimits.textContent = originalText, 1000);
+            });
+        }
+
+        if (els.buttons.createGoal) {
+            els.buttons.createGoal.addEventListener('click', () => {
+                console.log('Action: Create Goal Wallet (Placeholder)');
+                const btn = els.buttons.createGoal;
+                const originalText = btn.textContent;
+                btn.textContent = "Processing...";
+                setTimeout(() => btn.textContent = originalText, 500);
+            });
+        }
+
+        if (els.buttons.writeLetter) {
+            els.buttons.writeLetter.addEventListener('click', () => {
+                console.log('Action: Write Letter');
+                alert("Simulated: Time travel letter interface would open here.");
+            });
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('FinPlay Dashboard Initialized');
+            updateUI();
+        });
+
+    </script>
 </body>
 
 </html>

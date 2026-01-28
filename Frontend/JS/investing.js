@@ -1,18 +1,40 @@
-console.log('[investing.js] Script loaded');
+/**
+ * FinPlay Investing Module - Full Simulation Logic
+ * 
+ * State Flow:
+ * - Reads user profile from 'finplay_profile' (name, level, xp, income)
+ * - Reads dashboard state from 'finplay_dashboard_state' (budget confirmation, month)
+ * - Maintains portfolio in 'finplay_portfolio' (cash, positions, transactions)
+ * - Maintains market prices in 'finplay_market' (dynamic prices per asset)
+ * 
+ * Unlock Condition:
+ * - Investing is LOCKED until dashboard budget is confirmed
+ * - Reads confirmedBudget from finplay_dashboard_state.finance.confirmedBudget
+ * 
+ * Price Update Rules:
+ * - Bull Market: +3% to +6% (higher for volatile assets)
+ * - Bear Market: -3% to -7% (higher drops for volatile assets)
+ * - Volatile: Alternating +6% / -5%
+ * - Flat: ±1%
+ */
 
+console.log('[investing.js] Simulation module loaded');
+
+// ========== MARKET ASSETS DEFINITION ==========
 const MARKET_ASSETS = [
-    { id: 'STK_ALPHA', type: 'stock', name: 'AlphaTech', sector: 'Technology', basePrice: 240, volatility: 0.08, icon: '💻', description: 'High growth tech stock; higher volatility but potential for greater returns.' },
-    { id: 'STK_BETA', type: 'stock', name: 'BetaFinance', sector: 'Finance', basePrice: 180, volatility: 0.06, icon: '🏦', description: 'Established financial services company; moderate growth potential.' },
-    { id: 'STK_GAMMA', type: 'stock', name: 'GammaHealth', sector: 'Healthcare', basePrice: 320, volatility: 0.05, icon: '🏥', description: 'Healthcare sector stock; defensive with steady growth.' },
-    { id: 'STK_DELTA', type: 'stock', name: 'DeltaEnergy', sector: 'Energy', basePrice: 150, volatility: 0.07, icon: '⚡', description: 'Energy sector stock; cyclical with market conditions.' },
-    { id: 'MF_INDEX', type: 'mutual', name: 'Nifty Index Fund', sector: 'Diversified', basePrice: 100, volatility: 0.03, icon: '📊', description: 'Professionally managed fund tracking market index; lower risk through diversification.' },
-    { id: 'MF_GROWTH', type: 'mutual', name: 'Growth Fund', sector: 'Growth', basePrice: 85, volatility: 0.04, icon: '🌱', description: 'Focuses on growth stocks; moderate risk with good return potential.' },
-    { id: 'ETF_BANK', type: 'etf', name: 'Bank ETF', sector: 'Finance', basePrice: 120, volatility: 0.04, icon: '🏛️', description: 'Exchange-traded fund tracking banking sector; liquid and diversified.' },
-    { id: 'ETF_IT', type: 'etf', name: 'IT Sector ETF', sector: 'Technology', basePrice: 200, volatility: 0.05, icon: '🖥️', description: 'Tracks IT sector performance; good tech exposure with lower single-stock risk.' },
-    { id: 'FD_1Y', type: 'fd', name: '1-Year FD', sector: 'Fixed Income', basePrice: 0, volatility: 0, rate: 0.06, tenure: 12, icon: '🔒', description: 'Fixed deposit with guaranteed 6% annual return; zero risk, money locked for 1 year.' },
-    { id: 'FD_3Y', type: 'fd', name: '3-Year FD', sector: 'Fixed Income', basePrice: 0, volatility: 0, rate: 0.07, tenure: 36, icon: '🔐', description: 'Fixed deposit with guaranteed 7% annual return; zero risk, money locked for 3 years.' }
+    { id: 'STK_ALPHA', type: 'stock', name: 'AlphaTech', sector: 'Technology', basePrice: 240, volatility: 0.08, risk: 'high', icon: '💻', description: 'High growth tech stock; higher volatility but potential for greater returns.' },
+    { id: 'STK_BETA', type: 'stock', name: 'BetaFinance', sector: 'Finance', basePrice: 180, volatility: 0.06, risk: 'medium', icon: '🏦', description: 'Established financial services company; moderate growth potential.' },
+    { id: 'STK_GAMMA', type: 'stock', name: 'GammaHealth', sector: 'Healthcare', basePrice: 320, volatility: 0.05, risk: 'medium', icon: '🏥', description: 'Healthcare sector stock; defensive with steady growth.' },
+    { id: 'STK_DELTA', type: 'stock', name: 'DeltaEnergy', sector: 'Energy', basePrice: 150, volatility: 0.07, risk: 'high', icon: '⚡', description: 'Energy sector stock; cyclical with market conditions.' },
+    { id: 'MF_INDEX', type: 'mutual', name: 'Nifty Index Fund', sector: 'Diversified', basePrice: 100, volatility: 0.03, risk: 'low', icon: '📊', description: 'Professionally managed fund tracking market index; lower risk through diversification.' },
+    { id: 'MF_GROWTH', type: 'mutual', name: 'Growth Fund', sector: 'Growth', basePrice: 85, volatility: 0.04, risk: 'medium', icon: '🌱', description: 'Focuses on growth stocks; moderate risk with good return potential.' },
+    { id: 'ETF_BANK', type: 'etf', name: 'Bank ETF', sector: 'Finance', basePrice: 120, volatility: 0.04, risk: 'medium', icon: '🏛️', description: 'Exchange-traded fund tracking banking sector; liquid and diversified.' },
+    { id: 'ETF_IT', type: 'etf', name: 'IT Sector ETF', sector: 'Technology', basePrice: 200, volatility: 0.05, risk: 'medium', icon: '🖥️', description: 'Tracks IT sector performance; good tech exposure with lower single-stock risk.' },
+    { id: 'FD_1Y', type: 'fd', name: '1-Year FD', sector: 'Fixed Income', basePrice: 0, volatility: 0, risk: 'none', rate: 0.06, tenure: 12, icon: '🔒', description: 'Fixed deposit with guaranteed 6% annual return; zero risk, money locked for 1 year.' },
+    { id: 'FD_3Y', type: 'fd', name: '3-Year FD', sector: 'Fixed Income', basePrice: 0, volatility: 0, risk: 'none', rate: 0.07, tenure: 36, icon: '🔐', description: 'Fixed deposit with guaranteed 7% annual return; zero risk, money locked for 3 years.' }
 ];
 
+// ========== CONSTANTS ==========
 const FEES = { stock: 0.002, mutual: 0, etf: 0.001, fd: 0 };
 const MIN_MUTUAL_FUND = 1000;
 const MIN_FD = 5000;
@@ -22,59 +44,97 @@ const XP_REWARDS = {
     fdMaturity: 20,
     diversification: 15,
     yearHolding: 50,
-    samemonthLoss: -10
+    samemonthLoss: -10,
+    monthAdvance: 5
 };
 
+const SCENARIO_LABELS = {
+    bull: 'Bull Market',
+    bear: 'Bear Market',
+    volatile: 'Volatile',
+    flat: 'Flat'
+};
+
+// ========== STORAGE KEYS ==========
+const PROFILE_KEY = 'finplay_profile';
+const DASHBOARD_STATE_KEY = 'finplay_dashboard_state';
+const PORTFOLIO_KEY = 'finplay_portfolio';
+const MARKET_KEY = 'finplay_market';
+
+// ========== STATE ACCESSORS ==========
+
 function getProfile() {
-    const data = localStorage.getItem('finplay_profile');
+    const data = localStorage.getItem(PROFILE_KEY);
     if (!data) return null;
     try { return JSON.parse(data); } catch { return null; }
 }
 
 function saveProfile(profile) {
-    localStorage.setItem('finplay_profile', JSON.stringify(profile));
-    if (window.SyncService) {
-        window.SyncService.debouncedSave();
-    }
+    localStorage.setItem(PROFILE_KEY, JSON.stringify(profile));
+    if (window.SyncService) window.SyncService.debouncedSave();
+}
+
+function getDashboardState() {
+    const data = localStorage.getItem(DASHBOARD_STATE_KEY);
+    if (!data) return null;
+    try { return JSON.parse(data); } catch { return null; }
+}
+
+function saveDashboardState(state) {
+    localStorage.setItem(DASHBOARD_STATE_KEY, JSON.stringify(state));
+    if (window.SyncService) window.SyncService.debouncedSave();
 }
 
 function getPortfolio() {
-    const data = localStorage.getItem('finplay_portfolio');
+    const data = localStorage.getItem(PORTFOLIO_KEY);
     if (!data) return null;
     try { return JSON.parse(data); } catch { return null; }
 }
 
 function savePortfolio(portfolio) {
-    localStorage.setItem('finplay_portfolio', JSON.stringify(portfolio));
-    if (window.SyncService) {
-        window.SyncService.debouncedSave();
-    }
+    localStorage.setItem(PORTFOLIO_KEY, JSON.stringify(portfolio));
+    if (window.SyncService) window.SyncService.debouncedSave();
 }
 
 function getMarket() {
-    const data = localStorage.getItem('finplay_market');
+    const data = localStorage.getItem(MARKET_KEY);
     if (!data) return null;
     try { return JSON.parse(data); } catch { return null; }
 }
 
 function saveMarket(market) {
-    localStorage.setItem('finplay_market', JSON.stringify(market));
-    if (window.SyncService) {
-        window.SyncService.debouncedSave();
-    }
+    localStorage.setItem(MARKET_KEY, JSON.stringify(market));
+    if (window.SyncService) window.SyncService.debouncedSave();
 }
+
+// ========== UNLOCK CHECK (CRITICAL) ==========
+// Investing is LOCKED until budget is confirmed on Dashboard
+
+function isInvestingUnlocked() {
+    const dashState = getDashboardState();
+    // Check if budget has been confirmed
+    return dashState?.finance?.confirmedBudget === true;
+}
+
+// ========== INITIALIZATION ==========
 
 function initializePortfolio(profile) {
     let portfolio = getPortfolio();
     if (!portfolio) {
+        const dashState = getDashboardState();
+        // Calculate spendable from dashboard state
+        const income = dashState?.finance?.monthlyIncome || profile?.income || 40000;
+        const protectedAmt = dashState?.finance?.protectedAmount || Math.round(income * 0.2);
+        const spendable = income - protectedAmt;
+        
         portfolio = {
-            cash: profile.balance,
+            cash: spendable,
             positions: [],
             transactions: [],
             market_scenario: 'bull',
-            investMonth: profile.budget?.month || 1,
+            investMonth: 1,
             achievements: { firstInvestment: false, fdMatured: false, diversified: false, yearHeld: false },
-            startMonth: profile.budget?.month || 1
+            startMonth: 1
         };
         savePortfolio(portfolio);
     }
@@ -93,6 +153,8 @@ function initializeMarket() {
     return market;
 }
 
+// ========== UTILITY FUNCTIONS ==========
+
 function formatCurrency(amount) {
     return `₹${Math.round(amount).toLocaleString('en-IN')}`;
 }
@@ -105,13 +167,35 @@ function calculateLevel(xp) {
     return Math.floor(xp / 100) + 1;
 }
 
+function generateTxId() {
+    const portfolio = getPortfolio();
+    return `tx_${Date.now()}_${portfolio?.transactions?.length || 0}`;
+}
+
+function getCurrentMonth() {
+    const dashState = getDashboardState();
+    return dashState?.experience?.month || 1;
+}
+
+// ========== XP SYSTEM ==========
+
 function addXp(amount, silent = false) {
     const profile = getProfile();
     if (!profile) return;
-    const oldLevel = profile.level;
-    profile.xp = Math.max(0, profile.xp + amount);
+    
+    const oldLevel = profile.level || 1;
+    profile.xp = Math.max(0, (profile.xp || 0) + amount);
     profile.level = calculateLevel(profile.xp);
     saveProfile(profile);
+    
+    // Also update dashboard state XP
+    const dashState = getDashboardState();
+    if (dashState?.experience) {
+        dashState.experience.xp = profile.xp;
+        dashState.experience.level = profile.level;
+        saveDashboardState(dashState);
+    }
+    
     if (!silent) {
         if (profile.level > oldLevel) {
             showNotification(`Level Up! You're now Level ${profile.level}!`, 'success');
@@ -127,10 +211,12 @@ function addXp(amount, silent = false) {
 function showNotification(message, type = 'info') {
     const existing = document.querySelector('.game-notification');
     if (existing) existing.remove();
+    
     const notification = document.createElement('div');
     notification.className = `game-notification notification-${type}`;
     notification.textContent = message;
     document.body.appendChild(notification);
+    
     setTimeout(() => notification.classList.add('show'), 10);
     setTimeout(() => {
         notification.classList.remove('show');
@@ -138,15 +224,8 @@ function showNotification(message, type = 'info') {
     }, 2500);
 }
 
-function generateTxId() {
-    const portfolio = getPortfolio();
-    return `tx_${Date.now()}_${portfolio.transactions.length}`;
-}
-
-function getCurrentMonth() {
-    const profile = getProfile();
-    return profile?.budget?.month || 1;
-}
+// ========== MARKET SIMULATION ==========
+// Price update rules based on market scenario
 
 function simulateMarketMonth(scenario) {
     const market = getMarket();
@@ -154,41 +233,56 @@ function simulateMarketMonth(scenario) {
     const changes = [];
 
     market.forEach((asset, index) => {
-        if (asset.type === 'fd') return;
+        if (asset.type === 'fd') return; // FDs don't have market prices
 
         let drift = 0;
         const vol = asset.volatility;
 
+        // Price update rules per scenario
         switch (scenario) {
             case 'bull':
-                drift = vol < 0.05 ? 0.03 : 0.06;
+                // Bull: +3% to +6% (higher volatility = higher gains)
+                drift = 0.03 + (vol * 0.5);
                 break;
             case 'bear':
-                drift = vol < 0.05 ? -0.03 : -0.06;
+                // Bear: -3% to -7% (higher volatility = bigger drops)
+                drift = -0.03 - (vol * 0.5);
                 break;
             case 'volatile':
-                drift = (index % 2 === 0) ? 0.08 : -0.06;
+                // Volatile: alternating big swings
+                drift = (index % 2 === 0) ? 0.06 + (vol * 0.3) : -0.05 - (vol * 0.2);
                 break;
             case 'flat':
-                drift = (index % 2 === 0) ? 0.005 : -0.005;
+                // Flat: ±1%
+                drift = (Math.random() - 0.5) * 0.02;
                 break;
         }
 
-        drift *= (1 + vol);
+        // Add some randomness factor
+        const randomFactor = 1 + (Math.random() - 0.5) * 0.02;
+        drift *= randomFactor;
+
         const oldPrice = asset.price;
-        asset.price = round(asset.price * (1 + drift), 2);
+        asset.price = round(Math.max(asset.price * (1 + drift), 1), 2);
         
+        // Track changes for positions
         const position = portfolio.positions.find(p => p.id === asset.id);
         if (position) {
             position.current_price = asset.price;
             const change = asset.price - oldPrice;
             const pnlChange = change * position.quantity;
-            changes.push({ name: asset.name, change: drift * 100, pnlChange, sector: asset.sector });
+            changes.push({ 
+                name: asset.name, 
+                change: ((asset.price - oldPrice) / oldPrice) * 100, 
+                pnlChange, 
+                sector: asset.sector 
+            });
         }
     });
 
     saveMarket(market);
     
+    // Update position prices
     portfolio.positions.forEach(pos => {
         const asset = market.find(a => a.id === pos.id);
         if (asset) pos.current_price = asset.price;
@@ -208,7 +302,7 @@ function processFDMaturities(currentMonth) {
             const total = pos.principal + interest;
             portfolio.cash = round(portfolio.cash + total, 2);
             
-            portfolio.transactions.push({
+            portfolio.transactions.unshift({
                 tx_id: generateTxId(),
                 date: `Month ${currentMonth}`,
                 type: 'fd_mature',
@@ -234,6 +328,8 @@ function processFDMaturities(currentMonth) {
     savePortfolio(portfolio);
     return matured;
 }
+
+// ========== ACHIEVEMENT CHECKS ==========
 
 function checkDiversificationBonus() {
     const portfolio = getPortfolio();
@@ -265,13 +361,21 @@ function checkYearHoldingBonus(currentMonth) {
     }
 }
 
+// ========== TRADING FUNCTIONS ==========
+
 function buyAsset(assetId, amount) {
+    // Check unlock status
+    if (!isInvestingUnlocked()) {
+        return { success: false, error: 'Complete your monthly budget to unlock investing.' };
+    }
+
     const portfolio = getPortfolio();
     const market = getMarket();
     const asset = market.find(a => a.id === assetId);
 
     if (!asset || asset.type === 'fd') return { success: false, error: 'Invalid asset' };
 
+    // Mutual fund minimum
     if (asset.type === 'mutual' && amount < MIN_MUTUAL_FUND) {
         return { success: false, error: `Minimum investment for mutual funds is ${formatCurrency(MIN_MUTUAL_FUND)}` };
     }
@@ -279,13 +383,15 @@ function buyAsset(assetId, amount) {
     const fee = round(amount * FEES[asset.type], 2);
     const totalCost = amount + fee;
 
+    // Insufficient cash check
     if (totalCost > portfolio.cash) {
-        return { success: false, error: 'Insufficient cash' };
+        return { success: false, error: 'Insufficient cash available' };
     }
 
     const units = round(amount / asset.price, 4);
     portfolio.cash = round(portfolio.cash - totalCost, 2);
 
+    // Update or create position
     let position = portfolio.positions.find(p => p.id === assetId);
     if (position) {
         const totalCostBasis = position.avg_price * position.quantity + amount;
@@ -315,6 +421,7 @@ function buyAsset(assetId, amount) {
         cash_change: -totalCost
     });
 
+    // First investment bonus
     if (!portfolio.achievements.firstInvestment) {
         portfolio.achievements.firstInvestment = true;
         savePortfolio(portfolio);
@@ -329,12 +436,19 @@ function buyAsset(assetId, amount) {
 }
 
 function sellAsset(assetId, units) {
+    // Check unlock status
+    if (!isInvestingUnlocked()) {
+        return { success: false, error: 'Complete your monthly budget to unlock investing.' };
+    }
+
     const portfolio = getPortfolio();
     const market = getMarket();
     const position = portfolio.positions.find(p => p.id === assetId);
     const asset = market.find(a => a.id === assetId);
 
     if (!position || !asset) return { success: false, error: 'Position not found' };
+    
+    // Cannot sell more than owned
     if (units > position.quantity) return { success: false, error: 'Cannot sell more than you own' };
 
     const saleValue = round(units * asset.price, 2);
@@ -344,6 +458,7 @@ function sellAsset(assetId, units) {
     const costBasis = units * position.avg_price;
     const pnl = saleValue - costBasis;
 
+    // Same-month loss penalty
     if (pnl < 0 && position.buy_month === getCurrentMonth()) {
         addXp(XP_REWARDS.samemonthLoss);
     }
@@ -351,6 +466,7 @@ function sellAsset(assetId, units) {
     portfolio.cash = round(portfolio.cash + netProceeds, 2);
     position.quantity = round(position.quantity - units, 4);
 
+    // Remove position if sold all
     if (position.quantity < 0.0001) {
         portfolio.positions = portfolio.positions.filter(p => p.id !== assetId);
     }
@@ -371,14 +487,20 @@ function sellAsset(assetId, units) {
 }
 
 function openFD(tenure, amount) {
+    // Check unlock status
+    if (!isInvestingUnlocked()) {
+        return { success: false, error: 'Complete your monthly budget to unlock investing.' };
+    }
+
     const portfolio = getPortfolio();
     const currentMonth = getCurrentMonth();
 
+    // Minimum FD amount
     if (amount < MIN_FD) {
         return { success: false, error: `Minimum FD amount is ${formatCurrency(MIN_FD)}` };
     }
     if (amount > portfolio.cash) {
-        return { success: false, error: 'Insufficient cash' };
+        return { success: false, error: 'Insufficient cash available' };
     }
 
     const rate = tenure === 12 ? 0.06 : 0.07;
@@ -411,6 +533,7 @@ function openFD(tenure, amount) {
 
     savePortfolio(portfolio);
 
+    // First investment bonus
     if (!portfolio.achievements.firstInvestment) {
         portfolio.achievements.firstInvestment = true;
         addXp(XP_REWARDS.firstInvestment);
@@ -419,8 +542,12 @@ function openFD(tenure, amount) {
     return { success: true, maturityMonth, rate };
 }
 
+// ========== PORTFOLIO METRICS (REAL-TIME COMPUTED) ==========
+
 function calculatePortfolioMetrics() {
     const portfolio = getPortfolio();
+    if (!portfolio) return { cash: 0, investedValue: 0, totalPortfolio: 0, totalPnL: 0, riskScore: 0 };
+
     let investedValue = 0;
     let totalPnL = 0;
     let weightedVolatility = 0;
@@ -449,10 +576,7 @@ function calculatePortfolioMetrics() {
     return { cash: portfolio.cash, investedValue, totalPortfolio, totalPnL, riskScore };
 }
 
-function isMonthZero() {
-    const profile = getProfile();
-    return (profile?.budget?.monthHistory || []).length === 0;
-}
+// ========== UI UPDATE FUNCTIONS ==========
 
 function updateInvestingCTA() {
     const ctaContainer = document.getElementById('investingCTA');
@@ -462,16 +586,18 @@ function updateInvestingCTA() {
     const ctaButton = document.getElementById('ctaButton');
     const portfolio = getPortfolio();
     
-    const monthZero = isMonthZero();
+    const unlocked = isInvestingUnlocked();
     
-    if (monthZero) {
+    if (!unlocked) {
+        // LOCKED STATE - Show clear message
         ctaContainer.style.display = 'flex';
         ctaContainer.className = 'investing-cta cta-locked';
         ctaIcon.textContent = '🔒';
         ctaTitle.textContent = 'Investing Locked';
-        ctaMessage.textContent = 'Complete your first budget to unlock investing.';
+        ctaMessage.textContent = 'Complete your monthly budget on the Dashboard to unlock investing.';
         ctaButton.style.display = 'none';
     } else if (portfolio && portfolio.cash > 0 && portfolio.positions.length === 0) {
+        // READY STATE - First time investor
         ctaContainer.style.display = 'flex';
         ctaContainer.className = 'investing-cta cta-ready';
         ctaIcon.textContent = '🚀';
@@ -480,27 +606,32 @@ function updateInvestingCTA() {
         ctaButton.style.display = 'block';
         ctaButton.textContent = 'Start Investing';
     } else {
+        // Active investor - hide CTA
         ctaContainer.style.display = 'none';
     }
 }
 
 function updateMarketButtonStates() {
-    const monthZero = isMonthZero();
+    const unlocked = isInvestingUnlocked();
     const portfolio = getPortfolio();
     
+    // Update all trade buttons
     document.querySelectorAll('.market-btn').forEach(btn => {
-        if (monthZero) {
+        if (!unlocked) {
             btn.disabled = true;
             btn.classList.add('btn-disabled');
-            btn.setAttribute('title', 'Complete your first month to unlock investing');
+            btn.setAttribute('title', 'Complete your monthly budget to unlock investing');
         } else if (portfolio && portfolio.cash <= 0) {
             const assetId = btn.dataset.assetId;
-            const asset = MARKET_ASSETS.find(a => a.id === assetId);
             const position = portfolio.positions.find(p => p.id === assetId);
-            if (!position && asset && asset.type !== 'fd') {
+            if (!position) {
                 btn.disabled = true;
                 btn.classList.add('btn-disabled');
                 btn.setAttribute('title', 'No cash available');
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('btn-disabled');
+                btn.removeAttribute('title');
             }
         } else {
             btn.disabled = false;
@@ -509,11 +640,13 @@ function updateMarketButtonStates() {
         }
     });
     
+    // Update advance month and scenario controls
     const advanceBtn = document.getElementById('advanceMonthBtn');
     const scenarioSelect = document.getElementById('scenarioSelect');
-    if (monthZero) {
+    
+    if (!unlocked) {
         advanceBtn.disabled = true;
-        advanceBtn.setAttribute('title', 'Complete your first budget month first');
+        advanceBtn.setAttribute('title', 'Complete your monthly budget first');
         scenarioSelect.disabled = true;
     } else {
         advanceBtn.disabled = false;
@@ -525,36 +658,53 @@ function updateMarketButtonStates() {
 function updateHeaderUI() {
     const profile = getProfile();
     const portfolio = getPortfolio();
+    const dashState = getDashboardState();
     
-    document.getElementById('currentMonth').textContent = `Month ${getCurrentMonth()}`;
-    document.getElementById('levelBadge').querySelector('span:last-child').textContent = `Level ${profile.level}`;
-    document.getElementById('scenarioSelect').value = portfolio.market_scenario;
+    const month = dashState?.experience?.month || 1;
+    const level = profile?.level || 1;
+    
+    document.getElementById('currentMonth').textContent = `Month ${month}`;
+    document.getElementById('levelBadge').querySelector('span:last-child').textContent = `Level ${level}`;
+    
+    if (portfolio?.market_scenario) {
+        document.getElementById('scenarioSelect').value = portfolio.market_scenario;
+    }
 }
 
 function updatePortfolioStats() {
     const metrics = calculatePortfolioMetrics();
     
+    // All values computed from state - NO hardcoded values
     document.getElementById('cashBalance').textContent = formatCurrency(metrics.cash);
     document.getElementById('investedValue').textContent = formatCurrency(metrics.investedValue);
     document.getElementById('totalPortfolio').textContent = formatCurrency(metrics.totalPortfolio);
     
     const pnlEl = document.getElementById('totalPnL');
     const pnlIconEl = document.getElementById('pnlIcon');
-    pnlEl.textContent = (metrics.totalPnL >= 0 ? '+' : '') + formatCurrency(metrics.totalPnL);
-    pnlEl.style.color = metrics.totalPnL >= 0 ? 'var(--success)' : 'var(--error)';
-    pnlIconEl.textContent = metrics.totalPnL >= 0 ? '📈' : '📉';
+    
+    if (metrics.totalPnL === 0 && metrics.investedValue === 0) {
+        pnlEl.textContent = '₹0';
+        pnlEl.style.color = 'var(--text-secondary)';
+        pnlIconEl.textContent = '📊';
+    } else {
+        pnlEl.textContent = (metrics.totalPnL >= 0 ? '+' : '') + formatCurrency(metrics.totalPnL);
+        pnlEl.style.color = metrics.totalPnL >= 0 ? 'var(--success)' : 'var(--error)';
+        pnlIconEl.textContent = metrics.totalPnL >= 0 ? '📈' : '📉';
+    }
 }
 
 function renderMarket(filter = 'all') {
     const market = getMarket();
     const portfolio = getPortfolio();
     const container = document.getElementById('marketList');
+    const unlocked = isInvestingUnlocked();
+    
     container.innerHTML = '';
 
     const filtered = filter === 'all' ? market : market.filter(a => a.type === filter);
 
     filtered.forEach(asset => {
-        const position = portfolio.positions.find(p => p.id === asset.id);
+        const position = portfolio?.positions?.find(p => p.id === asset.id);
         const owned = position ? position.quantity : 0;
 
         const card = document.createElement('div');
@@ -569,12 +719,16 @@ function renderMarket(filter = 'all') {
                 ${asset.type === 'fd' ? `${asset.rate * 100}% p.a.` : formatCurrency(asset.price)}
             </div>
             ${owned > 0 ? `<div class="owned-badge">${round(owned, 2)} owned</div>` : ''}
-            <button class="btn btn-secondary btn-sm market-btn" data-asset-id="${asset.id}">
+            <button class="btn btn-secondary btn-sm market-btn" data-asset-id="${asset.id}" ${!unlocked ? 'disabled title="Complete your monthly budget to unlock"' : ''}>
                 ${asset.type === 'fd' ? 'Open FD' : 'Trade'}
             </button>
         `;
 
         card.querySelector('.market-btn').addEventListener('click', () => {
+            if (!isInvestingUnlocked()) {
+                showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
+                return;
+            }
             if (asset.type === 'fd') {
                 openFDModal(asset);
             } else {
@@ -591,22 +745,19 @@ function renderMarket(filter = 'all') {
 function renderHoldings() {
     const portfolio = getPortfolio();
     const container = document.getElementById('holdingsList');
-    const emptyState = document.getElementById('emptyPortfolioState');
 
-    if (portfolio.positions.length === 0) {
-        if (emptyState) {
-            emptyState.style.display = 'block';
-        } else {
-            container.innerHTML = `
-                <div id="emptyPortfolioState" class="empty-portfolio-state">
-                    <div class="empty-portfolio-icon">📭</div>
-                    <h4>You haven't invested yet</h4>
-                    <p>Start small — even one decision builds experience.</p>
-                    <button class="btn btn-primary" id="makeFirstInvestmentBtn">Make First Investment</button>
-                </div>
-            `;
-            wireFirstInvestmentButton();
-        }
+    if (!portfolio || portfolio.positions.length === 0) {
+        container.innerHTML = `
+            <div id="emptyPortfolioState" class="empty-portfolio-state">
+                <div class="empty-portfolio-icon">📭</div>
+                <h4>You haven't invested yet</h4>
+                <p>Start small — even one decision builds experience.</p>
+                <button class="btn btn-primary" id="makeFirstInvestmentBtn" ${!isInvestingUnlocked() ? 'disabled' : ''}>
+                    ${isInvestingUnlocked() ? 'Make First Investment' : 'Unlock by Confirming Budget'}
+                </button>
+            </div>
+        `;
+        wireFirstInvestmentButton();
         return;
     }
 
@@ -644,7 +795,7 @@ function renderAllocation() {
     const container = document.getElementById('allocationChart');
     const metrics = calculatePortfolioMetrics();
 
-    if (portfolio.positions.length === 0) {
+    if (!portfolio || portfolio.positions.length === 0) {
         container.innerHTML = '<p class="empty-state">No allocation data</p>';
         document.getElementById('riskScore').textContent = '-';
         return;
@@ -691,7 +842,7 @@ function renderTransactions() {
     const portfolio = getPortfolio();
     const container = document.getElementById('transactionList');
 
-    if (portfolio.transactions.length === 0) {
+    if (!portfolio || portfolio.transactions.length === 0) {
         container.innerHTML = '<p class="empty-state">No transactions yet</p>';
         return;
     }
@@ -714,12 +865,19 @@ function renderTransactions() {
     });
 }
 
+// ========== MODAL HANDLING ==========
+
 let selectedAsset = null;
 
 function openTradeModal(asset) {
+    if (!isInvestingUnlocked()) {
+        showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
+        return;
+    }
+
     selectedAsset = asset;
     const portfolio = getPortfolio();
-    const position = portfolio.positions.find(p => p.id === asset.id);
+    const position = portfolio?.positions?.find(p => p.id === asset.id);
 
     document.getElementById('modalAssetIcon').textContent = asset.icon;
     document.getElementById('modalAssetName').textContent = asset.name;
@@ -744,6 +902,11 @@ function openTradeModal(asset) {
 }
 
 function openFDModal() {
+    if (!isInvestingUnlocked()) {
+        showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
+        return;
+    }
+
     document.getElementById('fdAmount').value = '';
     document.querySelector('input[name="fdTenure"][value="12"]').checked = true;
     updateFDPreview();
@@ -768,16 +931,21 @@ function updateBuyPreview() {
     document.getElementById('buyUnits').textContent = units;
     document.getElementById('buyFeeAmount').textContent = formatCurrency(fee);
     document.getElementById('buyTotal').textContent = formatCurrency(total);
-    document.getElementById('buyCashAfter').textContent = formatCurrency(portfolio.cash - total);
+    document.getElementById('buyCashAfter').textContent = formatCurrency((portfolio?.cash || 0) - total);
 
     const btn = document.getElementById('confirmBuyBtn');
-    const isValid = amount > 0 && total <= portfolio.cash;
+    const cash = portfolio?.cash || 0;
+    const isValid = amount > 0 && total <= cash;
+    
     if (selectedAsset.type === 'mutual' && amount < MIN_MUTUAL_FUND) {
         btn.disabled = true;
         btn.textContent = `Min ${formatCurrency(MIN_MUTUAL_FUND)}`;
+    } else if (total > cash) {
+        btn.disabled = true;
+        btn.textContent = 'Insufficient Cash';
     } else {
         btn.disabled = !isValid;
-        btn.textContent = isValid ? 'Confirm Purchase' : 'Insufficient Cash';
+        btn.textContent = isValid ? 'Confirm Purchase' : 'Enter Amount';
     }
 }
 
@@ -785,7 +953,7 @@ function updateSellPreview() {
     if (!selectedAsset) return;
     const units = parseFloat(document.getElementById('sellUnits').value) || 0;
     const portfolio = getPortfolio();
-    const position = portfolio.positions.find(p => p.id === selectedAsset.id);
+    const position = portfolio?.positions?.find(p => p.id === selectedAsset.id);
     const owned = position ? position.quantity : 0;
 
     const value = round(units * selectedAsset.price, 2);
@@ -795,11 +963,19 @@ function updateSellPreview() {
     document.getElementById('sellValue').textContent = formatCurrency(value);
     document.getElementById('sellFeeAmount').textContent = formatCurrency(fee);
     document.getElementById('sellTotal').textContent = formatCurrency(total);
-    document.getElementById('sellCashAfter').textContent = formatCurrency(portfolio.cash + total);
+    document.getElementById('sellCashAfter').textContent = formatCurrency((portfolio?.cash || 0) + total);
 
     const btn = document.getElementById('confirmSellBtn');
-    btn.disabled = units <= 0 || units > owned;
-    btn.textContent = units > owned ? 'Exceeds Holdings' : 'Confirm Sale';
+    if (units > owned) {
+        btn.disabled = true;
+        btn.textContent = 'Exceeds Holdings';
+    } else if (units <= 0) {
+        btn.disabled = true;
+        btn.textContent = 'Enter Units';
+    } else {
+        btn.disabled = false;
+        btn.textContent = 'Confirm Sale';
+    }
 }
 
 function updateFDPreview() {
@@ -816,32 +992,66 @@ function updateFDPreview() {
     document.getElementById('fdMaturityMonth').textContent = `Month ${currentMonth + tenure}`;
 
     const portfolio = getPortfolio();
+    const cash = portfolio?.cash || 0;
     const btn = document.getElementById('confirmFdBtn');
-    btn.disabled = amount < MIN_FD || amount > portfolio.cash;
-    btn.textContent = amount < MIN_FD ? `Min ${formatCurrency(MIN_FD)}` : amount > portfolio.cash ? 'Insufficient Cash' : 'Open Fixed Deposit';
+    
+    if (amount < MIN_FD) {
+        btn.disabled = true;
+        btn.textContent = `Min ${formatCurrency(MIN_FD)}`;
+    } else if (amount > cash) {
+        btn.disabled = true;
+        btn.textContent = 'Insufficient Cash';
+    } else {
+        btn.disabled = false;
+        btn.textContent = 'Open Fixed Deposit';
+    }
 }
 
+// ========== MONTH ADVANCEMENT ==========
+
 function advanceMonth() {
+    if (!isInvestingUnlocked()) {
+        showNotification('Complete your monthly budget on the Dashboard first.', 'error');
+        return;
+    }
+
     const portfolio = getPortfolio();
-    const profile = getProfile();
+    const dashState = getDashboardState();
     const currentMonth = getCurrentMonth();
 
+    // Simulate market changes
     const changes = simulateMarketMonth(portfolio.market_scenario);
-    const matured = processFDMaturities(currentMonth + 1);
+    const newMonth = currentMonth + 1;
+    
+    // Process FD maturities
+    const matured = processFDMaturities(newMonth);
 
-    profile.budget.month = currentMonth + 1;
-    saveProfile(profile);
+    // Update month in dashboard state
+    if (dashState) {
+        dashState.experience.month = newMonth;
+        saveDashboardState(dashState);
+    }
 
-    checkYearHoldingBonus(currentMonth + 1);
+    // Update profile budget month
+    const profile = getProfile();
+    if (profile?.budget) {
+        profile.budget.month = newMonth;
+        saveProfile(profile);
+    }
+
+    portfolio.investMonth = newMonth;
+    savePortfolio(portfolio);
+
+    // Award XP for advancing
+    addXp(XP_REWARDS.monthAdvance, true);
+    checkYearHoldingBonus(newMonth);
 
     showMonthSummary(currentMonth, portfolio.market_scenario, changes, matured);
     refreshUI();
 }
 
 function showMonthSummary(month, scenario, changes, matured) {
-    const scenarioNames = { bull: 'Bull Market', bear: 'Bear Market', volatile: 'Volatile', flat: 'Flat' };
-    
-    let html = `<div class="summary-scenario">Market: ${scenarioNames[scenario]}</div>`;
+    let html = `<div class="summary-scenario">Market: ${SCENARIO_LABELS[scenario] || scenario}</div>`;
     
     if (changes.length > 0) {
         html += '<div class="summary-section"><h4>Portfolio Changes</h4>';
@@ -873,6 +1083,8 @@ function showMonthSummary(month, scenario, changes, matured) {
     document.getElementById('monthSummaryModal').classList.add('show');
 }
 
+// ========== UI REFRESH ==========
+
 function refreshUI() {
     updateHeaderUI();
     updatePortfolioStats();
@@ -883,6 +1095,28 @@ function refreshUI() {
     renderAllocation();
     renderTransactions();
 }
+
+function scrollToMarket() {
+    const marketSection = document.querySelector('.market-section');
+    if (marketSection) {
+        marketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function wireFirstInvestmentButton() {
+    const btn = document.getElementById('makeFirstInvestmentBtn');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            if (!isInvestingUnlocked()) {
+                showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
+                return;
+            }
+            scrollToMarket();
+        });
+    }
+}
+
+// ========== INITIALIZATION ==========
 
 async function initializePage() {
     if (window.SyncService) {
@@ -902,32 +1136,29 @@ async function initializePage() {
     document.getElementById('investingContent').style.display = 'block';
 
     refreshUI();
+    console.log('[investing.js] Page initialized. Investing unlocked:', isInvestingUnlocked());
 }
 
-function scrollToMarket() {
-    const marketSection = document.querySelector('.market-section');
-    if (marketSection) {
-        marketSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-function wireFirstInvestmentButton() {
-    const btn = document.getElementById('makeFirstInvestmentBtn');
-    if (btn) {
-        btn.addEventListener('click', scrollToMarket);
-    }
-}
+// ========== EVENT BINDINGS ==========
 
 document.addEventListener('DOMContentLoaded', () => {
     initializePage();
 
+    // CTA Button
     const ctaButton = document.getElementById('ctaButton');
     if (ctaButton) {
-        ctaButton.addEventListener('click', scrollToMarket);
+        ctaButton.addEventListener('click', () => {
+            if (!isInvestingUnlocked()) {
+                showNotification('Complete your monthly budget on the Dashboard first.', 'error');
+                return;
+            }
+            scrollToMarket();
+        });
     }
 
     wireFirstInvestmentButton();
 
+    // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -936,14 +1167,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Scenario selector
     document.getElementById('scenarioSelect').addEventListener('change', (e) => {
+        if (!isInvestingUnlocked()) {
+            showNotification('Complete your monthly budget to change market scenario.', 'error');
+            e.target.value = getPortfolio()?.market_scenario || 'bull';
+            return;
+        }
         const portfolio = getPortfolio();
         portfolio.market_scenario = e.target.value;
         savePortfolio(portfolio);
+        showNotification(`Market scenario changed to ${SCENARIO_LABELS[e.target.value]}`, 'info');
     });
 
+    // Advance month
     document.getElementById('advanceMonthBtn').addEventListener('click', advanceMonth);
 
+    // Trade tabs
     document.querySelectorAll('.trade-tab').forEach(tab => {
         tab.addEventListener('click', () => {
             document.querySelectorAll('.trade-tab').forEach(t => t.classList.remove('active'));
@@ -953,11 +1193,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // Input previews
     document.getElementById('buyAmount').addEventListener('input', updateBuyPreview);
     document.getElementById('sellUnits').addEventListener('input', updateSellPreview);
     document.getElementById('fdAmount').addEventListener('input', updateFDPreview);
     document.querySelectorAll('input[name="fdTenure"]').forEach(r => r.addEventListener('change', updateFDPreview));
 
+    // Confirm buy
     document.getElementById('confirmBuyBtn').addEventListener('click', () => {
         const amount = parseFloat(document.getElementById('buyAmount').value);
         const result = buyAsset(selectedAsset.id, amount);
@@ -970,6 +1212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Confirm sell
     document.getElementById('confirmSellBtn').addEventListener('click', () => {
         const units = parseFloat(document.getElementById('sellUnits').value);
         const result = sellAsset(selectedAsset.id, units);
@@ -982,6 +1225,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Confirm FD
     document.getElementById('confirmFdBtn').addEventListener('click', () => {
         const amount = parseFloat(document.getElementById('fdAmount').value);
         const tenure = parseInt(document.querySelector('input[name="fdTenure"]:checked').value);
@@ -995,10 +1239,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // Close modals
     document.getElementById('closeModalBtn').addEventListener('click', closeModals);
     document.getElementById('closeFdModalBtn').addEventListener('click', closeModals);
     document.getElementById('closeSummaryBtn').addEventListener('click', closeModals);
 
+    // Backdrop close
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModals();

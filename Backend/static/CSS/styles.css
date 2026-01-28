@@ -5467,3 +5467,346 @@ body {
 .cta-frozen .cta-icon {
     color: #F59E0B !important;
 }
+
+/* ========== PHASE 4: Long-Term Learning & Reflection ========== */
+
+.phase4-section {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+}
+
+.phase4-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.phase4-header .section-title {
+    font-size: 1.75rem;
+    margin-bottom: 8px;
+}
+
+.phase4-header .section-subtitle {
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.phase4-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+}
+
+@media (max-width: 900px) {
+    .phase4-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.phase4-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.phase4-card .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.phase4-card .card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.phase4-card .card-badge {
+    background: rgba(99, 102, 241, 0.15);
+    color: #6366F1;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.phase4-card .card-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 16px;
+    line-height: 1.5;
+}
+
+/* Time Simulation */
+.time-sim-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.time-sim-btn {
+    flex: 1;
+    padding: 12px 16px;
+}
+
+.time-sim-btn.active {
+    background: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.time-sim-result {
+    background: var(--bg-dark);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 16px;
+}
+
+.time-sim-result h4 {
+    margin: 0 0 16px 0;
+    font-size: 1rem;
+    color: var(--text-primary);
+}
+
+.sim-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.sim-stat {
+    text-align: center;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+}
+
+.sim-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.sim-stat-value.positive { color: #22C55E; }
+.sim-stat-value.negative { color: #EF4444; }
+
+.sim-stat-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.sim-summary {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+}
+
+/* Decision Timeline */
+.decision-timeline {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
+
+.timeline-entry {
+    display: flex;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.timeline-entry:last-child {
+    border-bottom: none;
+}
+
+.timeline-month {
+    min-width: 60px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.timeline-content {
+    flex: 1;
+}
+
+.timeline-action {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+}
+
+.timeline-event {
+    font-size: 0.85rem;
+    color: #F59E0B;
+    margin-bottom: 4px;
+}
+
+.timeline-value {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.timeline-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.timeline-tag.diversified { background: rgba(34, 197, 94, 0.15); color: #22C55E; }
+.timeline-tag.concentrated { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
+.timeline-tag.frozen { background: rgba(239, 68, 68, 0.15); color: #EF4444; }
+
+/* Behavior Insights */
+.behavior-insights {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.insight-item {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-dark);
+    border-radius: 8px;
+    align-items: flex-start;
+}
+
+.insight-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.insight-text {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Strategy Profile */
+.strategy-profile {
+    text-align: center;
+    padding: 24px;
+    background: var(--bg-dark);
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.profile-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.profile-icon {
+    font-size: 2rem;
+}
+
+.profile-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.profile-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Learning Score */
+.learning-score {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.score-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.score-header span:first-child {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.score-note {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.score-display {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 16px;
+}
+
+.score-value {
+    font-size: 3rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #6366F1, #8B5CF6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.score-max {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+}
+
+.score-breakdown {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+.score-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg-card);
+    border-radius: 6px;
+    font-size: 0.85rem;
+}
+
+.score-item-label {
+    color: var(--text-secondary);
+}
+
+.score-item-value {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Phase 4 Score Card */
+.phase4-score-card {
+    grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+    .phase4-score-card {
+        grid-column: span 1;
+    }
+}

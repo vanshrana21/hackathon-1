@@ -155,6 +155,82 @@
                         <p id="educationTip">Different investments carry different risk levels. High-risk assets (like stocks) can grow faster but also decline more. Low-risk assets (like index funds) are steadier. Try different market scenarios to see how your portfolio reacts!</p>
                     </div>
                 </section>
+
+                <!-- PHASE 4: Long-Term Learning & Reflection -->
+                <section class="phase4-section" id="phase4Section">
+                    <div class="phase4-header">
+                        <h2 class="section-title">Long-Term Learning</h2>
+                        <p class="section-subtitle">See how your decisions would play out over years, not months</p>
+                    </div>
+
+                    <div class="phase4-grid">
+                        <!-- Time Compression View -->
+                        <div class="card phase4-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Time Compression Simulation</h3>
+                                <span class="card-badge">Projection</span>
+                            </div>
+                            <p class="card-description">Simulate how your current portfolio and behavior might perform over extended periods.</p>
+                            <div class="time-sim-buttons">
+                                <button class="btn btn-secondary time-sim-btn" data-years="5">5 Years</button>
+                                <button class="btn btn-secondary time-sim-btn" data-years="10">10 Years</button>
+                                <button class="btn btn-secondary time-sim-btn" data-years="20">20 Years</button>
+                            </div>
+                            <div id="timeSimResult" class="time-sim-result" style="display: none;"></div>
+                        </div>
+
+                        <!-- Decision History -->
+                        <div class="card phase4-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Decision Timeline</h3>
+                                <span class="card-badge">History</span>
+                            </div>
+                            <p class="card-description">Your financial journey, month by month.</p>
+                            <div id="decisionTimeline" class="decision-timeline">
+                                <p class="empty-state">Make investments and advance months to see your history</p>
+                            </div>
+                            <button class="btn btn-secondary btn-sm" id="reviewHistoryBtn" style="display: none;">
+                                Review Full History (+5 XP)
+                            </button>
+                        </div>
+
+                        <!-- Behavior Insights -->
+                        <div class="card phase4-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Behavior Insights</h3>
+                                <span class="card-badge">Learning</span>
+                            </div>
+                            <div id="behaviorInsights" class="behavior-insights">
+                                <p class="empty-state">Insights will appear after you've made several decisions</p>
+                            </div>
+                        </div>
+
+                        <!-- Strategy Profile & Learning Score -->
+                        <div class="card phase4-card phase4-score-card">
+                            <div class="card-header">
+                                <h3 class="card-title">Your Financial Profile</h3>
+                            </div>
+                            <div class="strategy-profile" id="strategyProfile">
+                                <div class="profile-badge">
+                                    <span class="profile-icon">🎯</span>
+                                    <span class="profile-name" id="profileName">-</span>
+                                </div>
+                                <p class="profile-description" id="profileDescription">Complete more months to discover your investing style.</p>
+                            </div>
+                            <div class="learning-score">
+                                <div class="score-header">
+                                    <span>Financial Literacy Score</span>
+                                    <span class="score-note">Reflects learning, not wealth</span>
+                                </div>
+                                <div class="score-display">
+                                    <div class="score-value" id="literacyScore">0</div>
+                                    <div class="score-max">/ 100</div>
+                                </div>
+                                <div class="score-breakdown" id="scoreBreakdown"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>

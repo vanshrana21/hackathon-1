@@ -1280,12 +1280,16 @@ body {
     justify-content: center;
     z-index: 1000;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
     padding: 24px;
 }
 
 .modal-overlay.show {
     opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
 }
 
 .modal-content {
@@ -5167,4 +5171,162 @@ body {
         left: 16px;
         max-width: none;
     }
+}
+
+/* ========== PHASE 2: Risk & Behavior Awareness ========== */
+
+/* Risk Badges */
+.risk-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    gap: 4px;
+}
+
+.risk-badge.risk-low {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22C55E;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.risk-badge.risk-medium {
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.risk-badge.risk-high {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.risk-badge.risk-none {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94A3B8;
+    border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+/* Risk Score Display */
+.risk-score {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+    margin-top: 16px;
+}
+
+.risk-score span:first-child {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.risk-value {
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 8px;
+}
+
+.risk-value.risk-low {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22C55E;
+}
+
+.risk-value.risk-medium {
+    background: rgba(245, 158, 11, 0.15);
+    color: #F59E0B;
+}
+
+.risk-value.risk-high {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+}
+
+/* Diversification Status */
+.diversification-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-top: 16px;
+    font-size: 0.9rem;
+}
+
+.diversification-status.diversified {
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    color: #22C55E;
+}
+
+.diversification-status.not-diversified {
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #F59E0B;
+}
+
+.diversification-icon {
+    font-size: 1.2rem;
+}
+
+/* Behavior Feedback in Summary Modal */
+.behavior-feedback {
+    background: var(--bg-dark);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 16px;
+    border-left: 4px solid var(--primary);
+}
+
+.behavior-feedback p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.behavior-feedback .insight-icon {
+    margin-right: 8px;
+}
+
+/* Market Card Risk Badge Integration */
+.market-card .risk-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+}
+
+.market-card {
+    position: relative;
+}
+
+/* Holdings Risk Badge */
+.holding-item .risk-badge {
+    font-size: 0.7rem;
+    padding: 2px 8px;
+}
+
+.holding-risk {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+/* Summary Modal Enhancements */
+.summary-change.risk-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-change .risk-badge {
+    font-size: 0.65rem;
+    padding: 2px 6px;
 }

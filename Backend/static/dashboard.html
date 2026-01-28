@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - FinPlay</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        <p>Loading your profile...</p>
+    </div>
+
+    <div id="firstMonthGuide" class="first-month-guide" style="display: none;">
+        <div class="guide-panel">
+            <div class="guide-header">
+                <div class="guide-step-indicator">
+                    <span class="guide-step-dot active" data-step="1"></span>
+                    <span class="guide-step-dot" data-step="2"></span>
+                    <span class="guide-step-dot" data-step="3"></span>
+                    <span class="guide-step-dot" data-step="4"></span>
+                </div>
+                <button class="guide-dismiss-btn" id="dismissGuideBtn" title="Dismiss guide">×</button>
+            </div>
+            <div class="guide-content">
+                <div class="guide-step active" data-step="1">
+                    <div class="guide-icon">🌱</div>
+                    <h3>Welcome to Your Practice Space</h3>
+                    <p>This is a simulation. There's no right or wrong — only decisions and learning.</p>
+                    <div class="guide-details">
+                        <p>Each month is a decision cycle:</p>
+                        <ul>
+                            <li>Your income arrives</li>
+                            <li>You decide how to allocate it</li>
+                            <li>You observe the results</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary guide-next-btn" data-next="2">Let's make your first plan</button>
+                </div>
+                <div class="guide-step" data-step="2">
+                    <div class="guide-icon">📊</div>
+                    <h3>Budget Allocation</h3>
+                    <p>Most people start with the 50/30/20 rule — but you can adapt it to your style.</p>
+                    <div class="guide-details">
+                        <ul>
+                            <li><strong>Needs (50%):</strong> Essentials like rent, food, utilities</li>
+                            <li><strong>Wants (30%):</strong> Things you enjoy but don't strictly need</li>
+                            <li><strong>Savings (20%):</strong> Building your safety net</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-secondary guide-next-btn" data-next="3">Got it</button>
+                </div>
+                <div class="guide-step" data-step="3">
+                    <div class="guide-icon">🛡️</div>
+                    <h3>Protected Money</h3>
+                    <p>Your Future Self Wallet protects money first — so you don't have to rely on willpower later.</p>
+                    <div class="guide-details">
+                        <p>This is intentional friction, not punishment. The money is yours — just harder to spend impulsively.</p>
+                    </div>
+                    <button class="btn btn-secondary guide-next-btn" data-next="4">Makes sense</button>
+                </div>
+                <div class="guide-step" data-step="4">
+                    <div class="guide-icon">⏭️</div>
+                    <h3>Ending Your Month</h3>
+                    <p>When you "End Month," time advances and you see the impact of your decisions.</p>
+                    <div class="guide-details">
+                        <ul>
+                            <li>Insights will appear based on your choices</li>
+                            <li>Your experience will grow</li>
+                            <li>Nothing bad happens — it's all learning</li>
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary guide-next-btn" id="completeGuideBtn">Complete Month 1</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="dashboardContent" class="dashboard" style="display: none;">
+        <nav class="dashboard-nav">
+            <div class="container">
+                <div class="nav-content">
+                    <div class="logo">FinPlay</div>
+                    <div class="nav-links">
+                        <a href="/dashboard" class="nav-link active">Dashboard</a>
+                        <a href="/investing" class="nav-link">Investing</a>
+                        <a href="/analytics" class="nav-link">Insights</a>
+                    </div>
+                    <div class="nav-right">
+                        <div class="month-badge" id="currentMonth">Month 1</div>
+                        <div class="level-badge" id="levelBadge">
+                            <span>⭐</span>
+                            <span>Level 1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <header class="dashboard-header">
+            <div class="container">
+                <div class="welcome-section">
+                    <div class="welcome-text">
+                          <h1>Welcome, <span id="userName">User</span>!</h1>
+                      </div>
+                  </div>
+              </div>
+          </header>
+
+          <main class="dashboard-content">
+              <div class="container">
+                  <div class="monthly-flow-explainer" id="monthlyFlowExplainer">
+                      <div class="flow-steps">
+                          <div class="flow-step">
+                              <span class="flow-icon">💵</span>
+                              <span class="flow-label">Income</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">🛡️</span>
+                              <span class="flow-label">Protected</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">📊</span>
+                              <span class="flow-label">Budgeted</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">📈</span>
+                              <span class="flow-label">Invested</span>
+                          </div>
+                          <span class="flow-arrow">→</span>
+                          <div class="flow-step">
+                              <span class="flow-icon">✓</span>
+                              <span class="flow-label">Reviewed</span>
+                          </div>
+                      </div>
+                      <p class="flow-note">Each month is a fresh decision cycle. Money only carries forward when you choose to protect or invest it.</p>
+                  </div>
+              </div>
+            <div class="container">
+                <section class="money-overview-section">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">Your Money This Month</h2>
+                        <p class="section-subtitle">See what's available to allocate and what's committed for the future</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon">💰</div>
+                        </div>
+                        <div class="stat-card-value" id="virtualBalance">₹0</div>
+                        <div class="stat-card-label">Income for Month 1</div>
+                        <div class="stat-card-helper">You'll allocate this income in this month's decisions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon">📅</div>
+                        </div>
+                        <div class="stat-card-value" id="monthlyIncome">₹30,000</div>
+                        <div class="stat-card-label">Income (per month)</div>
+                        <div class="stat-card-helper">Added at the start of each month</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon">🛡️</div>
+                        </div>
+                        <div class="stat-card-value" id="totalProtected">₹0</div>
+                        <div class="stat-card-label">Protected This Month</div>
+                        <div class="stat-card-helper">Set aside before spending</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon">🎯</div>
+                        </div>
+                        <div class="stat-card-value" id="focusGoal">-</div>
+                        <div class="stat-card-label">Long-Term Commitments</div>
+                        <div class="stat-card-helper">Money intentionally locked for the future</div>
+                    </div>
+                    </div>
+                </section>
+
+                <section class="protected-money-section">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">Protected Money</h2>
+                        <p class="section-subtitle">Money set aside intentionally — designed to be harder to spend, not impossible</p>
+                    </div>
+
+                <div id="futureWalletCard" class="card future-wallet-card">
+                    <div class="future-wallet-header">
+                        <div class="fw-badge">🔐</div>
+                        <div class="fw-title">
+                            <h3>Future Self Wallet</h3>
+                            <p class="fw-subtitle">Automatically saves a portion of your income before you can spend it</p>
+                        </div>
+                    </div>
+                    <div class="future-wallet-stats">
+                        <div class="fw-stat">
+                            <div class="fw-stat-value" id="futureWalletBalance">₹0</div>
+                            <div class="fw-stat-label">Protected Balance</div>
+                        </div>
+                        <div class="fw-stat">
+                            <div class="fw-stat-value" id="futureWalletContribution">₹0</div>
+                            <div class="fw-stat-label">This Month</div>
+                        </div>
+                        <div class="fw-stat">
+                            <div class="fw-stat-value" id="futureWalletRate">15%</div>
+                            <div class="fw-stat-label">Current Rate</div>
+                        </div>
+                    </div>
+                    <div class="fw-info">
+                        <span class="fw-info-icon">💡</span>
+                        <span>This money is protected from spending. Think of it as paying your future self first.</span>
+                    </div>
+                    <div class="fw-actions">
+                        <button class="btn btn-secondary btn-sm" id="adjustRateBtn">
+                            Adjust Rate
+                        </button>
+                        <span class="rate-locked-indicator" id="rateLocked" style="display: none;">
+                            <span class="lock-icon">🔒</span>
+                            <span>Rate locked for this month</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div id="temptationControlsCard" class="card temptation-controls-card">
+                    <div class="temptation-header">
+                        <div class="temptation-badge">🛡️</div>
+                        <div class="temptation-title">
+                            <h3>Temptation Controls</h3>
+                            <p class="temptation-subtitle">Set spending limits on high-temptation categories before the month begins</p>
+                        </div>
+                    </div>
+                    <div id="temptationLocksContainer" class="temptation-locks-container">
+                    </div>
+                    <div class="temptation-info">
+                        <span class="temptation-info-icon">💡</span>
+                        <span>Constraints chosen in advance are more effective than willpower in the moment.</span>
+                    </div>
+                </div>
+
+                <div class="dashboard-main">
+                    <div class="card level-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Learning Progress</h2>
+                            <p class="card-helper">Levels reflect experience gained — not financial success</p>
+                        </div>
+                        <div class="level-info">
+                            <div class="level-name" id="levelName">Level 1 – Budgeting Basics</div>
+                            <div class="level-description" id="levelDescription">Learn to allocate your income wisely across needs, wants, and savings.</div>
+                        </div>
+                        <div class="xp-progress">
+                            <div class="xp-bar">
+                                <div class="xp-fill" id="xpFill" style="width: 50%;"></div>
+                            </div>
+                            <div class="xp-text">
+                                <span id="currentXp">50 Experience</span>
+                                <span id="xpToNext">100 to Level 2</span>
+                            </div>
+                        </div>
+                        <p class="xp-explainer">Experience grows through making decisions — not through perfect outcomes</p>
+                    </div>
+
+                    <div class="card profile-card">
+                        <div class="card-header">
+                            <h2 class="card-title">Your Profile</h2>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Knowledge Level</span>
+                            <span class="profile-value" id="knowledgeLevel">-</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Life Stage</span>
+                            <span class="profile-value" id="lifeStage">-</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Primary Goal</span>
+                            <span class="profile-value" id="primaryGoal">-</span>
+                        </div>
+                        <div class="profile-item">
+                            <span class="profile-label">Current Level</span>
+                            <span class="profile-value" id="currentLevel">Level 1</span>
+                        </div>
+                    </div>
+                </div>
+                </section>
+
+                <section class="budget-section">
+                    <div class="section-header-bar">
+                        <h2 class="section-title">Monthly Budget</h2>
+                        <p class="section-subtitle">Allocate your spendable income — these choices are reversible until you confirm</p>
+                    </div>
+
+                    <div id="budgetAllocation" class="card budget-allocation-card">
+                        <h3 class="card-title">Allocate Your Spendable Income</h3>
+                        <p class="allocation-hint">
+                            <strong>Spendable: <span id="spendableIncome">₹0</span></strong> (after Future Self Wallet)
+                        </p>
+                        <p class="allocation-hint">Needs (essentials) + Wants (lifestyle) + Savings = Spendable Income</p>
+                        
+                        <div class="allocation-inputs">
+                            <div class="allocation-input-group">
+                                <label>Needs (50% suggested)</label>
+                                <div class="input-with-icon">
+                                    <span>₹</span>
+                                    <input type="number" id="needsInput" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="allocation-input-group">
+                                <label>Wants (30% suggested)</label>
+                                <div class="input-with-icon">
+                                    <span>₹</span>
+                                    <input type="number" id="wantsInput" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="allocation-input-group">
+                                <label>Savings (20% suggested)</label>
+                                <div class="input-with-icon">
+                                    <span>₹</span>
+                                    <input type="number" id="savingsInput" placeholder="0" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="allocation-summary">
+                            <div class="allocation-row">
+                                <span>Total Allocated:</span>
+                                <span id="allocationTotal">₹0</span>
+                            </div>
+                            <div class="allocation-row">
+                                <span>Remaining:</span>
+                                <span id="allocationRemaining">₹0</span>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" id="allocateBudgetBtn" disabled style="width: 100%;">
+                            Confirm Allocation
+                        </button>
+                    </div>
+
+                    <div id="budgetOverview" class="budget-overview" style="display: none;">
+                        <div class="budget-category">
+                            <div class="budget-category-header">
+                                <div class="budget-category-icon needs-icon">🏠</div>
+                                <div class="budget-category-info">
+                                    <h4>Needs</h4>
+                                    <p>Allocated: <span id="needsAllocated">₹0</span></p>
+                                </div>
+                                <div class="budget-category-remaining">
+                                    <span id="needsRemaining">₹0</span>
+                                    <small>remaining</small>
+                                </div>
+                            </div>
+                            <div class="budget-bar">
+                                <div class="budget-bar-fill needs-bar" id="needsBar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="budget-category">
+                            <div class="budget-category-header">
+                                <div class="budget-category-icon wants-icon">🎬</div>
+                                <div class="budget-category-info">
+                                    <h4>Wants</h4>
+                                    <p>Allocated: <span id="wantsAllocated">₹0</span></p>
+                                </div>
+                                <div class="budget-category-remaining">
+                                    <span id="wantsRemaining">₹0</span>
+                                    <small>remaining</small>
+                                </div>
+                            </div>
+                            <div class="budget-bar">
+                                <div class="budget-bar-fill wants-bar" id="wantsBar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="budget-category">
+                            <div class="budget-category-header">
+                                <div class="budget-category-icon savings-icon">🏦</div>
+                                <div class="budget-category-info">
+                                    <h4>Savings</h4>
+                                    <p>Allocated: <span id="savingsAllocated">₹0</span></p>
+                                </div>
+                                <div class="budget-category-remaining">
+                                    <span id="savingsRemaining">₹0</span>
+                                    <small>total saved</small>
+                                </div>
+                            </div>
+                            <div class="budget-bar">
+                                <div class="budget-bar-fill savings-bar" id="savingsBar" style="width: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="goal-wallets-section">
+                    <div class="goal-wallets-header">
+                        <div class="goal-wallets-title-area">
+                            <div class="goal-wallets-icon">🎯</div>
+                            <div>
+                                <h2 class="section-title">Goal Wallets</h2>
+                                <p class="section-subtitle">Commit money to specific goals — withdrawing early has trade-offs, so consider carefully</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="goalWalletsContainer" class="goal-wallets-container">
+                    </div>
+                </section>
+
+                <section class="time-travel-section">
+                    <div class="time-travel-header">
+                        <div class="time-travel-title-area">
+                            <div class="time-travel-icon">✉️</div>
+                            <div>
+                                <h2 class="section-title">Time-Travel Letters</h2>
+                                <p class="section-subtitle">Write a note to your future self — it arrives at a moment you choose</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="timeTravelContainer" class="time-travel-container">
+                        <div class="time-travel-prompt">
+                            <p>Capture what you're thinking now. Your future self will appreciate the reminder.</p>
+                            <button class="btn btn-secondary btn-sm" id="writeLetterBtn">Write Letter</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section id="expenseSection" class="expense-section" style="display: none;">
+                    <div class="expense-header">
+                        <div>
+                            <h2 class="section-title">Monthly Expenses</h2>
+                            <p class="section-subtitle">Needs are required. Wants are optional — choose what matters to you.</p>
+                        </div>
+                        <button class="btn btn-primary" id="endMonthBtn" disabled>
+                            End Month
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div id="expenseList" class="expense-list"></div>
+                </section>
+            </div>
+        </main>
+    </div>
+    <script src="/js/sync.js"></script>
+    <script src="/js/dashboard.js"></script>
+</body>
+</html>

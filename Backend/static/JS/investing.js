@@ -1,7 +1,7 @@
-console.log("🔥 INVESTING.JS LOADED (PHASE 1 + PHASE 2):", window.location.pathname, new Date().toISOString());
+console.log("🔥 INVESTING.JS LOADED (PHASE 1 + 2 + 3):", window.location.pathname, new Date().toISOString());
 
 /**
- * FinPlay Investing Module - PHASE 1 + PHASE 2
+ * FinPlay Investing Module - PHASE 1 + PHASE 2 + PHASE 3
  * 
  * Phase 1: Investing Foundations
  * - Budget → Investing unlock
@@ -16,6 +16,13 @@ console.log("🔥 INVESTING.JS LOADED (PHASE 1 + PHASE 2):", window.location.pat
  * - Diversification detection & benefits
  * - Risk-adjusted market returns
  * - Behavior feedback
+ * 
+ * Phase 3: Life Events & Real-World Shocks
+ * - Random life events during month advance
+ * - Cash impacts (emergencies/bonuses)
+ * - Investment impacts (market crashes)
+ * - Stress state (freeze investing)
+ * - Liquidity awareness
  * 
  * NO: Selling, rebalancing, SIPs, real charts
  */
@@ -39,13 +46,82 @@ const XP_REWARDS = {
     firstInvestment: 10,
     monthAdvance: 5,
     firstDiversified: 5,
-    holdThroughVolatility: 3
+    holdThroughVolatility: 3,
+    handledEmergency: 5,
+    survivedCrashDiversified: 5
 };
+
+// ========== PHASE 3: LIFE EVENTS ==========
+const LIFE_EVENTS = [
+    {
+        id: 'MEDICAL_EMERGENCY',
+        title: 'Medical Emergency',
+        type: 'Emergency',
+        description: 'An unexpected health issue requires immediate attention.',
+        cashImpactMin: -10000,
+        cashImpactMax: -5000,
+        investmentImpact: null,
+        behaviorTag: 'Prepared',
+        feedback: 'Emergency expenses are easier to handle with cash buffers.'
+    },
+    {
+        id: 'JOB_BONUS',
+        title: 'Job Bonus',
+        type: 'Opportunity',
+        description: 'Your hard work paid off — you received a performance bonus!',
+        cashImpactMin: 5000,
+        cashImpactMax: 10000,
+        investmentImpact: null,
+        behaviorTag: 'Disciplined',
+        feedback: 'Bonuses are great for building emergency funds or investing wisely.'
+    },
+    {
+        id: 'MARKET_CRASH',
+        title: 'Market Crash News',
+        type: 'Emergency',
+        description: 'Breaking news: Global markets tumble on economic concerns.',
+        cashImpactMin: 0,
+        cashImpactMax: 0,
+        investmentImpact: 'crash',
+        behaviorTag: 'Prepared',
+        feedback: 'Diversification reduced portfolio damage during the crash.'
+    },
+    {
+        id: 'UNEXPECTED_EXPENSE',
+        title: 'Unexpected Expense',
+        type: 'Emergency',
+        description: 'Your vehicle broke down and needs urgent repairs.',
+        cashImpactMin: -6000,
+        cashImpactMax: -3000,
+        investmentImpact: null,
+        behaviorTag: 'Prepared',
+        feedback: 'Having cash prevented forced decisions during this expense.'
+    },
+    {
+        id: 'SKILL_UPGRADE',
+        title: 'Side Income',
+        type: 'Opportunity',
+        description: 'Your freelance project was successful — extra income this month!',
+        cashImpactMin: 2000,
+        cashImpactMax: 4000,
+        investmentImpact: null,
+        behaviorTag: 'Disciplined',
+        feedback: 'Extra income reinforces good long-term financial habits.'
+    }
+];
+
+const LIFE_EVENT_PROBABILITY = 0.30;
 
 // ========== PHASE 2 STATE TRACKING ==========
 let phase2State = {
     firstDiversifiedAwarded: false,
     lastPortfolioValue: 0
+};
+
+// ========== PHASE 3 STATE TRACKING ==========
+let phase3State = {
+    lastEventId: null,
+    stressActive: false
 };
 
 // ========== STORAGE KEYS ==========
@@ -111,12 +187,16 @@ function initializePortfolio(profile) {
             month: 1,
             totalInvested: 0,
             firstInvestmentDone: false,
-            firstDiversifiedAwarded: false
+            firstDiversifiedAwarded: false,
+            stressState: false,
+            lastLifeEvent: null
         };
         savePortfolio(portfolio);
     }
     
     phase2State.firstDiversifiedAwarded = portfolio.firstDiversifiedAwarded || false;
+    phase3State.stressActive = portfolio.stressState || false;
+    phase3State.lastEventId = portfolio.lastLifeEvent?.id || null;
     
     return portfolio;
 }
@@ -218,6 +298,133 @@ function getBehaviorFeedback(changes, scenario) {
     }
     
     return "📊 Your portfolio stayed relatively stable despite market fluctuations.";
+}
+
+// ========== PHASE 3: LIFE EVENTS ==========
+
+function maybeGetLifeEvent() {
+    if (Math.random() > LIFE_EVENT_PROBABILITY) return null;
+    const index = Math.floor(Math.random() * LIFE_EVENTS.length);
+    return LIFE_EVENTS[index];
+}
+
+function calculateCashImpact(event) {
+    if (!event || event.cashImpactMin === 0 && event.cashImpactMax === 0) return 0;
+    const min = Math.min(event.cashImpactMin, event.cashImpactMax);
+    const max = Math.max(event.cashImpactMin, event.cashImpactMax);
+    return Math.round(min + Math.random() * (max - min));
+}
+
+function applyLifeEvent(event, portfolio) {
+    if (!event) return { applied: false };
+    
+    const result = {
+        applied: true,
+        event,
+        cashImpact: 0,
+        investmentChanges: [],
+        hadEnoughCash: true,
+        stressTriggered: false,
+        xpAwarded: 0
+    };
+    
+    const cashImpact = calculateCashImpact(event);
+    result.cashImpact = cashImpact;
+    
+    if (cashImpact !== 0) {
+        const cashBefore = portfolio.cash;
+        portfolio.cash += cashImpact;
+        
+        if (portfolio.cash < 0) {
+            result.hadEnoughCash = false;
+            result.stressTriggered = true;
+            portfolio.cash = 0;
+            portfolio.stressState = true;
+            phase3State.stressActive = true;
+        } else if (cashImpact < 0 && event.type === 'Emergency') {
+            result.xpAwarded = XP_REWARDS.handledEmergency;
+        }
+    }
+    
+    if (event.investmentImpact === 'crash' && portfolio.holdings.length > 0) {
+        const diversified = isDiversified();
+        
+        portfolio.holdings.forEach(holding => {
+            const oldValue = holding.currentValue;
+            let dropPercent;
+            
+            if (holding.riskLevel === 'High') {
+                dropPercent = 8 + Math.random() * 7;
+            } else if (holding.riskLevel === 'Medium') {
+                dropPercent = 4 + Math.random() * 4;
+            } else {
+                dropPercent = 1 + Math.random() * 2;
+            }
+            
+            if (diversified) {
+                dropPercent *= 0.7;
+            }
+            
+            holding.currentValue = Math.round(oldValue * (1 - dropPercent / 100));
+            
+            result.investmentChanges.push({
+                name: holding.assetName,
+                riskLevel: holding.riskLevel,
+                oldValue,
+                newValue: holding.currentValue,
+                change: -dropPercent
+            });
+        });
+        
+        if (diversified) {
+            result.xpAwarded = XP_REWARDS.survivedCrashDiversified;
+        }
+    }
+    
+    portfolio.lastLifeEvent = {
+        id: event.id,
+        title: event.title,
+        type: event.type,
+        cashImpact: result.cashImpact,
+        month: portfolio.month
+    };
+    
+    phase3State.lastEventId = event.id;
+    
+    return result;
+}
+
+function isInvestingFrozen() {
+    const portfolio = getPortfolio();
+    return portfolio?.stressState === true || phase3State.stressActive;
+}
+
+function clearStressState() {
+    const portfolio = getPortfolio();
+    if (portfolio) {
+        portfolio.stressState = false;
+        savePortfolio(portfolio);
+    }
+    phase3State.stressActive = false;
+}
+
+function getLifeEventFeedback(eventResult) {
+    if (!eventResult?.applied) return null;
+    
+    const event = eventResult.event;
+    
+    if (eventResult.stressTriggered) {
+        return "⚠️ Cash shortage! Investing is frozen next month. Build an emergency fund to avoid this.";
+    }
+    
+    if (event.investmentImpact === 'crash') {
+        if (isDiversified()) {
+            return "💡 " + event.feedback;
+        }
+        return "📉 Market crash hit your portfolio hard. Diversification could have reduced the damage.";
+    }
+    
+    return "💡 " + event.feedback;
 }
 
 // ========== XP SYSTEM ==========
@@ -325,7 +532,7 @@ function simulateMonthlyReturns(scenario) {
     return changes;
 }
 
-// ========== TRADE FUNCTION (PHASE 1 + PHASE 2) ==========
+// ========== TRADE FUNCTION (PHASE 1 + 2 + 3) ==========
 
 function tradeAsset(assetId) {
     console.log('🟢 TRADE: Attempting trade for', assetId);
@@ -333,6 +540,12 @@ function tradeAsset(assetId) {
     if (!isInvestingUnlocked()) {
         showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
         console.log('🟢 TRADE: Blocked - investing locked');
+        return { success: false };
+    }
+    
+    if (isInvestingFrozen()) {
+        showNotification('Investing is frozen this month due to cash shortage. Advance to next month.', 'error');
+        console.log('🟢 TRADE: Blocked - stress state active');
         return { success: false };
     }
     
@@ -393,7 +606,7 @@ function tradeAsset(assetId) {
     return { success: true };
 }
 
-// ========== ADVANCE MONTH (PHASE 1 + PHASE 2) ==========
+// ========== ADVANCE MONTH (PHASE 1 + 2 + 3) ==========
 
 function advanceMonth() {
     console.log('🟢 ADVANCE MONTH: Starting');
@@ -412,7 +625,21 @@ function advanceMonth() {
     
     console.log('🟢 ADVANCE MONTH: Month', currentMonth, 'Scenario', scenario);
     
-    const changes = simulateMonthlyReturns(scenario);
+    const lifeEvent = maybeGetLifeEvent();
+    let eventResult = { applied: false };
+    
+    if (lifeEvent) {
+        console.log('🟢 ADVANCE MONTH: Life event triggered:', lifeEvent.title);
+        eventResult = applyLifeEvent(lifeEvent, portfolio);
+    }
+    
+    let changes = [];
+    if (lifeEvent?.investmentImpact !== 'crash') {
+        changes = simulateMonthlyReturns(scenario);
+    } else {
+        changes = eventResult.investmentChanges;
+    }
+    
     const newMonth = currentMonth + 1;
     
     if (dashState) {
@@ -421,22 +648,34 @@ function advanceMonth() {
     }
     
     portfolio.month = newMonth;
+    
+    if (portfolio.stressState && !eventResult.stressTriggered) {
+        portfolio.stressState = false;
+        phase3State.stressActive = false;
+        console.log('🟢 ADVANCE MONTH: Stress state cleared');
+    }
+    
     savePortfolio(portfolio);
     
     addXp(XP_REWARDS.monthAdvance);
     
+    if (eventResult.xpAwarded > 0) {
+        addXp(eventResult.xpAwarded);
+        console.log('🟢 ADVANCE MONTH: Life event XP awarded:', eventResult.xpAwarded);
+    }
+    
     const newValue = calculateMetrics().currentValue;
-    if (previousValue > 0 && newValue < previousValue && portfolio.holdings.length > 0) {
+    if (previousValue > 0 && newValue < previousValue && portfolio.holdings.length > 0 && !eventResult.applied) {
         addXp(XP_REWARDS.holdThroughVolatility);
         console.log('🟢 ADVANCE MONTH: Held through volatility! +3 XP');
     }
     
     console.log('🟢 ADVANCE MONTH: Complete. New month:', newMonth);
-    showMonthSummary(currentMonth, newMonth, scenario, changes);
+    showMonthSummary(currentMonth, newMonth, scenario, changes, eventResult);
     refreshUI();
 }
 
-function showMonthSummary(oldMonth, newMonth, scenario, changes) {
+function showMonthSummary(oldMonth, newMonth, scenario, changes, eventResult = { applied: false }) {
     const modal = document.getElementById('monthSummaryModal');
     const title = document.getElementById('summaryTitle');
     const content = document.getElementById('summaryContent');
@@ -446,12 +685,46 @@ function showMonthSummary(oldMonth, newMonth, scenario, changes) {
     const scenarioLabels = { bull: 'Bull Market', bear: 'Bear Market', sideways: 'Sideways Market' };
     const diversified = isDiversified();
     
-    let html = `<div class="summary-scenario">Market: ${scenarioLabels[scenario] || 'Sideways Market'}</div>`;
+    let html = '';
+    
+    if (eventResult.applied) {
+        const event = eventResult.event;
+        const typeClass = event.type.toLowerCase();
+        const typeIcons = { emergency: '🚨', opportunity: '🎁', neutral: '📋' };
+        
+        html += `<div class="life-event-banner life-event-${typeClass}">
+            <div class="life-event-header">
+                <span class="life-event-icon">${typeIcons[typeClass] || '📋'}</span>
+                <span class="life-event-type">${event.type}</span>
+            </div>
+            <h4 class="life-event-title">${event.title}</h4>
+            <p class="life-event-description">${event.description}</p>`;
+        
+        if (eventResult.cashImpact !== 0) {
+            const impactClass = eventResult.cashImpact >= 0 ? 'positive' : 'negative';
+            const impactSign = eventResult.cashImpact >= 0 ? '+' : '';
+            html += `<div class="life-event-impact ${impactClass}">
+                <span>Cash Impact:</span>
+                <strong>${impactSign}${formatCurrency(eventResult.cashImpact)}</strong>
+            </div>`;
+        }
+        
+        if (eventResult.stressTriggered) {
+            html += `<div class="life-event-warning">
+                <span>⚠️</span>
+                <span>Investing frozen next month due to cash shortage</span>
+            </div>`;
+        }
+        
+        html += '</div>';
+    }
+    
+    html += `<div class="summary-scenario">Market: ${scenarioLabels[scenario] || 'Sideways Market'}</div>`;
     
     if (diversified) {
         html += `<div class="diversification-status diversified">
             <span class="diversification-icon">✓</span>
-            <span>Portfolio is diversified (volatility reduced by 20%)</span>
+            <span>Portfolio is diversified (volatility reduced)</span>
         </div>`;
     }
     
@@ -466,12 +739,22 @@ function showMonthSummary(oldMonth, newMonth, scenario, changes) {
             </div>`;
         });
         html += '</div>';
-        
-        const feedback = getBehaviorFeedback(changes, scenario);
-        html += `<div class="behavior-feedback">
-            <p><span class="insight-icon">💡</span>${feedback}</p>
-        </div>`;
+    }
+    
+    let feedback;
+    if (eventResult.applied) {
+        feedback = getLifeEventFeedback(eventResult);
     } else {
+        feedback = getBehaviorFeedback(changes, scenario);
+    }
+    
+    if (feedback) {
+        html += `<div class="behavior-feedback">
+            <p><span class="insight-icon"></span>${feedback}</p>
+        </div>`;
+    }
+    
+    if (changes.length === 0 && !eventResult.applied) {
         html += '<p>No investments yet. Make your first investment to see results!</p>';
     }
     
@@ -549,6 +832,7 @@ function updateInvestingCTA() {
     const portfolio = getPortfolio();
     
     const unlocked = isInvestingUnlocked();
+    const frozen = isInvestingFrozen();
     
     if (!unlocked) {
         ctaContainer.style.display = 'flex';
@@ -556,6 +840,13 @@ function updateInvestingCTA() {
         ctaIcon.textContent = '🔒';
         ctaTitle.textContent = 'Investing Locked';
         ctaMessage.textContent = 'Complete your monthly budget on the Dashboard to unlock investing.';
+        ctaButton.style.display = 'none';
+    } else if (frozen) {
+        ctaContainer.style.display = 'flex';
+        ctaContainer.className = 'investing-cta cta-frozen';
+        ctaIcon.textContent = '⚠️';
+        ctaTitle.textContent = 'Investing Frozen';
+        ctaMessage.textContent = 'Cash shortage this month. Advance to next month to resume investing.';
         ctaButton.style.display = 'none';
     } else if (portfolio && portfolio.holdings.length === 0) {
         ctaContainer.style.display = 'flex';
@@ -574,8 +865,19 @@ function renderMarket(filter = 'all') {
     const portfolio = getPortfolio();
     const container = document.getElementById('marketList');
     const unlocked = isInvestingUnlocked();
+    const frozen = isInvestingFrozen();
     
     container.innerHTML = '';
+    
+    if (frozen) {
+        container.innerHTML = `<div class="stress-state-banner">
+            <span class="stress-icon">⚠️</span>
+            <div class="stress-content">
+                <strong>Investing Frozen</strong>
+                <p>Due to cash shortage, you cannot invest this month. Advance to next month to resume.</p>
+            </div>
+        </div>`;
+    }
     
     const filtered = filter === 'all' 
         ? MARKET_ASSETS.filter(a => a.type !== 'fd')
@@ -586,6 +888,7 @@ function renderMarket(filter = 'all') {
         const owned = holding ? holding.currentValue : 0;
         const canAfford = portfolio && portfolio.cash >= FIXED_INVESTMENT_AMOUNT;
         const isFD = asset.type === 'fd';
+        const isDisabled = !unlocked || !canAfford || isFD || frozen;
         
         const card = document.createElement('div');
         card.className = 'market-card';
@@ -602,8 +905,8 @@ function renderMarket(filter = 'all') {
             ${owned > 0 ? `<div class="owned-badge">${formatCurrency(owned)} invested</div>` : ''}
             <button class="btn btn-secondary btn-sm market-btn" 
                     data-asset-id="${asset.id}" 
-                    ${!unlocked || !canAfford || isFD ? 'disabled' : ''}
-                    title="${!unlocked ? 'Complete your monthly budget to unlock' : !canAfford ? 'Not enough virtual cash' : isFD ? 'Unlocks in higher levels' : `Invest ${formatCurrency(FIXED_INVESTMENT_AMOUNT)}`}">
+                    ${isDisabled ? 'disabled' : ''}
+                    title="${frozen ? 'Investing frozen this month' : !unlocked ? 'Complete your monthly budget to unlock' : !canAfford ? 'Not enough virtual cash' : isFD ? 'Unlocks in higher levels' : `Invest ${formatCurrency(FIXED_INVESTMENT_AMOUNT)}`}">
                 ${isFD ? 'Locked' : 'Trade'}
             </button>
         `;

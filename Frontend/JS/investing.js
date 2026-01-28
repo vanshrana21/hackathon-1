@@ -1,3 +1,5 @@
+console.log("🔥 INVESTING.JS LOADED:", window.location.pathname, new Date().toISOString());
+
 /**
  * FinPlay Investing Module - Full Simulation Logic
  * 

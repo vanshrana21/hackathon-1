@@ -429,6 +429,14 @@ function applyLifeEvent(event, portfolio) {
     };
     
     phase3State.lastEventId = event.id;
+
+    recordDecision('life_event', { 
+        eventTitle: event.title, 
+        eventType: event.type, 
+        cashImpact: result.cashImpact, 
+        stressTriggered: result.stressTriggered,
+        investmentImpact: event.investmentImpact 
+    });
     
     return result;
 }
@@ -628,7 +636,7 @@ function generateBehaviorInsights() {
     } else if (stressTriggers.length > 0) {
         insights.push({
             icon: '💡',
-            text: `Cash shortages occurred ${stressTriggers.length} time(s). Building a larger emergency fund could prevent future freezes.`
+            text: `Periods of cash stress slowed your long-term growth. Building a larger emergency fund could prevent future freezes.`
         });
     }
     
@@ -974,6 +982,8 @@ function advanceMonth() {
     savePortfolio(portfolio);
     
     addXp(XP_REWARDS.monthAdvance);
+    
+    recordDecision('month_advance', { scenario });
     
     if (eventResult.xpAwarded > 0) {
         addXp(eventResult.xpAwarded);
@@ -1360,6 +1370,10 @@ function renderTimeSimResult(result) {
     const returnClass = result.totalReturn >= 0 ? 'positive' : 'negative';
     const returnSign = result.totalReturn >= 0 ? '+' : '';
     
+    let volSummary = 'Low';
+    if (result.avgVolatility > 4) volSummary = 'High';
+    else if (result.avgVolatility > 2) volSummary = 'Medium';
+    
     container.innerHTML = `
         <h4>${result.years}-Year Projection (${result.months} months)</h4>
         <div class="sim-stats">
@@ -1377,9 +1391,12 @@ function renderTimeSimResult(result) {
             </div>
         </div>
         <div class="sim-summary">
-            ${result.diversified ? '✓ Diversification reduced volatility by ~10%.' : '⚠ A diversified portfolio would have reduced volatility.'}
-            <br>Market conditions: ${result.bullMonths} bull months, ${result.bearMonths} bear months.
-            <br><em>This is a projection based on historical patterns, not a prediction.</em>
+            <div class="sim-volatility">
+                <strong>Volatility Summary:</strong> ${volSummary} (${result.avgVolatility.toFixed(1)}% avg monthly swing)
+            </div>
+            <p>${result.diversified ? '✓ Diversification reduced volatility by ~10%.' : '⚠ A diversified portfolio would have reduced volatility.'}</p>
+            <p>Market conditions: ${result.bullMonths} bull months, ${result.bearMonths} bear months.</p>
+            <p class="sim-disclaimer"><em>Strategy ≠ Prediction. This is a behavioral simulation based on historical patterns, not a prediction of future results.</em></p>
         </div>
     `;
     container.style.display = 'block';

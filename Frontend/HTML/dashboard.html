@@ -14,8 +14,8 @@
     <style>
         :root {
             --bg-deep: #020617;
-            --card-glass: rgba(15, 23, 42, 0.6);
-            --border-subtle: rgba(255, 255, 255, 0.06);
+            --card-glass: rgba(15, 23, 42, 0.55);
+            --border-subtle: rgba(255, 255, 255, 0.05);
             --accent-teal: #2dd4bf;
         }
 
@@ -24,84 +24,72 @@
             background-color: var(--bg-deep);
             color: #e2e8f0;
             background-image:
-                radial-gradient(circle at 15% 0%, rgba(45, 212, 191, 0.05) 0%, transparent 25%),
-                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 25%);
+                radial-gradient(circle at 15% 0%, rgba(45, 212, 191, 0.04) 0%, transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(59, 130, 246, 0.04) 0%, transparent 25%);
             background-attachment: fixed;
         }
 
-        /* Subtle Scrollbar */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
 
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
-        }
-
-        /* Glassmorphism Utilities */
         .glass-panel {
             background: var(--card-glass);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border: 1px solid var(--border-subtle);
-            box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.3);
         }
 
         .glass-nav {
-            background: rgba(2, 6, 23, 0.85);
+            background: rgba(2, 6, 23, 0.9);
             backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--border-subtle);
         }
 
-        /* Form Elements */
         .input-clean {
             background: transparent;
             border: none;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
             color: white;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             border-radius: 0;
-            padding: 8px 0;
+            padding: 6px 0;
         }
-
         .input-clean:focus {
             outline: none;
             border-color: var(--accent-teal);
-            box-shadow: 0 1px 0 0 var(--accent-teal);
+        }
+        .input-clean:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
         }
 
         .btn-primary {
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%), #1e293b;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.2s;
+            background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 100%), #1e293b;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: all 0.15s;
             cursor: pointer;
         }
-
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background: #334155;
             transform: translateY(-1px);
         }
+        .btn-primary:active:not(:disabled) { transform: translateY(0); }
+        .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        .btn-primary:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+        .btn-confirm {
+            background: #f1f5f9;
+            color: #0f172a;
+            font-weight: 600;
+            transition: all 0.15s;
         }
+        .btn-confirm:hover:not(:disabled) { background: #fff; }
+        .btn-confirm:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* Typography Utilities */
         .text-label {
-            font-size: 0.75rem;
+            font-size: 0.65rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            letter-spacing: 0.06em;
             color: #64748b;
             font-weight: 600;
         }
@@ -110,429 +98,340 @@
             font-feature-settings: "tnum";
             font-variant-numeric: tabular-nums;
         }
+
+        .flow-step { transition: all 0.2s; }
+        .flow-step.active .flow-icon { 
+            background: rgba(45, 212, 191, 0.15); 
+            border-color: rgba(45, 212, 191, 0.4);
+        }
+        .flow-step.active .flow-label { color: #2dd4bf; }
+        .flow-step.completed .flow-icon { 
+            background: rgba(45, 212, 191, 0.1); 
+            border-color: rgba(45, 212, 191, 0.3);
+        }
+        .flow-step.completed .flow-label { color: #94a3b8; }
     </style>
 </head>
 
 <body class="min-h-screen flex flex-col">
 
-    <!-- 1. Top Navigation Bar -->
+    <!-- Navigation -->
     <nav class="glass-nav sticky top-0 z-50 w-full">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-10">
-                <!-- Logo -->
+        <div class="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-8">
                 <div class="flex items-center gap-2">
-                    <div
-                        class="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 flex items-center justify-center text-white">
-                        <span class="font-bold tracking-tight">F</span>
+                    <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-slate-800 to-slate-900 border border-white/10 flex items-center justify-center text-white">
+                        <span class="font-bold text-sm">F</span>
                     </div>
-                    <span class="text-white font-medium tracking-tight">FinPlay</span>
+                    <span class="text-white font-medium text-sm tracking-tight">FinPlay</span>
                 </div>
-
-                <!-- Tabs -->
                 <div class="hidden md:flex items-center gap-1">
-                    <a href="dashboard.html"
-                        class="px-4 py-2 rounded-full bg-white/5 text-white text-sm font-medium border border-white/5">Dashboard</a>
-                    <a href="investing.html"
-                        class="px-4 py-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors">Investing</a>
-                    <a href="analytics.html"
-                        class="px-4 py-2 rounded-full text-slate-400 hover:text-white hover:bg-white/5 text-sm font-medium transition-colors">Insights</a>
+                    <a href="dashboard.html" class="px-3 py-1.5 rounded-full bg-white/5 text-white text-xs font-medium border border-white/5">Dashboard</a>
+                    <a href="investing" class="px-3 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 text-xs font-medium transition-colors">Investing</a>
+                    <a href="analytics" class="px-3 py-1.5 rounded-full text-slate-400 hover:text-white hover:bg-white/5 text-xs font-medium transition-colors">Insights</a>
                 </div>
             </div>
-
-            <!-- Indicators -->
-            <div class="flex items-center gap-3">
-                <div class="px-3 py-1.5 rounded-md border border-slate-800 bg-slate-900/50 flex items-center gap-2">
-                    <iconify-icon icon="solar:calendar-linear" class="text-slate-500"></iconify-icon>
-                    <span class="text-xs font-medium text-slate-300">Month 1</span>
+            <div class="flex items-center gap-2">
+                <div class="px-2.5 py-1 rounded-md border border-slate-800 bg-slate-900/50 flex items-center gap-1.5">
+                    <iconify-icon icon="solar:calendar-linear" class="text-slate-500 text-xs"></iconify-icon>
+                    <span class="text-[10px] font-medium text-slate-300" id="month-badge">Month 1</span>
                 </div>
-                <div class="px-3 py-1.5 rounded-md border border-slate-800 bg-slate-900/50 flex items-center gap-2">
-                    <iconify-icon icon="solar:medal-ribbon-linear" class="text-teal-500/80"></iconify-icon>
-                    <span class="text-xs font-medium text-slate-300">Level 1</span>
+                <div class="px-2.5 py-1 rounded-md border border-slate-800 bg-slate-900/50 flex items-center gap-1.5">
+                    <iconify-icon icon="solar:medal-ribbon-linear" class="text-teal-500/70 text-xs"></iconify-icon>
+                    <span class="text-[10px] font-medium text-slate-300" id="level-badge">Level 1</span>
                 </div>
             </div>
         </div>
     </nav>
 
-    <main class="flex-1 max-w-7xl mx-auto px-6 py-12 w-full space-y-12">
+    <main class="flex-1 max-w-7xl mx-auto px-6 py-10 w-full space-y-10">
 
-        <!-- 2. Welcome Section -->
-        <section class="fade-in">
-            <h1 class="text-3xl font-medium text-white tracking-tight mb-2">Welcome, Alex</h1>
-            <p class="text-slate-400 font-light">Your financial simulation is active. Take a moment to review your
-                position.</p>
-        </section>
-
-        <!-- 3. Monthly Flow Explanation Strip -->
-        <section class="w-full">
-            <div
-                class="glass-panel rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
-                <!-- Background decorative line -->
-                <div
-                    class="absolute top-1/2 left-10 right-10 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent hidden md:block z-0">
-                </div>
-
-                <!-- Steps -->
-                <div
-                    class="flex flex-col items-center gap-2 bg-slate-900/80 px-4 py-2 rounded-lg z-10 border border-slate-800 md:bg-transparent md:border-0 md:p-0">
-                    <span
-                        class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-teal-400 mb-1 shadow-lg relative z-10 bg-slate-900">
-                        <iconify-icon icon="solar:wallet-money-linear" width="16"></iconify-icon>
-                    </span>
-                    <span class="text-xs font-medium text-slate-300 relative z-10">Income</span>
-                </div>
-
-                <iconify-icon icon="solar:arrow-right-linear"
-                    class="text-slate-600 hidden md:block relative z-10"></iconify-icon>
-
-                <div class="flex flex-col items-center gap-2 z-10">
-                    <span
-                        class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-blue-400 mb-1 shadow-lg relative z-10 bg-slate-900">
-                        <iconify-icon icon="solar:shield-check-linear" width="16"></iconify-icon>
-                    </span>
-                    <span class="text-xs font-medium text-slate-300 relative z-10">Protected</span>
-                </div>
-
-                <iconify-icon icon="solar:arrow-right-linear"
-                    class="text-slate-600 hidden md:block relative z-10"></iconify-icon>
-
-                <div class="flex flex-col items-center gap-2 z-10">
-                    <span
-                        class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 mb-1 shadow-lg relative z-10 bg-slate-900">
-                        <iconify-icon icon="solar:pie-chart-2-linear" width="16"></iconify-icon>
-                    </span>
-                    <span class="text-xs font-medium text-slate-400 relative z-10">Budgeted</span>
-                </div>
-
-                <iconify-icon icon="solar:arrow-right-linear"
-                    class="text-slate-600 hidden md:block relative z-10"></iconify-icon>
-
-                <div class="flex flex-col items-center gap-2 z-10">
-                    <span
-                        class="w-8 h-8 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 mb-1 shadow-lg relative z-10 bg-slate-900">
-                        <iconify-icon icon="solar:graph-up-linear" width="16"></iconify-icon>
-                    </span>
-                    <span class="text-xs font-medium text-slate-400 relative z-10">Invested</span>
-                </div>
-
-                <div class="md:ml-auto pl-6 md:border-l border-slate-800 relative z-10">
-                    <p class="text-xs text-slate-500 max-w-xs leading-relaxed">
-                        Each month is a fresh decision cycle. Money only carries forward when you choose to protect or
-                        invest it.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. "Your Money This Month" Section -->
+        <!-- Welcome -->
         <section>
-            <div class="flex items-end justify-between mb-6">
+            <h1 class="text-2xl font-medium text-white tracking-tight mb-1">Welcome, <span id="user-name">User</span></h1>
+            <p class="text-slate-500 text-sm font-light">Your financial simulation is active. Review your position.</p>
+        </section>
+
+        <!-- Monthly Flow Strip -->
+        <section>
+            <div class="glass-panel rounded-xl px-6 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 md:gap-6">
+                    <div class="flow-step active flex flex-col items-center gap-1" data-step="income">
+                        <span class="flow-icon w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-teal-400">
+                            <iconify-icon icon="solar:wallet-money-linear" width="14"></iconify-icon>
+                        </span>
+                        <span class="flow-label text-[10px] font-medium text-slate-400">Income</span>
+                    </div>
+                    <iconify-icon icon="solar:arrow-right-linear" class="text-slate-700 hidden md:block" width="12"></iconify-icon>
+                    <div class="flow-step flex flex-col items-center gap-1" data-step="protected">
+                        <span class="flow-icon w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-blue-400">
+                            <iconify-icon icon="solar:shield-check-linear" width="14"></iconify-icon>
+                        </span>
+                        <span class="flow-label text-[10px] font-medium text-slate-500">Protected</span>
+                    </div>
+                    <iconify-icon icon="solar:arrow-right-linear" class="text-slate-700 hidden md:block" width="12"></iconify-icon>
+                    <div class="flow-step flex flex-col items-center gap-1" data-step="budgeted">
+                        <span class="flow-icon w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                            <iconify-icon icon="solar:pie-chart-2-linear" width="14"></iconify-icon>
+                        </span>
+                        <span class="flow-label text-[10px] font-medium text-slate-500">Budgeted</span>
+                    </div>
+                    <iconify-icon icon="solar:arrow-right-linear" class="text-slate-700 hidden md:block" width="12"></iconify-icon>
+                    <div class="flow-step flex flex-col items-center gap-1" data-step="invested">
+                        <span class="flow-icon w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                            <iconify-icon icon="solar:graph-up-linear" width="14"></iconify-icon>
+                        </span>
+                        <span class="flow-label text-[10px] font-medium text-slate-500">Invested</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-600 max-w-xs leading-relaxed text-center md:text-right">
+                    Each month is a fresh decision cycle. Money only carries forward when protected or invested.
+                </p>
+            </div>
+        </section>
+
+        <!-- Money Overview Cards -->
+        <section>
+            <div class="flex items-end justify-between mb-4">
                 <div>
-                    <h2 class="text-lg font-medium text-white tracking-tight">Your Money This Month</h2>
-                    <p class="text-sm text-slate-500 mt-1">See what’s available to allocate and what’s committed.</p>
+                    <h2 class="text-base font-medium text-white tracking-tight">Your Money This Month</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">What's available to allocate and what's committed.</p>
                 </div>
             </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Card 1 -->
-                <div
-                    class="glass-panel p-5 rounded-xl flex flex-col justify-between h-32 hover:bg-slate-800/40 transition-colors">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                <div class="glass-panel p-4 rounded-xl flex flex-col justify-between h-28">
                     <div class="flex justify-between items-start">
-                        <span class="text-label">Income This Month</span>
-                        <iconify-icon icon="solar:wad-of-money-linear" class="text-slate-600"></iconify-icon>
+                        <span class="text-label">Spendable</span>
+                        <iconify-icon icon="solar:wad-of-money-linear" class="text-slate-600 text-sm"></iconify-icon>
                     </div>
                     <div>
-                        <span class="text-2xl font-medium text-white text-value tracking-tight">₹40,000</span>
-                        <p class="text-xs text-slate-500 mt-1">Available to allocate</p>
+                        <span class="text-xl font-medium text-white text-value" id="val-spendable">₹0</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">After protection</p>
                     </div>
                 </div>
-
-                <!-- Card 2 -->
-                <div
-                    class="glass-panel p-5 rounded-xl flex flex-col justify-between h-32 hover:bg-slate-800/40 transition-colors">
+                <div class="glass-panel p-4 rounded-xl flex flex-col justify-between h-28">
                     <div class="flex justify-between items-start">
-                        <span class="text-label">Income Per Month</span>
-                        <iconify-icon icon="solar:calendar-mark-linear" class="text-slate-600"></iconify-icon>
+                        <span class="text-label">Total Income</span>
+                        <iconify-icon icon="solar:calendar-mark-linear" class="text-slate-600 text-sm"></iconify-icon>
                     </div>
                     <div>
-                        <span class="text-2xl font-medium text-slate-300 text-value tracking-tight">₹40,000</span>
-                        <p class="text-xs text-slate-500 mt-1">Fixed Recurring</p>
+                        <span class="text-xl font-medium text-slate-300 text-value" id="val-income">₹0</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Monthly recurring</p>
                     </div>
                 </div>
-
-                <!-- Card 3 -->
-                <div
-                    class="glass-panel p-5 rounded-xl flex flex-col justify-between h-32 hover:bg-slate-800/40 transition-colors">
+                <div class="glass-panel p-4 rounded-xl flex flex-col justify-between h-28">
                     <div class="flex justify-between items-start">
-                        <span class="text-label text-teal-500/80">Protected Now</span>
-                        <iconify-icon icon="solar:lock-password-linear" class="text-teal-500/50"></iconify-icon>
+                        <span class="text-label text-teal-500/80">Protected</span>
+                        <iconify-icon icon="solar:lock-password-linear" class="text-teal-500/50 text-sm"></iconify-icon>
                     </div>
                     <div>
-                        <span class="text-2xl font-medium text-teal-400 text-value tracking-tight"
-                            id="val-protected-now">₹8,000</span>
-                        <p class="text-xs text-slate-500 mt-1">20% of income secured</p>
+                        <span class="text-xl font-medium text-teal-400 text-value" id="val-protected">₹0</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5"><span id="val-rate-hint">0%</span> secured</p>
                     </div>
                 </div>
-
-                <!-- Card 4 -->
-                <div
-                    class="glass-panel p-5 rounded-xl flex flex-col justify-between h-32 hover:bg-slate-800/40 transition-colors">
+                <div class="glass-panel p-4 rounded-xl flex flex-col justify-between h-28">
                     <div class="flex justify-between items-start">
                         <span class="text-label">Commitments</span>
-                        <iconify-icon icon="solar:bill-list-linear" class="text-slate-600"></iconify-icon>
+                        <iconify-icon icon="solar:bill-list-linear" class="text-slate-600 text-sm"></iconify-icon>
                     </div>
                     <div>
-                        <span class="text-2xl font-medium text-slate-300 text-value tracking-tight">₹0</span>
-                        <p class="text-xs text-slate-500 mt-1">Recurring bills/EMI</p>
+                        <span class="text-xl font-medium text-slate-300 text-value" id="val-commitments">₹0</span>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Bills / EMI</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <!-- Left Column (Actionable) -->
-            <div class="lg:col-span-2 space-y-10">
+            <!-- Left Column (Actions) -->
+            <div class="lg:col-span-2 space-y-8">
 
-                <!-- 5. Protected Money Section -->
+                <!-- Monthly Budget (Primary Task Area) -->
                 <section>
-                    <div class="mb-4">
-                        <h2 class="text-lg font-medium text-white tracking-tight">Protected Money</h2>
-                        <p class="text-sm text-slate-500 mt-1">Money set aside intentionally — designed to be harder to
-                            spend.</p>
+                    <div class="mb-3">
+                        <h2 class="text-base font-medium text-white tracking-tight">Monthly Budget</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Allocate your spendable income — reversible until confirmed.</p>
                     </div>
-
-                    <div
-                        class="glass-panel p-1 rounded-2xl bg-gradient-to-br from-slate-800/50 to-slate-900/50 border border-teal-500/20 shadow-[0_0_30px_-10px_rgba(45,212,191,0.1)]">
-                        <div class="bg-slate-900/80 rounded-xl p-6 relative overflow-hidden">
-                            <div
-                                class="absolute top-0 right-0 w-32 h-32 bg-teal-500/5 rounded-full blur-3xl -mr-10 -mt-10">
-                            </div>
-
-                            <div
-                                class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative z-10">
-                                <div class="flex items-start gap-4">
-                                    <div
-                                        class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-teal-400 shadow-sm">
-                                        <iconify-icon icon="solar:safe-square-linear" width="24"></iconify-icon>
-                                    </div>
-                                    <div>
-                                        <h3 class="text-base font-medium text-white">Future Self Wallet</h3>
-                                        <p class="text-xs text-slate-400 mt-1 max-w-sm">This money is protected from
-                                            spending. Think of it as paying your future self first.</p>
-                                    </div>
-                                </div>
-
-                                <div class="flex items-center gap-6">
-                                    <div class="text-right">
-                                        <p class="text-label mb-1">Current Rate</p>
-                                        <p class="text-lg font-semibold text-white text-value" id="val-protected-rate">
-                                            20%</p>
-                                    </div>
-                                    <div class="h-8 w-px bg-slate-700 hidden sm:block"></div>
-                                    <div class="text-right">
-                                        <p class="text-label mb-1">Balance</p>
-                                        <p class="text-lg font-semibold text-teal-400 text-value"
-                                            id="val-protected-balance">₹8,000</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="mt-6 pt-5 border-t border-white/5 flex justify-end">
-                                <button id="btn-adjust-rate"
-                                    class="btn-primary px-4 py-2 rounded-lg text-sm text-slate-300 hover:text-white flex items-center gap-2">
-                                    <iconify-icon icon="solar:settings-minimalistic-linear"></iconify-icon>
-                                    Adjust Rate
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- 9. Monthly Budget Section (Placed in main flow for importance) -->
-                <section>
-                    <div class="mb-4">
-                        <h2 class="text-lg font-medium text-white tracking-tight">Monthly Budget</h2>
-                        <p class="text-sm text-slate-500 mt-1">Allocate your spendable income — choices are reversible
-                            until you confirm.</p>
-                    </div>
-
                     <div class="glass-panel rounded-xl overflow-hidden">
-                        <div class="p-6 space-y-6">
-                            <!-- Budget Row -->
-                            <div class="flex items-center gap-4 group">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
-                                    <iconify-icon icon="solar:home-smile-linear"></iconify-icon>
+                        <div class="p-5 space-y-4">
+                            <div class="flex items-center gap-3 group">
+                                <div class="w-7 h-7 rounded-full bg-slate-800/40 flex items-center justify-center text-slate-500 group-hover:text-white transition-colors">
+                                    <iconify-icon icon="solar:home-smile-linear" width="14"></iconify-icon>
                                 </div>
                                 <div class="flex-1">
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Needs & Living</label>
-                                    <input id="input-needs" type="text" placeholder="₹0"
-                                        class="input-clean w-full text-base font-medium placeholder-slate-600">
+                                    <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Needs & Living</label>
+                                    <input id="input-needs" type="number" placeholder="0" class="input-clean w-full text-sm font-medium placeholder-slate-600">
                                 </div>
                             </div>
-
-                            <!-- Budget Row -->
-                            <div class="flex items-center gap-4 group">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
-                                    <iconify-icon icon="solar:bag-heart-linear"></iconify-icon>
+                            <div class="flex items-center gap-3 group">
+                                <div class="w-7 h-7 rounded-full bg-slate-800/40 flex items-center justify-center text-slate-500 group-hover:text-white transition-colors">
+                                    <iconify-icon icon="solar:bag-heart-linear" width="14"></iconify-icon>
                                 </div>
                                 <div class="flex-1">
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Wants &
-                                        Lifestyle</label>
-                                    <input id="input-wants" type="text" placeholder="₹0"
-                                        class="input-clean w-full text-base font-medium placeholder-slate-600">
+                                    <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Wants & Lifestyle</label>
+                                    <input id="input-wants" type="number" placeholder="0" class="input-clean w-full text-sm font-medium placeholder-slate-600">
                                 </div>
                             </div>
-
-                            <!-- Budget Row -->
-                            <div class="flex items-center gap-4 group">
-                                <div
-                                    class="w-8 h-8 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:text-white transition-colors">
-                                    <iconify-icon icon="solar:bolt-linear"></iconify-icon>
+                            <div class="flex items-center gap-3 group">
+                                <div class="w-7 h-7 rounded-full bg-slate-800/40 flex items-center justify-center text-slate-500 group-hover:text-white transition-colors">
+                                    <iconify-icon icon="solar:bolt-linear" width="14"></iconify-icon>
                                 </div>
                                 <div class="flex-1">
-                                    <label class="block text-xs font-medium text-slate-400 mb-1">Unexpected
-                                        Expenses</label>
-                                    <input id="input-unexpected" type="text" placeholder="₹0"
-                                        class="input-clean w-full text-base font-medium placeholder-slate-600">
+                                    <label class="block text-[10px] font-medium text-slate-500 mb-0.5">Unexpected</label>
+                                    <input id="input-unexpected" type="number" placeholder="0" class="input-clean w-full text-sm font-medium placeholder-slate-600">
                                 </div>
                             </div>
                         </div>
-
-                        <div
-                            class="px-6 py-4 bg-slate-900/50 border-t border-white/5 flex justify-between items-center">
-                            <div class="flex gap-4 text-sm">
-                                <span class="text-slate-500">Total Budgeted: <span id="val-total-budgeted"
-                                        class="text-white font-medium ml-1">₹0</span></span>
-                                <span class="text-slate-500">Remaining: <span id="val-remaining"
-                                        class="text-teal-400 font-medium ml-1">₹32,000</span></span>
+                        <div class="px-5 py-3 bg-slate-900/40 border-t border-white/5 flex justify-between items-center">
+                            <div class="flex gap-4 text-xs">
+                                <span class="text-slate-500">Total: <span id="val-budgeted" class="text-white font-medium ml-0.5">₹0</span></span>
+                                <span class="text-slate-500">Remaining: <span id="val-remaining" class="text-teal-400 font-medium ml-0.5">₹0</span></span>
                             </div>
-                            <button id="btn-confirm-budget"
-                                class="bg-slate-100 hover:bg-white text-slate-900 px-5 py-2 rounded-lg text-sm font-semibold transition-colors shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <button id="btn-confirm-budget" class="btn-confirm px-4 py-1.5 rounded-lg text-xs disabled:opacity-40" disabled>
                                 Confirm Budget
                             </button>
                         </div>
                     </div>
                 </section>
 
-                <!-- 10. Goal Wallets Section -->
+                <!-- Protected Money -->
                 <section>
-                    <div class="mb-4">
-                        <h2 class="text-lg font-medium text-white tracking-tight">Goal Wallets</h2>
-                        <p class="text-sm text-slate-500 mt-1">Commit money to specific goals — withdrawing early has
-                            trade-offs.</p>
+                    <div class="mb-3">
+                        <h2 class="text-base font-medium text-white tracking-tight">Protected Money</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Money set aside intentionally — harder to spend.</p>
                     </div>
-
-                    <div
-                        class="glass-panel rounded-xl p-10 flex flex-col items-center justify-center text-center border-dashed border-slate-700/50">
-                        <div
-                            class="w-12 h-12 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-500 mb-4">
-                            <iconify-icon icon="solar:folder-with-files-linear" width="24"></iconify-icon>
+                    <div class="glass-panel rounded-xl p-5 border-teal-500/10">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-teal-400">
+                                    <iconify-icon icon="solar:safe-square-linear" width="20"></iconify-icon>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-medium text-white">Future Self Wallet</h3>
+                                    <p class="text-[10px] text-slate-500 mt-0.5 max-w-xs">This money is protected. Think of it as paying your future self first.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-5">
+                                <div class="text-right">
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-wide">Rate</p>
+                                    <p class="text-base font-semibold text-white text-value" id="val-rate">20%</p>
+                                </div>
+                                <div class="h-6 w-px bg-slate-700 hidden sm:block"></div>
+                                <div class="text-right">
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-wide">Balance</p>
+                                    <p class="text-base font-semibold text-teal-400 text-value" id="val-protected-balance">₹0</p>
+                                </div>
+                            </div>
                         </div>
-                        <h3 class="text-sm font-medium text-slate-300">No Goal Wallets Active</h3>
-                        <p class="text-xs text-slate-500 mt-2 max-w-xs mb-6">Creating a wallet separates funds for
-                            specific outcomes like travel, gadgets, or emergency funds.</p>
-                        <button id="btn-create-goal"
-                            class="btn-primary px-4 py-2 rounded-lg text-sm text-slate-300 hover:text-white transition-colors">
-                            Create Goal Wallet
-                        </button>
+                        <div class="mt-4 pt-3 border-t border-white/5 flex justify-end">
+                            <button id="btn-adjust-rate" class="btn-primary px-3 py-1.5 rounded-lg text-xs text-slate-300 hover:text-white flex items-center gap-1.5">
+                                <iconify-icon icon="solar:settings-minimalistic-linear" width="12"></iconify-icon>
+                                Adjust Rate
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Goal Wallets -->
+                <section>
+                    <div class="mb-3">
+                        <h2 class="text-base font-medium text-white tracking-tight">Goal Wallets</h2>
+                        <p class="text-xs text-slate-500 mt-0.5">Commit money to specific goals — withdrawing early has trade-offs.</p>
+                    </div>
+                    <div id="goal-wallets-container">
+                        <div id="goal-wallets-empty" class="glass-panel rounded-xl p-8 flex flex-col items-center justify-center text-center border-dashed border-slate-700/30">
+                            <div class="w-10 h-10 rounded-full bg-slate-800/40 flex items-center justify-center text-slate-500 mb-3">
+                                <iconify-icon icon="solar:folder-with-files-linear" width="20"></iconify-icon>
+                            </div>
+                            <h3 class="text-xs font-medium text-slate-400">No Goal Wallets Active</h3>
+                            <p class="text-[10px] text-slate-600 mt-1 max-w-xs mb-4">Create a wallet to separate funds for travel, gadgets, or emergencies.</p>
+                            <button id="btn-create-goal" class="btn-primary px-3 py-1.5 rounded-lg text-xs text-slate-300 hover:text-white">
+                                Create Goal Wallet
+                            </button>
+                        </div>
+                        <div id="goal-wallets-list" class="space-y-3 hidden"></div>
                     </div>
                 </section>
 
             </div>
 
-            <!-- Right Column (Controls & Meta) -->
-            <div class="space-y-8">
+            <!-- Right Column (Status & Reflection) -->
+            <div class="space-y-6">
 
-                <!-- 6. Temptation Controls Section -->
+                <!-- Temptation Controls -->
                 <section>
-                    <div class="mb-4">
-                        <h2 class="text-base font-medium text-white tracking-tight">Temptation Controls</h2>
-                        <p class="text-xs text-slate-500 mt-1">Set spending limits on high-temptation categories.</p>
+                    <div class="mb-3">
+                        <h2 class="text-sm font-medium text-white tracking-tight">Temptation Controls</h2>
+                        <p class="text-[10px] text-slate-500 mt-0.5">Set spending limits on high-temptation categories.</p>
                     </div>
-
-                    <div class="glass-panel rounded-xl p-6">
-                        <div class="flex flex-col items-center text-center py-4">
-                            <div
-                                class="w-10 h-10 rounded-full bg-slate-800/30 flex items-center justify-center text-slate-500 mb-3">
-                                <iconify-icon icon="solar:shield-warning-linear" width="20"></iconify-icon>
+                    <div class="glass-panel rounded-xl p-5">
+                        <div class="flex flex-col items-center text-center py-2">
+                            <div class="w-8 h-8 rounded-full bg-slate-800/30 flex items-center justify-center text-slate-500 mb-2">
+                                <iconify-icon icon="solar:shield-warning-linear" width="16"></iconify-icon>
                             </div>
-                            <p class="text-sm text-slate-400 mb-4">No active limits set for this month.</p>
-                            <button id="btn-set-limits"
-                                class="text-xs font-medium text-teal-400 hover:text-teal-300 border-b border-teal-500/30 pb-0.5 hover:border-teal-400 transition-all">
+                            <p class="text-[10px] text-slate-500 mb-3">No active limits set for this month.</p>
+                            <button id="btn-set-limits" class="text-[10px] font-medium text-teal-400 hover:text-teal-300 border-b border-teal-500/30 pb-0.5 hover:border-teal-400 transition-all">
                                 Set Limits
                             </button>
                         </div>
                     </div>
                 </section>
 
-                <!-- 7. Learning Progress Section -->
+                <!-- Learning Progress -->
                 <section>
-                    <div class="mb-4 flex items-center justify-between">
-                        <h2 class="text-base font-medium text-white tracking-tight">Learning Progress</h2>
-                        <span
-                            class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">LEVEL
-                            1</span>
+                    <div class="mb-3 flex items-center justify-between">
+                        <h2 class="text-sm font-medium text-white tracking-tight">Learning Progress</h2>
+                        <span id="level-pill" class="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-slate-800 text-slate-400 border border-slate-700">LEVEL 1</span>
                     </div>
-
-                    <div class="glass-panel rounded-xl p-6">
-                        <div class="flex justify-between text-xs text-slate-400 mb-2">
+                    <div class="glass-panel rounded-xl p-4">
+                        <div class="flex justify-between text-[10px] text-slate-500 mb-1.5">
                             <span>Experience</span>
-                            <span class="text-white">120 / 500 XP</span>
+                            <span class="text-white" id="val-xp">0 / 100 XP</span>
                         </div>
-                        <div class="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden mb-3">
-                            <div class="h-full w-[24%] bg-gradient-to-r from-teal-600 to-blue-600 rounded-full"></div>
+                        <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden mb-2">
+                            <div id="xp-bar" class="h-full w-0 bg-gradient-to-r from-teal-600 to-blue-600 rounded-full transition-all duration-300"></div>
                         </div>
-                        <p class="text-[10px] text-slate-500 leading-relaxed">
-                            Levels reflect experience gained through decision making, not just financial success.
+                        <p class="text-[9px] text-slate-600 leading-relaxed">
+                            Levels reflect experience through decision making, not just financial success.
                         </p>
                     </div>
                 </section>
 
-                <!-- 8. Profile Summary Card -->
+                <!-- Profile Summary -->
                 <section>
-                    <div class="mb-4">
-                        <h2 class="text-base font-medium text-white tracking-tight">Your Profile</h2>
+                    <div class="mb-3">
+                        <h2 class="text-sm font-medium text-white tracking-tight">Your Profile</h2>
                     </div>
-
-                    <div class="glass-panel rounded-xl p-0 overflow-hidden">
+                    <div class="glass-panel rounded-xl overflow-hidden">
                         <div class="divide-y divide-white/5">
-                            <div class="flex justify-between items-center p-4">
-                                <span class="text-xs text-slate-500 font-medium">Knowledge</span>
-                                <span class="text-xs text-slate-300">Beginner</span>
+                            <div class="flex justify-between items-center px-4 py-3">
+                                <span class="text-[10px] text-slate-500 font-medium">Knowledge</span>
+                                <span class="text-[10px] text-slate-300" id="val-knowledge">-</span>
                             </div>
-                            <div class="flex justify-between items-center p-4">
-                                <span class="text-xs text-slate-500 font-medium">Life Stage</span>
-                                <span class="text-xs text-slate-300">Young Professional</span>
+                            <div class="flex justify-between items-center px-4 py-3">
+                                <span class="text-[10px] text-slate-500 font-medium">Life Stage</span>
+                                <span class="text-[10px] text-slate-300" id="val-lifestage">-</span>
                             </div>
-                            <div class="flex justify-between items-center p-4">
-                                <span class="text-xs text-slate-500 font-medium">Primary Goal</span>
-                                <span class="text-xs text-slate-300">Learn to budget</span>
+                            <div class="flex justify-between items-center px-4 py-3">
+                                <span class="text-[10px] text-slate-500 font-medium">Primary Goal</span>
+                                <span class="text-[10px] text-slate-300" id="val-goal">-</span>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- 11. Time-Travel Letters Section -->
+                <!-- Time-Travel Letters -->
                 <section>
-                    <div id="btn-write-letter"
-                        class="glass-panel rounded-xl p-6 relative overflow-hidden group hover:border-slate-700 transition-colors cursor-pointer">
-                        <div
-                            class="absolute top-0 right-0 w-20 h-20 bg-blue-500/5 rounded-full blur-2xl -mr-5 -mt-5 transition-opacity opacity-50 group-hover:opacity-100">
-                        </div>
-
-                        <div class="flex items-start gap-3 relative z-10">
-                            <iconify-icon icon="solar:letter-linear" class="text-slate-400 mt-1"></iconify-icon>
+                    <div id="btn-write-letter" class="glass-panel rounded-xl p-4 group hover:border-slate-700 transition-colors cursor-pointer">
+                        <div class="flex items-start gap-2.5">
+                            <iconify-icon icon="solar:letter-linear" class="text-slate-400 mt-0.5" width="14"></iconify-icon>
                             <div>
-                                <h3 class="text-sm font-medium text-white">Time-Travel Letters</h3>
-                                <p class="text-xs text-slate-500 mt-1 mb-3 leading-relaxed">Write a note to your future
-                                    self — it arrives at a moment you choose.</p>
-                                <span
-                                    class="text-xs font-medium text-slate-300 group-hover:text-white transition-colors flex items-center gap-1">
-                                    Write Letter <iconify-icon icon="solar:arrow-right-linear"
-                                        width="12"></iconify-icon>
+                                <h3 class="text-xs font-medium text-white">Time-Travel Letters</h3>
+                                <p class="text-[10px] text-slate-600 mt-0.5 mb-2 leading-relaxed">Write a note to your future self — it arrives at a moment you choose.</p>
+                                <span class="text-[10px] font-medium text-slate-400 group-hover:text-white transition-colors flex items-center gap-1">
+                                    Write Letter <iconify-icon icon="solar:arrow-right-linear" width="10"></iconify-icon>
                                 </span>
                             </div>
                         </div>
@@ -544,367 +443,497 @@
 
     </main>
 
-    <footer class="max-w-7xl mx-auto px-6 py-8 text-center">
-        <p class="text-[10px] text-slate-600 uppercase tracking-widest font-semibold">FinPlay Simulation • Educational
-            Use Only</p>
+    <footer class="max-w-7xl mx-auto px-6 py-6 text-center">
+        <p class="text-[9px] text-slate-700 uppercase tracking-widest font-semibold">FinPlay Simulation • Educational Use Only</p>
     </footer>
 
+    <!-- ==================== DASHBOARD LOGIC ==================== -->
     <script>
-        const STATE_KEY = 'finplay_dashboard_state';
-        const PROFILE_KEY = 'finplay_profile';
+        /**
+         * FinPlay Dashboard - State Management & Logic
+         * 
+         * Architecture:
+         * 1. appState - Single source of truth for all data
+         * 2. loadState() - Hydrates state from localStorage/onboarding
+         * 3. saveState() - Persists state to localStorage
+         * 4. render() - Updates all UI elements from state
+         * 5. Event bindings - All interactive elements
+         */
 
-        const dashboardState = {
-            income: 0,
-            month: 1,
-            level: 1,
-            protectedRate: 0.20,
-            protectedAmount: 0,
-            budget: {
-                needs: 0,
-                wants: 0,
-                unexpected: 0
+        // ========== STORAGE KEYS ==========
+        const PROFILE_KEY = 'finplay_profile';
+        const STATE_KEY = 'finplay_dashboard_state';
+        const GOALS_KEY = 'finplay_goals';
+        const LETTERS_KEY = 'finplay_letters';
+
+        // ========== CENTRAL STATE OBJECT ==========
+        const appState = {
+            user: {
+                name: '',
+                knowledgeLevel: '',
+                lifeStage: '',
+                primaryGoal: ''
             },
-            commitments: 0,
-            confirmedBudget: false
+            finance: {
+                monthlyIncome: 0,
+                protectedRate: 0.20,
+                protectedAmount: 0,
+                commitments: 0,
+                budget: {
+                    needs: 0,
+                    wants: 0,
+                    unexpected: 0
+                },
+                confirmedBudget: false
+            },
+            experience: {
+                xp: 0,
+                level: 1,
+                month: 1
+            },
+            goals: [],
+            flowStep: 'income'
         };
 
-        function loadProfileFromStorage() {
-            try {
-                const data = localStorage.getItem(PROFILE_KEY);
-                return data ? JSON.parse(data) : null;
-            } catch (e) {
-                console.warn('Could not load profile:', e);
-                return null;
-            }
-        }
-
-        function loadStateFromStorage() {
-            try {
-                const data = localStorage.getItem(STATE_KEY);
-                return data ? JSON.parse(data) : null;
-            } catch (e) {
-                return null;
-            }
-        }
-
-        function initializeDashboardState() {
-            const profile = loadProfileFromStorage();
-            const savedState = loadStateFromStorage();
-
-            if (profile) {
-                dashboardState.income = profile.income || 40000;
-                dashboardState.month = profile.budget?.month || 1;
-                dashboardState.level = profile.level || 1;
-            }
-
+        // ========== STATE PERSISTENCE ==========
+        
+        function loadState() {
+            // 1. Load saved dashboard state
+            const savedState = localStorage.getItem(STATE_KEY);
             if (savedState) {
-                if (profile && savedState.income !== profile.income) {
-                    savedState.income = profile.income;
-                }
-                Object.assign(dashboardState, savedState);
+                const parsed = JSON.parse(savedState);
+                Object.assign(appState.finance, parsed.finance || {});
+                Object.assign(appState.experience, parsed.experience || {});
+                appState.flowStep = parsed.flowStep || 'income';
             }
 
-            dashboardState.protectedAmount = Math.round(dashboardState.income * dashboardState.protectedRate);
-            saveState();
+            // 2. Load profile from onboarding (always sync)
+            const profile = localStorage.getItem(PROFILE_KEY);
+            if (profile) {
+                const p = JSON.parse(profile);
+                appState.user.name = p.name || '';
+                appState.user.knowledgeLevel = p.knowledge_level || '';
+                appState.user.lifeStage = p.life_stage || '';
+                appState.user.primaryGoal = p.primary_goal || '';
+                
+                // Income from onboarding takes priority
+                if (p.income) {
+                    appState.finance.monthlyIncome = Number(p.income);
+                }
+            }
+
+            // 3. Load goals
+            const goals = localStorage.getItem(GOALS_KEY);
+            if (goals) {
+                appState.goals = JSON.parse(goals);
+            }
+
+            // 4. Calculate protected amount
+            appState.finance.protectedAmount = Math.round(
+                appState.finance.monthlyIncome * appState.finance.protectedRate
+            );
+
+            console.log('State loaded:', appState);
         }
 
         function saveState() {
-            localStorage.setItem(STATE_KEY, JSON.stringify(dashboardState));
+            localStorage.setItem(STATE_KEY, JSON.stringify({
+                finance: appState.finance,
+                experience: appState.experience,
+                flowStep: appState.flowStep
+            }));
+            localStorage.setItem(GOALS_KEY, JSON.stringify(appState.goals));
         }
 
-        function formatCurrency(amount) {
-            return '₹' + Math.round(amount).toLocaleString('en-IN');
-        }
+        // ========== CALCULATIONS ==========
 
-        function parseCurrency(str) {
-            if (!str) return 0;
-            const clean = str.toString().replace(/[^0-9.]/g, '');
-            return parseFloat(clean) || 0;
-        }
-
-        function getProtectedAmount() {
-            return Math.round(dashboardState.income * dashboardState.protectedRate);
-        }
-
-        function getSpendableIncome() {
-            return dashboardState.income - getProtectedAmount();
+        function getSpendable() {
+            return appState.finance.monthlyIncome - appState.finance.protectedAmount;
         }
 
         function getTotalBudgeted() {
-            return dashboardState.budget.needs + dashboardState.budget.wants + dashboardState.budget.unexpected;
+            const b = appState.finance.budget;
+            return (Number(b.needs) || 0) + (Number(b.wants) || 0) + (Number(b.unexpected) || 0);
         }
 
-        function renderDashboard() {
-            const profile = loadProfileFromStorage();
-            const income = dashboardState.income;
-            const protectedAmt = getProtectedAmount();
-            const spendable = getSpendableIncome();
+        function getRemaining() {
+            return getSpendable() - getTotalBudgeted();
+        }
+
+        function isBudgetValid() {
+            return getTotalBudgeted() > 0 && getRemaining() >= 0;
+        }
+
+        // ========== FORMATTING ==========
+
+        function formatCurrency(num) {
+            return '₹' + Math.round(num).toLocaleString('en-IN');
+        }
+
+        // ========== RENDER FUNCTION ==========
+
+        function render() {
+            const spendable = getSpendable();
             const totalBudgeted = getTotalBudgeted();
-            const remaining = spendable - totalBudgeted;
-            const ratePercent = Math.round(dashboardState.protectedRate * 100);
+            const remaining = getRemaining();
+            const ratePercent = Math.round(appState.finance.protectedRate * 100);
 
-            const welcomeEl = document.querySelector('h1.text-3xl');
-            if (welcomeEl && profile?.name) {
-                welcomeEl.textContent = `Welcome, ${profile.name}`;
-            }
+            // Navigation badges
+            document.getElementById('month-badge').textContent = `Month ${appState.experience.month}`;
+            document.getElementById('level-badge').textContent = `Level ${appState.experience.level}`;
 
-            const incomeCards = document.querySelectorAll('.glass-panel .text-2xl.text-value');
-            if (incomeCards[0]) incomeCards[0].textContent = formatCurrency(income);
-            if (incomeCards[1]) incomeCards[1].textContent = formatCurrency(income);
+            // Welcome
+            document.getElementById('user-name').textContent = appState.user.name || 'User';
 
-            const protectedNowEl = document.getElementById('val-protected-now');
-            if (protectedNowEl) {
-                protectedNowEl.textContent = formatCurrency(protectedAmt);
-                const parentCard = protectedNowEl.closest('.glass-panel');
-                if (parentCard) {
-                    const hint = parentCard.querySelector('.text-xs.text-slate-500');
-                    if (hint) hint.textContent = `${ratePercent}% of income secured`;
+            // Money overview cards
+            document.getElementById('val-spendable').textContent = formatCurrency(spendable);
+            document.getElementById('val-income').textContent = formatCurrency(appState.finance.monthlyIncome);
+            document.getElementById('val-protected').textContent = formatCurrency(appState.finance.protectedAmount);
+            document.getElementById('val-rate-hint').textContent = ratePercent + '%';
+            document.getElementById('val-commitments').textContent = formatCurrency(appState.finance.commitments);
+
+            // Protected money section
+            document.getElementById('val-rate').textContent = ratePercent + '%';
+            document.getElementById('val-protected-balance').textContent = formatCurrency(appState.finance.protectedAmount);
+
+            // Budget section
+            document.getElementById('val-budgeted').textContent = formatCurrency(totalBudgeted);
+            
+            const remEl = document.getElementById('val-remaining');
+            remEl.textContent = formatCurrency(remaining);
+            remEl.classList.toggle('text-teal-400', remaining >= 0);
+            remEl.classList.toggle('text-red-400', remaining < 0);
+
+            // Budget inputs (preserve focus)
+            const inputs = {
+                needs: document.getElementById('input-needs'),
+                wants: document.getElementById('input-wants'),
+                unexpected: document.getElementById('input-unexpected')
+            };
+
+            Object.keys(inputs).forEach(key => {
+                if (document.activeElement !== inputs[key]) {
+                    inputs[key].value = appState.finance.budget[key] || '';
                 }
-            }
+                inputs[key].disabled = appState.finance.confirmedBudget;
+            });
 
-            const commitmentsEl = incomeCards[3];
-            if (commitmentsEl) commitmentsEl.textContent = formatCurrency(dashboardState.commitments);
-
-            const protectedRateEl = document.getElementById('val-protected-rate');
-            if (protectedRateEl) protectedRateEl.textContent = `${ratePercent}%`;
-
-            const protectedBalanceEl = document.getElementById('val-protected-balance');
-            if (protectedBalanceEl) protectedBalanceEl.textContent = formatCurrency(protectedAmt);
-
-            const totalBudgetedEl = document.getElementById('val-total-budgeted');
-            if (totalBudgetedEl) totalBudgetedEl.textContent = formatCurrency(totalBudgeted);
-
-            const remainingEl = document.getElementById('val-remaining');
-            if (remainingEl) {
-                remainingEl.textContent = formatCurrency(remaining);
-                remainingEl.classList.toggle('text-teal-400', remaining >= 0);
-                remainingEl.classList.toggle('text-red-400', remaining < 0);
-            }
-
-            const needsInput = document.getElementById('input-needs');
-            const wantsInput = document.getElementById('input-wants');
-            const unexpectedInput = document.getElementById('input-unexpected');
-
-            if (needsInput && document.activeElement !== needsInput) {
-                needsInput.value = dashboardState.budget.needs > 0 ? dashboardState.budget.needs : '';
-            }
-            if (wantsInput && document.activeElement !== wantsInput) {
-                wantsInput.value = dashboardState.budget.wants > 0 ? dashboardState.budget.wants : '';
-            }
-            if (unexpectedInput && document.activeElement !== unexpectedInput) {
-                unexpectedInput.value = dashboardState.budget.unexpected > 0 ? dashboardState.budget.unexpected : '';
-            }
-
+            // Confirm button state
             const confirmBtn = document.getElementById('btn-confirm-budget');
-            if (confirmBtn) {
-                if (dashboardState.confirmedBudget) {
-                    confirmBtn.textContent = 'Budget Confirmed';
-                    confirmBtn.disabled = true;
-                    confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                    setInputsDisabled(true);
-                } else {
-                    confirmBtn.textContent = 'Confirm Budget';
-                    const isValid = remaining >= 0 && totalBudgeted > 0;
-                    confirmBtn.disabled = !isValid;
-                    setInputsDisabled(false);
-                }
+            if (appState.finance.confirmedBudget) {
+                confirmBtn.textContent = 'Budget Confirmed';
+                confirmBtn.disabled = true;
+            } else {
+                confirmBtn.textContent = 'Confirm Budget';
+                confirmBtn.disabled = !isBudgetValid();
             }
 
-            const monthIndicator = document.querySelector('.glass-nav .text-xs.font-medium.text-slate-300');
-            if (monthIndicator) monthIndicator.textContent = `Month ${dashboardState.month}`;
+            // Profile section
+            document.getElementById('val-knowledge').textContent = appState.user.knowledgeLevel || '-';
+            document.getElementById('val-lifestage').textContent = appState.user.lifeStage || '-';
+            document.getElementById('val-goal').textContent = appState.user.primaryGoal || '-';
 
-            const levelIndicator = document.querySelectorAll('.glass-nav .text-xs.font-medium.text-slate-300')[1];
-            if (levelIndicator) levelIndicator.textContent = `Level ${dashboardState.level}`;
+            // Experience section
+            const xpInLevel = appState.experience.xp % 100;
+            const xpNeeded = 100;
+            document.getElementById('val-xp').textContent = `${xpInLevel} / ${xpNeeded} XP`;
+            document.getElementById('xp-bar').style.width = `${(xpInLevel / xpNeeded) * 100}%`;
+            document.getElementById('level-pill').textContent = `LEVEL ${appState.experience.level}`;
 
-            if (profile) {
-                const profileSection = document.querySelector('section:has(h2.text-base)');
-                const profileItems = document.querySelectorAll('.glass-panel .divide-y .flex.justify-between');
-                if (profileItems.length >= 3) {
-                    const knowledgeVal = profileItems[0].querySelector('.text-slate-300');
-                    const lifeStageVal = profileItems[1].querySelector('.text-slate-300');
-                    const goalVal = profileItems[2].querySelector('.text-slate-300');
-                    if (knowledgeVal) knowledgeVal.textContent = profile.knowledge_level || 'Beginner';
-                    if (lifeStageVal) lifeStageVal.textContent = profile.life_stage || 'Young Professional';
-                    if (goalVal) goalVal.textContent = profile.focus_goal || 'Learn to budget';
-                }
-            }
+            // Flow steps
+            updateFlowSteps();
 
-            const xpSection = document.querySelector('.glass-panel:has(.bg-gradient-to-r)');
-            if (xpSection && profile) {
-                const xpDisplay = xpSection.querySelector('.text-white');
-                const xpBar = xpSection.querySelector('.bg-gradient-to-r');
-                if (xpDisplay && profile.xp !== undefined) {
-                    const xpInLevel = profile.xp % 100;
-                    xpDisplay.textContent = `${xpInLevel} / 100 XP`;
-                    if (xpBar) xpBar.style.width = `${xpInLevel}%`;
-                }
-            }
-
-            const levelBadge = document.querySelector('.text-\\[10px\\].font-semibold.bg-slate-800');
-            if (levelBadge) levelBadge.textContent = `LEVEL ${dashboardState.level}`;
-
-            console.log('Dashboard rendered:', { income, protectedAmt, spendable, totalBudgeted, remaining });
+            // Goal wallets
+            renderGoalWallets();
         }
 
-        function setInputsDisabled(disabled) {
-            ['input-needs', 'input-wants', 'input-unexpected'].forEach(id => {
-                const input = document.getElementById(id);
-                if (input) {
-                    input.disabled = disabled;
-                    input.classList.toggle('opacity-50', disabled);
+        function updateFlowSteps() {
+            const steps = ['income', 'protected', 'budgeted', 'invested'];
+            const currentIndex = steps.indexOf(appState.flowStep);
+            
+            steps.forEach((step, index) => {
+                const el = document.querySelector(`.flow-step[data-step="${step}"]`);
+                if (!el) return;
+                
+                el.classList.remove('active', 'completed');
+                if (index < currentIndex) {
+                    el.classList.add('completed');
+                } else if (index === currentIndex) {
+                    el.classList.add('active');
                 }
             });
         }
 
-        function handleBudgetInput(e) {
-            const field = e.target.id.replace('input-', '');
-            dashboardState.budget[field] = parseCurrency(e.target.value);
-            saveState();
-            renderDashboard();
+        function renderGoalWallets() {
+            const empty = document.getElementById('goal-wallets-empty');
+            const list = document.getElementById('goal-wallets-list');
+            
+            if (appState.goals.length === 0) {
+                empty.classList.remove('hidden');
+                list.classList.add('hidden');
+            } else {
+                empty.classList.add('hidden');
+                list.classList.remove('hidden');
+                list.innerHTML = appState.goals.map((goal, i) => `
+                    <div class="glass-panel rounded-xl p-4 flex justify-between items-center">
+                        <div>
+                            <h4 class="text-sm font-medium text-white">${goal.name}</h4>
+                            <p class="text-[10px] text-slate-500">Target: ${formatCurrency(goal.target)}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-medium text-teal-400">${formatCurrency(goal.saved)}</p>
+                            <p class="text-[10px] text-slate-500">${Math.round((goal.saved / goal.target) * 100)}%</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
         }
 
-        function handleAdjustRate() {
-            const existingModal = document.getElementById('rate-modal');
-            if (existingModal) return;
+        // ========== MODALS ==========
 
-            const modalOverlay = document.createElement('div');
-            modalOverlay.id = 'rate-modal';
-            modalOverlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+        function openRateModal() {
+            if (document.getElementById('rate-modal')) return;
 
-            const currentRate = Math.round(dashboardState.protectedRate * 100);
-            const previewAmt = Math.round(dashboardState.income * dashboardState.protectedRate);
-
-            modalOverlay.innerHTML = `
-                <div class="glass-panel p-6 rounded-xl w-full max-w-sm space-y-6 m-4">
+            const currentRate = Math.round(appState.finance.protectedRate * 100);
+            const modal = document.createElement('div');
+            modal.id = 'rate-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="glass-panel p-5 rounded-xl w-full max-w-xs m-4 space-y-5">
                     <div class="flex justify-between items-center">
-                        <h3 class="text-white font-medium">Adjust Protection Rate</h3>
-                        <button class="text-slate-400 hover:text-white close-modal">✕</button>
+                        <h3 class="text-white font-medium text-sm">Adjust Protection Rate</h3>
+                        <button class="text-slate-500 hover:text-white text-lg close-modal">×</button>
                     </div>
                     <div>
-                        <div class="flex justify-between text-sm mb-2">
-                            <span class="text-slate-400">5%</span>
-                            <span class="text-teal-400 font-bold" id="modal-rate-val">${currentRate}%</span>
-                            <span class="text-slate-400">50%</span>
+                        <div class="flex justify-between text-xs mb-2 text-slate-400">
+                            <span>5%</span>
+                            <span class="text-teal-400 font-bold text-base" id="modal-rate-val">${currentRate}%</span>
+                            <span>50%</span>
                         </div>
-                        <input type="range" min="5" max="50" step="5" value="${currentRate}" 
-                            class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500" id="rate-slider">
+                        <input type="range" min="5" max="50" step="5" value="${currentRate}"
+                            class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-400" id="modal-slider">
                     </div>
-                    <div class="text-center">
-                        <p class="text-xs text-slate-500 mb-1">Protected Amount</p>
-                        <p class="text-lg text-teal-400 font-semibold" id="modal-preview-amt">${formatCurrency(previewAmt)}</p>
-                        <p class="text-xs text-slate-500">Spendable: <span id="modal-spendable">${formatCurrency(dashboardState.income - previewAmt)}</span></p>
+                    <div class="text-center space-y-1">
+                        <p class="text-[10px] text-slate-500">Protected Amount</p>
+                        <p class="text-lg text-teal-400 font-semibold" id="modal-amt">${formatCurrency(appState.finance.protectedAmount)}</p>
+                        <p class="text-[10px] text-slate-500">Spendable: <span id="modal-spend">${formatCurrency(getSpendable())}</span></p>
                     </div>
-                    <p class="text-xs text-slate-500">
-                        Higher protection reduces your spendable income but builds your safety net faster.
+                    <p class="text-[10px] text-slate-600 leading-relaxed">
+                        Higher protection reduces spendable income but builds your safety net faster.
                     </p>
-                    <button id="modal-save-rate" class="btn-primary w-full py-2 rounded-lg text-sm text-white">
-                        Update Rate
-                    </button>
+                    <button id="modal-save" class="btn-confirm w-full py-2 rounded-lg text-xs">Update Rate</button>
                 </div>
             `;
+            document.body.appendChild(modal);
 
-            document.body.appendChild(modalOverlay);
-
-            const slider = document.getElementById('rate-slider');
+            const slider = document.getElementById('modal-slider');
             const rateVal = document.getElementById('modal-rate-val');
-            const previewAmtEl = document.getElementById('modal-preview-amt');
-            const spendableEl = document.getElementById('modal-spendable');
+            const amtEl = document.getElementById('modal-amt');
+            const spendEl = document.getElementById('modal-spend');
 
             slider.addEventListener('input', () => {
                 const newRate = parseInt(slider.value) / 100;
-                const newProtected = Math.round(dashboardState.income * newRate);
+                const newProtected = Math.round(appState.finance.monthlyIncome * newRate);
+                const newSpendable = appState.finance.monthlyIncome - newProtected;
                 rateVal.textContent = slider.value + '%';
-                previewAmtEl.textContent = formatCurrency(newProtected);
-                spendableEl.textContent = formatCurrency(dashboardState.income - newProtected);
+                amtEl.textContent = formatCurrency(newProtected);
+                spendEl.textContent = formatCurrency(newSpendable);
             });
 
-            document.getElementById('modal-save-rate').addEventListener('click', () => {
-                dashboardState.protectedRate = parseInt(slider.value) / 100;
-                dashboardState.protectedAmount = getProtectedAmount();
+            document.getElementById('modal-save').addEventListener('click', () => {
+                appState.finance.protectedRate = parseInt(slider.value) / 100;
+                appState.finance.protectedAmount = Math.round(
+                    appState.finance.monthlyIncome * appState.finance.protectedRate
+                );
                 
-                const spendable = getSpendableIncome();
-                const totalBudgeted = getTotalBudgeted();
-                if (totalBudgeted > spendable) {
-                    dashboardState.budget = { needs: 0, wants: 0, unexpected: 0 };
-                    dashboardState.confirmedBudget = false;
+                // Reset budget if over limit
+                if (getTotalBudgeted() > getSpendable()) {
+                    appState.finance.budget = { needs: 0, wants: 0, unexpected: 0 };
+                    appState.finance.confirmedBudget = false;
+                }
+                
+                appState.flowStep = 'protected';
+                saveState();
+                render();
+                modal.remove();
+                console.log('Rate updated to', appState.finance.protectedRate * 100 + '%');
+            });
+
+            modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+
+        function openGoalModal() {
+            if (document.getElementById('goal-modal')) return;
+
+            const modal = document.createElement('div');
+            modal.id = 'goal-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="glass-panel p-5 rounded-xl w-full max-w-xs m-4 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-white font-medium text-sm">Create Goal Wallet</h3>
+                        <button class="text-slate-500 hover:text-white text-lg close-modal">×</button>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Goal Name</label>
+                        <input type="text" id="goal-name" placeholder="e.g., Emergency Fund" 
+                            class="input-clean w-full text-sm placeholder-slate-600">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Target Amount</label>
+                        <input type="number" id="goal-target" placeholder="10000" 
+                            class="input-clean w-full text-sm placeholder-slate-600">
+                    </div>
+                    <button id="goal-save" class="btn-confirm w-full py-2 rounded-lg text-xs">Create Wallet</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('goal-save').addEventListener('click', () => {
+                const name = document.getElementById('goal-name').value.trim();
+                const target = parseInt(document.getElementById('goal-target').value) || 0;
+                
+                if (!name || target < 1000) {
+                    alert('Please enter a valid name and target (min ₹1,000)');
+                    return;
+                }
+
+                appState.goals.push({ name, target, saved: 0 });
+                saveState();
+                render();
+                modal.remove();
+                console.log('Goal created:', name);
+            });
+
+            modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+
+        function openLetterModal() {
+            if (document.getElementById('letter-modal')) return;
+
+            const modal = document.createElement('div');
+            modal.id = 'letter-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="glass-panel p-5 rounded-xl w-full max-w-sm m-4 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-white font-medium text-sm">Write to Your Future Self</h3>
+                        <button class="text-slate-500 hover:text-white text-lg close-modal">×</button>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Your Message</label>
+                        <textarea id="letter-text" rows="4" placeholder="Dear future me..." 
+                            class="input-clean w-full text-sm placeholder-slate-600 resize-none border border-slate-800 rounded-lg p-2"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-500 mb-1">Deliver After Month</label>
+                        <select id="letter-month" class="input-clean w-full text-sm bg-slate-900 border border-slate-800 rounded-lg p-2">
+                            <option value="3">Month 3</option>
+                            <option value="6">Month 6</option>
+                            <option value="12">Month 12</option>
+                        </select>
+                    </div>
+                    <button id="letter-save" class="btn-confirm w-full py-2 rounded-lg text-xs">Send to Future</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('letter-save').addEventListener('click', () => {
+                const text = document.getElementById('letter-text').value.trim();
+                const deliverMonth = parseInt(document.getElementById('letter-month').value);
+                
+                if (!text) {
+                    alert('Please write a message');
+                    return;
+                }
+
+                const letters = JSON.parse(localStorage.getItem(LETTERS_KEY) || '[]');
+                letters.push({ text, deliverMonth, createdMonth: appState.experience.month });
+                localStorage.setItem(LETTERS_KEY, JSON.stringify(letters));
+                
+                modal.remove();
+                alert('Letter saved! It will arrive at Month ' + deliverMonth);
+                console.log('Letter saved for Month', deliverMonth);
+            });
+
+            modal.querySelector('.close-modal').addEventListener('click', () => modal.remove());
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+
+        function openLimitsModal() {
+            if (document.getElementById('limits-modal')) return;
+
+            const modal = document.createElement('div');
+            modal.id = 'limits-modal';
+            modal.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
+            modal.innerHTML = `
+                <div class="glass-panel p-5 rounded-xl w-full max-w-xs m-4 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-white font-medium text-sm">Set Temptation Limits</h3>
+                        <button class="text-slate-500 hover:text-white text-lg close-modal">×</button>
+                    </div>
+                    <p class="text-[10px] text-slate-500">This feature helps you control impulse spending by setting category-specific limits.</p>
+                    <div class="py-4 text-center">
+                        <iconify-icon icon="solar:lock-keyhole-minimalistic-linear" class="text-slate-600 text-3xl mb-2"></iconify-icon>
+                        <p class="text-xs text-slate-400">Unlocks at Level 2</p>
+                    </div>
+                    <button class="btn-primary w-full py-2 rounded-lg text-xs text-slate-400 close-modal">Got it</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            modal.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', () => modal.remove());
+            });
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        }
+
+        // ========== EVENT BINDINGS ==========
+
+        function bindEvents() {
+            // Budget inputs
+            ['needs', 'wants', 'unexpected'].forEach(key => {
+                document.getElementById(`input-${key}`).addEventListener('input', (e) => {
+                    appState.finance.budget[key] = parseFloat(e.target.value) || 0;
+                    saveState();
+                    render();
+                });
+            });
+
+            // Confirm budget
+            document.getElementById('btn-confirm-budget').addEventListener('click', () => {
+                if (!isBudgetValid()) return;
+                
+                appState.finance.confirmedBudget = true;
+                appState.flowStep = 'budgeted';
+                
+                // Award XP
+                appState.experience.xp += 25;
+                if (appState.experience.xp >= 100) {
+                    appState.experience.level += 1;
+                    appState.experience.xp = appState.experience.xp % 100;
                 }
                 
                 saveState();
-                renderDashboard();
-                modalOverlay.remove();
-                console.log(`Protected rate updated to ${dashboardState.protectedRate * 100}%`);
+                render();
+                console.log('Budget confirmed. XP awarded.');
             });
 
-            modalOverlay.querySelector('.close-modal').addEventListener('click', () => modalOverlay.remove());
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) modalOverlay.remove();
-            });
-        }
+            // Adjust rate
+            document.getElementById('btn-adjust-rate').addEventListener('click', openRateModal);
 
-        function handleConfirmBudget() {
-            const totalBudgeted = getTotalBudgeted();
-            const remaining = getSpendableIncome() - totalBudgeted;
-            
-            if (totalBudgeted === 0) {
-                alert('Please allocate some budget before confirming.');
-                return;
-            }
-            if (remaining < 0) {
-                alert('Your budget exceeds spendable income. Please adjust.');
-                return;
-            }
+            // Set limits
+            document.getElementById('btn-set-limits').addEventListener('click', openLimitsModal);
 
-            dashboardState.confirmedBudget = true;
-            saveState();
-            renderDashboard();
-            console.log('Budget confirmed:', dashboardState.budget);
-        }
+            // Create goal
+            document.getElementById('btn-create-goal').addEventListener('click', openGoalModal);
 
-        function handleSetLimits() {
-            console.log('Action: Set Limits');
-            const btn = document.getElementById('btn-set-limits');
-            const originalText = btn.textContent;
-            btn.textContent = 'Coming Soon';
-            setTimeout(() => btn.textContent = originalText, 1500);
-        }
+            // Write letter
+            document.getElementById('btn-write-letter').addEventListener('click', openLetterModal);
 
-        function handleCreateGoal() {
-            console.log('Action: Create Goal Wallet');
-            const btn = document.getElementById('btn-create-goal');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = 'Coming Soon...';
-            setTimeout(() => btn.innerHTML = originalHTML, 1500);
-        }
-
-        function handleWriteLetter() {
-            console.log('Action: Write Letter');
-            alert('Time-Travel Letters feature coming soon!\n\nWrite a note to your future self that arrives at a moment you choose.');
-        }
-
-        function bindEventListeners() {
-            const needsInput = document.getElementById('input-needs');
-            const wantsInput = document.getElementById('input-wants');
-            const unexpectedInput = document.getElementById('input-unexpected');
-
-            if (needsInput) needsInput.addEventListener('input', handleBudgetInput);
-            if (wantsInput) wantsInput.addEventListener('input', handleBudgetInput);
-            if (unexpectedInput) unexpectedInput.addEventListener('input', handleBudgetInput);
-
-            const adjustRateBtn = document.getElementById('btn-adjust-rate');
-            if (adjustRateBtn) adjustRateBtn.addEventListener('click', handleAdjustRate);
-
-            const confirmBudgetBtn = document.getElementById('btn-confirm-budget');
-            if (confirmBudgetBtn) confirmBudgetBtn.addEventListener('click', handleConfirmBudget);
-
-            const setLimitsBtn = document.getElementById('btn-set-limits');
-            if (setLimitsBtn) setLimitsBtn.addEventListener('click', handleSetLimits);
-
-            const createGoalBtn = document.getElementById('btn-create-goal');
-            if (createGoalBtn) createGoalBtn.addEventListener('click', handleCreateGoal);
-
-            const writeLetterBtn = document.getElementById('btn-write-letter');
-            if (writeLetterBtn) writeLetterBtn.addEventListener('click', handleWriteLetter);
-
+            // Navigation links
             document.querySelectorAll('nav a').forEach(link => {
                 link.addEventListener('click', (e) => {
                     console.log('Navigation:', link.href);
@@ -912,23 +941,14 @@
             });
         }
 
-        function resetBudgetForNewMonth() {
-            dashboardState.budget = { needs: 0, wants: 0, unexpected: 0 };
-            dashboardState.confirmedBudget = false;
-            dashboardState.month += 1;
-            saveState();
-            renderDashboard();
-        }
+        // ========== INITIALIZATION ==========
 
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('FinPlay Dashboard Initializing...');
-            
-            initializeDashboardState();
-            bindEventListeners();
-            renderDashboard();
-            
-            console.log('Dashboard state:', dashboardState);
-            console.log('Profile loaded:', loadProfileFromStorage());
+            console.log('FinPlay Dashboard initializing...');
+            loadState();
+            bindEvents();
+            render();
+            console.log('Dashboard ready. State:', appState);
         });
     </script>
 </body>

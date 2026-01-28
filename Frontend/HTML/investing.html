@@ -62,10 +62,9 @@
                     <div class="scenario-selector">
                         <label>Market Scenario:</label>
                         <select id="scenarioSelect">
-                            <option value="bull">Bull Market (+3-6%/mo)</option>
-                            <option value="bear">Bear Market (-3-6%/mo)</option>
-                            <option value="volatile">Volatile (swings)</option>
-                            <option value="flat">Flat (±0.5%)</option>
+                            <option value="bull">Bull Market (+2-6%/mo)</option>
+                            <option value="bear">Bear Market (-2-6%/mo)</option>
+                            <option value="sideways" selected>Sideways (-1 to +1%)</option>
                         </select>
                         <button class="btn btn-primary btn-sm" id="advanceMonthBtn">
                             Advance Month
@@ -107,12 +106,12 @@
                     <section class="market-section">
                         <div class="section-header">
                             <h2 class="section-title">Market</h2>
+                            <p class="section-subtitle">Each Trade button invests ₹1,000. No selling in Phase 1.</p>
                             <div class="asset-filters">
                                 <button class="filter-btn active" data-filter="all">All</button>
                                 <button class="filter-btn" data-filter="stock">Stocks</button>
                                 <button class="filter-btn" data-filter="mutual">Mutual Funds</button>
                                 <button class="filter-btn" data-filter="etf">ETFs</button>
-                                <button class="filter-btn" data-filter="fd">FDs</button>
                             </div>
                         </div>
                         <div id="marketList" class="market-list"></div>
@@ -143,7 +142,7 @@
                         <div class="card">
                             <h3 class="card-title">Recent Transactions</h3>
                             <div id="transactionList" class="transaction-list">
-                                <p class="empty-state">Your trade history will appear here</p>
+                                <p class="empty-state">Transaction history unlocks in higher levels</p>
                             </div>
                         </div>
                     </aside>
@@ -152,157 +151,12 @@
                 <section class="education-tip">
                     <div class="tip-icon">💡</div>
                     <div class="tip-content">
-                        <h4>Understanding Risk</h4>
-                        <p id="educationTip">Different investments carry different risk levels. FDs are stable but grow slowly. Stocks can grow faster but also decline. Diversification — spreading across types — helps smooth the ride.</p>
+                        <h4>Phase 1: Understanding Risk</h4>
+                        <p id="educationTip">Different investments carry different risk levels. High-risk assets (like stocks) can grow faster but also decline more. Low-risk assets (like index funds) are steadier. Try different market scenarios to see how your portfolio reacts!</p>
                     </div>
                 </section>
             </div>
         </main>
-    </div>
-
-    <div id="tradeModal" class="modal-overlay">
-        <div class="modal-content trade-modal">
-            <button class="modal-close" id="closeModalBtn">&times;</button>
-            <div id="modalHeader" class="modal-header">
-                <div class="modal-asset-icon" id="modalAssetIcon">📈</div>
-                <div>
-                    <h2 id="modalAssetName">Asset Name</h2>
-                    <p id="modalAssetType" class="modal-asset-type">Stock</p>
-                </div>
-            </div>
-            
-            <div class="modal-info">
-                <div class="info-row">
-                    <span>Current Price:</span>
-                    <span id="modalPrice">₹0</span>
-                </div>
-                <div class="info-row">
-                    <span>You Own:</span>
-                    <span id="modalOwned">0 units</span>
-                </div>
-                <div class="info-row">
-                    <span>Transaction Fee:</span>
-                    <span id="modalFee">0.2%</span>
-                </div>
-            </div>
-
-            <p id="modalDescription" class="modal-description"></p>
-
-            <div class="trade-tabs">
-                <button class="trade-tab active" data-action="buy">Buy</button>
-                <button class="trade-tab" data-action="sell">Sell</button>
-            </div>
-
-            <div id="buyForm" class="trade-form">
-                <div class="form-group">
-                    <label>Amount (₹)</label>
-                    <input type="number" id="buyAmount" placeholder="Enter amount" min="0">
-                </div>
-                <div class="trade-preview">
-                    <div class="preview-row">
-                        <span>Units to receive:</span>
-                        <span id="buyUnits">0</span>
-                    </div>
-                    <div class="preview-row">
-                        <span>Fee:</span>
-                        <span id="buyFeeAmount">₹0</span>
-                    </div>
-                    <div class="preview-row total">
-                        <span>Total Cost:</span>
-                        <span id="buyTotal">₹0</span>
-                    </div>
-                    <div class="preview-row">
-                        <span>Cash After:</span>
-                        <span id="buyCashAfter">₹0</span>
-                    </div>
-                </div>
-                <button class="btn btn-primary" id="confirmBuyBtn" style="width: 100%;">Confirm Purchase</button>
-            </div>
-
-            <div id="sellForm" class="trade-form" style="display: none;">
-                <div class="form-group">
-                    <label>Units to Sell</label>
-                    <input type="number" id="sellUnits" placeholder="Enter units" min="0" step="0.0001">
-                </div>
-                <div class="trade-preview">
-                    <div class="preview-row">
-                        <span>Sale Value:</span>
-                        <span id="sellValue">₹0</span>
-                    </div>
-                    <div class="preview-row">
-                        <span>Fee:</span>
-                        <span id="sellFeeAmount">₹0</span>
-                    </div>
-                    <div class="preview-row total">
-                        <span>You Receive:</span>
-                        <span id="sellTotal">₹0</span>
-                    </div>
-                    <div class="preview-row">
-                        <span>Cash After:</span>
-                        <span id="sellCashAfter">₹0</span>
-                    </div>
-                </div>
-                <button class="btn btn-primary" id="confirmSellBtn" style="width: 100%;">Confirm Sale</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="fdModal" class="modal-overlay">
-        <div class="modal-content trade-modal">
-            <button class="modal-close" id="closeFdModalBtn">&times;</button>
-            <div class="modal-header">
-                <div class="modal-asset-icon">🏦</div>
-                <div>
-                    <h2>Open Fixed Deposit</h2>
-                    <p class="modal-asset-type">Safe, guaranteed returns</p>
-                </div>
-            </div>
-
-            <p class="modal-description">Fixed Deposits offer guaranteed returns with zero risk. Your money is locked for the tenure period.</p>
-
-            <div class="fd-options">
-                <label class="fd-option">
-                    <input type="radio" name="fdTenure" value="12" checked>
-                    <div class="fd-option-content">
-                        <span class="fd-tenure">1 Year</span>
-                        <span class="fd-rate">6% p.a.</span>
-                    </div>
-                </label>
-                <label class="fd-option">
-                    <input type="radio" name="fdTenure" value="36">
-                    <div class="fd-option-content">
-                        <span class="fd-tenure">3 Years</span>
-                        <span class="fd-rate">7% p.a.</span>
-                    </div>
-                </label>
-            </div>
-
-            <div class="form-group">
-                <label>Deposit Amount (₹) - Min ₹5,000</label>
-                <input type="number" id="fdAmount" placeholder="Enter amount" min="5000">
-            </div>
-
-            <div class="trade-preview">
-                <div class="preview-row">
-                    <span>Principal:</span>
-                    <span id="fdPrincipal">₹0</span>
-                </div>
-                <div class="preview-row">
-                    <span>Interest Earned:</span>
-                    <span id="fdInterest">₹0</span>
-                </div>
-                <div class="preview-row total">
-                    <span>Maturity Amount:</span>
-                    <span id="fdMaturity">₹0</span>
-                </div>
-                <div class="preview-row">
-                    <span>Matures at:</span>
-                    <span id="fdMaturityMonth">Month -</span>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" id="confirmFdBtn" style="width: 100%;">Open Fixed Deposit</button>
-        </div>
     </div>
 
     <div id="monthSummaryModal" class="modal-overlay">

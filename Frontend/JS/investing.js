@@ -872,6 +872,7 @@ function renderTransactions() {
 let selectedAsset = null;
 
 function openTradeModal(asset) {
+    console.log('🟢 Clicked: Trade Button', { assetId: asset.id, assetName: asset.name });
     if (!isInvestingUnlocked()) {
         showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
         return;
@@ -904,6 +905,7 @@ function openTradeModal(asset) {
 }
 
 function openFDModal() {
+    console.log('🟢 Clicked: Open FD Modal');
     if (!isInvestingUnlocked()) {
         showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
         return;
@@ -1144,12 +1146,14 @@ async function initializePage() {
 // ========== EVENT BINDINGS ==========
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('🟢 DOMContentLoaded: Wiring all event handlers');
     initializePage();
 
     // CTA Button
     const ctaButton = document.getElementById('ctaButton');
     if (ctaButton) {
         ctaButton.addEventListener('click', () => {
+            console.log('🟢 Clicked: CTA Button');
             if (!isInvestingUnlocked()) {
                 showNotification('Complete your monthly budget on the Dashboard first.', 'error');
                 return;
@@ -1163,88 +1167,130 @@ document.addEventListener('DOMContentLoaded', () => {
     // Filter buttons
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+            const filter = btn.dataset.filter;
+            console.log('🟢 Clicked: Filter', { filter });
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            renderMarket(btn.dataset.filter);
+            renderMarket(filter);
         });
     });
 
     // Scenario selector
-    document.getElementById('scenarioSelect').addEventListener('change', (e) => {
-        if (!isInvestingUnlocked()) {
-            showNotification('Complete your monthly budget to change market scenario.', 'error');
-            e.target.value = getPortfolio()?.market_scenario || 'bull';
-            return;
-        }
-        const portfolio = getPortfolio();
-        portfolio.market_scenario = e.target.value;
-        savePortfolio(portfolio);
-        showNotification(`Market scenario changed to ${SCENARIO_LABELS[e.target.value]}`, 'info');
-    });
+    const scenarioSelect = document.getElementById('scenarioSelect');
+    if (scenarioSelect) {
+        scenarioSelect.addEventListener('change', (e) => {
+            console.log('🟢 Clicked: Scenario Change', { scenario: e.target.value });
+            if (!isInvestingUnlocked()) {
+                showNotification('Complete your monthly budget to change market scenario.', 'error');
+                e.target.value = getPortfolio()?.market_scenario || 'bull';
+                return;
+            }
+            const portfolio = getPortfolio();
+            portfolio.market_scenario = e.target.value;
+            savePortfolio(portfolio);
+            showNotification(`Market scenario changed to ${SCENARIO_LABELS[e.target.value]}`, 'info');
+        });
+    }
 
     // Advance month
-    document.getElementById('advanceMonthBtn').addEventListener('click', advanceMonth);
+    const advanceBtn = document.getElementById('advanceMonthBtn');
+    if (advanceBtn) {
+        advanceBtn.addEventListener('click', () => {
+            console.log('🟢 Clicked: Advance Month');
+            advanceMonth();
+        });
+    }
 
     // Trade tabs
     document.querySelectorAll('.trade-tab').forEach(tab => {
         tab.addEventListener('click', () => {
+            const action = tab.dataset.action;
+            console.log('🟢 Clicked: Trade Tab', { action });
             document.querySelectorAll('.trade-tab').forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
-            document.getElementById('buyForm').style.display = tab.dataset.action === 'buy' ? 'block' : 'none';
-            document.getElementById('sellForm').style.display = tab.dataset.action === 'sell' ? 'block' : 'none';
+            document.getElementById('buyForm').style.display = action === 'buy' ? 'block' : 'none';
+            document.getElementById('sellForm').style.display = action === 'sell' ? 'block' : 'none';
         });
     });
 
     // Input previews
-    document.getElementById('buyAmount').addEventListener('input', updateBuyPreview);
-    document.getElementById('sellUnits').addEventListener('input', updateSellPreview);
-    document.getElementById('fdAmount').addEventListener('input', updateFDPreview);
+    const buyAmountInput = document.getElementById('buyAmount');
+    const sellUnitsInput = document.getElementById('sellUnits');
+    const fdAmountInput = document.getElementById('fdAmount');
+    
+    if (buyAmountInput) buyAmountInput.addEventListener('input', updateBuyPreview);
+    if (sellUnitsInput) sellUnitsInput.addEventListener('input', updateSellPreview);
+    if (fdAmountInput) fdAmountInput.addEventListener('input', updateFDPreview);
     document.querySelectorAll('input[name="fdTenure"]').forEach(r => r.addEventListener('change', updateFDPreview));
 
     // Confirm buy
-    document.getElementById('confirmBuyBtn').addEventListener('click', () => {
-        const amount = parseFloat(document.getElementById('buyAmount').value);
-        const result = buyAsset(selectedAsset.id, amount);
-        if (result.success) {
-            showNotification(`Bought ${result.units} units of ${selectedAsset.name}`, 'success');
-            closeModals();
-            refreshUI();
-        } else {
-            showNotification(result.error, 'error');
-        }
-    });
+    const confirmBuyBtn = document.getElementById('confirmBuyBtn');
+    if (confirmBuyBtn) {
+        confirmBuyBtn.addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('buyAmount').value);
+            console.log('🟢 Clicked: Buy', { assetId: selectedAsset?.id, amount });
+            if (!selectedAsset) {
+                showNotification('No asset selected', 'error');
+                return;
+            }
+            const result = buyAsset(selectedAsset.id, amount);
+            if (result.success) {
+                showNotification(`Bought ${result.units} units of ${selectedAsset.name}`, 'success');
+                closeModals();
+                refreshUI();
+            } else {
+                showNotification(result.error, 'error');
+            }
+        });
+    }
 
     // Confirm sell
-    document.getElementById('confirmSellBtn').addEventListener('click', () => {
-        const units = parseFloat(document.getElementById('sellUnits').value);
-        const result = sellAsset(selectedAsset.id, units);
-        if (result.success) {
-            showNotification(`Sold for ${formatCurrency(result.proceeds)} (P&L: ${formatCurrency(result.pnl)})`, result.pnl >= 0 ? 'success' : 'info');
-            closeModals();
-            refreshUI();
-        } else {
-            showNotification(result.error, 'error');
-        }
-    });
+    const confirmSellBtn = document.getElementById('confirmSellBtn');
+    if (confirmSellBtn) {
+        confirmSellBtn.addEventListener('click', () => {
+            const units = parseFloat(document.getElementById('sellUnits').value);
+            console.log('🟢 Clicked: Sell', { assetId: selectedAsset?.id, units });
+            if (!selectedAsset) {
+                showNotification('No asset selected', 'error');
+                return;
+            }
+            const result = sellAsset(selectedAsset.id, units);
+            if (result.success) {
+                showNotification(`Sold for ${formatCurrency(result.proceeds)} (P&L: ${formatCurrency(result.pnl)})`, result.pnl >= 0 ? 'success' : 'info');
+                closeModals();
+                refreshUI();
+            } else {
+                showNotification(result.error, 'error');
+            }
+        });
+    }
 
     // Confirm FD
-    document.getElementById('confirmFdBtn').addEventListener('click', () => {
-        const amount = parseFloat(document.getElementById('fdAmount').value);
-        const tenure = parseInt(document.querySelector('input[name="fdTenure"]:checked').value);
-        const result = openFD(tenure, amount);
-        if (result.success) {
-            showNotification(`FD opened! Matures at Month ${result.maturityMonth}`, 'success');
-            closeModals();
-            refreshUI();
-        } else {
-            showNotification(result.error, 'error');
-        }
-    });
+    const confirmFdBtn = document.getElementById('confirmFdBtn');
+    if (confirmFdBtn) {
+        confirmFdBtn.addEventListener('click', () => {
+            const amount = parseFloat(document.getElementById('fdAmount').value);
+            const tenure = parseInt(document.querySelector('input[name="fdTenure"]:checked').value);
+            console.log('🟢 Clicked: Open FD', { amount, tenure });
+            const result = openFD(tenure, amount);
+            if (result.success) {
+                showNotification(`FD opened! Matures at Month ${result.maturityMonth}`, 'success');
+                closeModals();
+                refreshUI();
+            } else {
+                showNotification(result.error, 'error');
+            }
+        });
+    }
 
     // Close modals
-    document.getElementById('closeModalBtn').addEventListener('click', closeModals);
-    document.getElementById('closeFdModalBtn').addEventListener('click', closeModals);
-    document.getElementById('closeSummaryBtn').addEventListener('click', closeModals);
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const closeFdModalBtn = document.getElementById('closeFdModalBtn');
+    const closeSummaryBtn = document.getElementById('closeSummaryBtn');
+    
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModals);
+    if (closeFdModalBtn) closeFdModalBtn.addEventListener('click', closeModals);
+    if (closeSummaryBtn) closeSummaryBtn.addEventListener('click', closeModals);
 
     // Backdrop close
     document.querySelectorAll('.modal-overlay').forEach(modal => {
@@ -1252,4 +1298,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === modal) closeModals();
         });
     });
+
+    console.log('🟢 All event handlers wired successfully');
 });

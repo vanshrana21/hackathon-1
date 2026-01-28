@@ -550,267 +550,386 @@
     </footer>
 
     <script>
-        /**
-         * FinPlay Dashboard Logic
-         * Handles budget calculations, protected money rate adjustments, and state persistence.
-         * Pure Vanilla JS + LocalStorage. No frameworks.
-         */
-
         const STATE_KEY = 'finplay_dashboard_state';
-        const DEFAULT_INCOME = 40000;
+        const PROFILE_KEY = 'finplay_profile';
 
-        // Default State
-        const defaultState = {
-            income: DEFAULT_INCOME,
-            protectedRate: 0.20, // 20%
+        const dashboardState = {
+            income: 0,
+            month: 1,
+            level: 1,
+            protectedRate: 0.20,
+            protectedAmount: 0,
             budget: {
                 needs: 0,
                 wants: 0,
                 unexpected: 0
             },
+            commitments: 0,
             confirmedBudget: false
         };
 
-        // Initialize State
-        let state = JSON.parse(localStorage.getItem(STATE_KEY)) || defaultState;
-
-        // DOM Elements
-        const els = {
-            inputs: {
-                needs: document.getElementById('input-needs'),
-                wants: document.getElementById('input-wants'),
-                unexpected: document.getElementById('input-unexpected'),
-            },
-            displays: {
-                totalBudgeted: document.getElementById('val-total-budgeted'),
-                remaining: document.getElementById('val-remaining'),
-                protectedRate: document.getElementById('val-protected-rate'),
-                protectedBalance: document.getElementById('val-protected-balance'),
-                protectedOverview: document.getElementById('val-protected-now'),
-            },
-            buttons: {
-                adjustRate: document.getElementById('btn-adjust-rate'),
-                confirmBudget: document.getElementById('btn-confirm-budget'),
-                setLimits: document.getElementById('btn-set-limits'),
-                createGoal: document.getElementById('btn-create-goal'),
-                writeLetter: document.getElementById('btn-write-letter'),
+        function loadProfileFromStorage() {
+            try {
+                const data = localStorage.getItem(PROFILE_KEY);
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                console.warn('Could not load profile:', e);
+                return null;
             }
-        };
+        }
 
-        // --- Core Logic & Helpers ---
+        function loadStateFromStorage() {
+            try {
+                const data = localStorage.getItem(STATE_KEY);
+                return data ? JSON.parse(data) : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function initializeDashboardState() {
+            const profile = loadProfileFromStorage();
+            const savedState = loadStateFromStorage();
+
+            if (profile) {
+                dashboardState.income = profile.income || 40000;
+                dashboardState.month = profile.budget?.month || 1;
+                dashboardState.level = profile.level || 1;
+            }
+
+            if (savedState) {
+                if (profile && savedState.income !== profile.income) {
+                    savedState.income = profile.income;
+                }
+                Object.assign(dashboardState, savedState);
+            }
+
+            dashboardState.protectedAmount = Math.round(dashboardState.income * dashboardState.protectedRate);
+            saveState();
+        }
+
+        function saveState() {
+            localStorage.setItem(STATE_KEY, JSON.stringify(dashboardState));
+        }
 
         function formatCurrency(amount) {
-            return '₹' + amount.toLocaleString('en-IN');
+            return '₹' + Math.round(amount).toLocaleString('en-IN');
         }
 
         function parseCurrency(str) {
             if (!str) return 0;
-            // Remove non-numeric chars except dot? Integer for this simulation usually.
             const clean = str.toString().replace(/[^0-9.]/g, '');
             return parseFloat(clean) || 0;
         }
 
-        function saveState() {
-            localStorage.setItem(STATE_KEY, JSON.stringify(state));
-        }
-
         function getProtectedAmount() {
-            return Math.round(state.income * state.protectedRate);
+            return Math.round(dashboardState.income * dashboardState.protectedRate);
         }
 
         function getSpendableIncome() {
-            return state.income - getProtectedAmount();
+            return dashboardState.income - getProtectedAmount();
         }
 
         function getTotalBudgeted() {
-            return state.budget.needs + state.budget.wants + state.budget.unexpected;
+            return dashboardState.budget.needs + dashboardState.budget.wants + dashboardState.budget.unexpected;
         }
 
-        // --- UI Updates ---
-
-        function updateUI() {
-            // Protected Money
+        function renderDashboard() {
+            const profile = loadProfileFromStorage();
+            const income = dashboardState.income;
             const protectedAmt = getProtectedAmount();
-            const formattedProtected = formatCurrency(protectedAmt);
-            els.displays.protectedRate.textContent = Math.round(state.protectedRate * 100) + '%';
-            els.displays.protectedBalance.textContent = formattedProtected;
-            els.displays.protectedOverview.textContent = formattedProtected;
-
-            // Budget
             const spendable = getSpendableIncome();
             const totalBudgeted = getTotalBudgeted();
             const remaining = spendable - totalBudgeted;
+            const ratePercent = Math.round(dashboardState.protectedRate * 100);
 
-            els.displays.totalBudgeted.textContent = formatCurrency(totalBudgeted);
-            els.displays.remaining.textContent = formatCurrency(remaining);
-
-            // Validate Budget
-            const isValid = remaining >= 0; // Negative remaining means over budget
-
-            // Visual feedback for calculation
-            els.displays.remaining.classList.toggle('text-teal-400', isValid);
-            els.displays.remaining.classList.toggle('text-red-400', !isValid);
-
-            // Input fields sync (if not focused, to avoid jumping cursor, but here we just set values on load)
-            if (document.activeElement !== els.inputs.needs) els.inputs.needs.value = state.budget.needs > 0 ? state.budget.needs : '';
-            if (document.activeElement !== els.inputs.wants) els.inputs.wants.value = state.budget.wants > 0 ? state.budget.wants : '';
-            if (document.activeElement !== els.inputs.unexpected) els.inputs.unexpected.value = state.budget.unexpected > 0 ? state.budget.unexpected : '';
-
-            // Confirm Button State
-            if (state.confirmedBudget) {
-                els.buttons.confirmBudget.textContent = "Budget Confirmed";
-                els.buttons.confirmBudget.disabled = true;
-                els.buttons.confirmBudget.classList.add('opacity-50', 'cursor-not-allowed');
-                disableInputs(true);
-            } else {
-                els.buttons.confirmBudget.textContent = "Confirm Budget";
-                // Enable valid budget (Total > 0 and Remaining >= 0)
-                const hasEntry = totalBudgeted > 0;
-                els.buttons.confirmBudget.disabled = !(isValid && hasEntry);
-                disableInputs(false);
+            const welcomeEl = document.querySelector('h1.text-3xl');
+            if (welcomeEl && profile?.name) {
+                welcomeEl.textContent = `Welcome, ${profile.name}`;
             }
+
+            const incomeCards = document.querySelectorAll('.glass-panel .text-2xl.text-value');
+            if (incomeCards[0]) incomeCards[0].textContent = formatCurrency(income);
+            if (incomeCards[1]) incomeCards[1].textContent = formatCurrency(income);
+
+            const protectedNowEl = document.getElementById('val-protected-now');
+            if (protectedNowEl) {
+                protectedNowEl.textContent = formatCurrency(protectedAmt);
+                const parentCard = protectedNowEl.closest('.glass-panel');
+                if (parentCard) {
+                    const hint = parentCard.querySelector('.text-xs.text-slate-500');
+                    if (hint) hint.textContent = `${ratePercent}% of income secured`;
+                }
+            }
+
+            const commitmentsEl = incomeCards[3];
+            if (commitmentsEl) commitmentsEl.textContent = formatCurrency(dashboardState.commitments);
+
+            const protectedRateEl = document.getElementById('val-protected-rate');
+            if (protectedRateEl) protectedRateEl.textContent = `${ratePercent}%`;
+
+            const protectedBalanceEl = document.getElementById('val-protected-balance');
+            if (protectedBalanceEl) protectedBalanceEl.textContent = formatCurrency(protectedAmt);
+
+            const totalBudgetedEl = document.getElementById('val-total-budgeted');
+            if (totalBudgetedEl) totalBudgetedEl.textContent = formatCurrency(totalBudgeted);
+
+            const remainingEl = document.getElementById('val-remaining');
+            if (remainingEl) {
+                remainingEl.textContent = formatCurrency(remaining);
+                remainingEl.classList.toggle('text-teal-400', remaining >= 0);
+                remainingEl.classList.toggle('text-red-400', remaining < 0);
+            }
+
+            const needsInput = document.getElementById('input-needs');
+            const wantsInput = document.getElementById('input-wants');
+            const unexpectedInput = document.getElementById('input-unexpected');
+
+            if (needsInput && document.activeElement !== needsInput) {
+                needsInput.value = dashboardState.budget.needs > 0 ? dashboardState.budget.needs : '';
+            }
+            if (wantsInput && document.activeElement !== wantsInput) {
+                wantsInput.value = dashboardState.budget.wants > 0 ? dashboardState.budget.wants : '';
+            }
+            if (unexpectedInput && document.activeElement !== unexpectedInput) {
+                unexpectedInput.value = dashboardState.budget.unexpected > 0 ? dashboardState.budget.unexpected : '';
+            }
+
+            const confirmBtn = document.getElementById('btn-confirm-budget');
+            if (confirmBtn) {
+                if (dashboardState.confirmedBudget) {
+                    confirmBtn.textContent = 'Budget Confirmed';
+                    confirmBtn.disabled = true;
+                    confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    setInputsDisabled(true);
+                } else {
+                    confirmBtn.textContent = 'Confirm Budget';
+                    const isValid = remaining >= 0 && totalBudgeted > 0;
+                    confirmBtn.disabled = !isValid;
+                    setInputsDisabled(false);
+                }
+            }
+
+            const monthIndicator = document.querySelector('.glass-nav .text-xs.font-medium.text-slate-300');
+            if (monthIndicator) monthIndicator.textContent = `Month ${dashboardState.month}`;
+
+            const levelIndicator = document.querySelectorAll('.glass-nav .text-xs.font-medium.text-slate-300')[1];
+            if (levelIndicator) levelIndicator.textContent = `Level ${dashboardState.level}`;
+
+            if (profile) {
+                const profileSection = document.querySelector('section:has(h2.text-base)');
+                const profileItems = document.querySelectorAll('.glass-panel .divide-y .flex.justify-between');
+                if (profileItems.length >= 3) {
+                    const knowledgeVal = profileItems[0].querySelector('.text-slate-300');
+                    const lifeStageVal = profileItems[1].querySelector('.text-slate-300');
+                    const goalVal = profileItems[2].querySelector('.text-slate-300');
+                    if (knowledgeVal) knowledgeVal.textContent = profile.knowledge_level || 'Beginner';
+                    if (lifeStageVal) lifeStageVal.textContent = profile.life_stage || 'Young Professional';
+                    if (goalVal) goalVal.textContent = profile.focus_goal || 'Learn to budget';
+                }
+            }
+
+            const xpSection = document.querySelector('.glass-panel:has(.bg-gradient-to-r)');
+            if (xpSection && profile) {
+                const xpDisplay = xpSection.querySelector('.text-white');
+                const xpBar = xpSection.querySelector('.bg-gradient-to-r');
+                if (xpDisplay && profile.xp !== undefined) {
+                    const xpInLevel = profile.xp % 100;
+                    xpDisplay.textContent = `${xpInLevel} / 100 XP`;
+                    if (xpBar) xpBar.style.width = `${xpInLevel}%`;
+                }
+            }
+
+            const levelBadge = document.querySelector('.text-\\[10px\\].font-semibold.bg-slate-800');
+            if (levelBadge) levelBadge.textContent = `LEVEL ${dashboardState.level}`;
+
+            console.log('Dashboard rendered:', { income, protectedAmt, spendable, totalBudgeted, remaining });
         }
 
-        function disableInputs(disabled) {
-            Object.values(els.inputs).forEach(input => {
-                input.disabled = disabled;
-                if (disabled) input.classList.add('opacity-50');
-                else input.classList.remove('opacity-50');
+        function setInputsDisabled(disabled) {
+            ['input-needs', 'input-wants', 'input-unexpected'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.disabled = disabled;
+                    input.classList.toggle('opacity-50', disabled);
+                }
             });
         }
 
-        // --- Event Handlers ---
-
         function handleBudgetInput(e) {
-            const field = e.target.id.replace('input-', ''); // needs, wants, unexpected
-            const val = parseCurrency(e.target.value);
-
-            state.budget[field] = val;
+            const field = e.target.id.replace('input-', '');
+            dashboardState.budget[field] = parseCurrency(e.target.value);
             saveState();
-            updateUI();
+            renderDashboard();
         }
 
         function handleAdjustRate() {
-            // Minimal Modal Construction
             const existingModal = document.getElementById('rate-modal');
             if (existingModal) return;
 
             const modalOverlay = document.createElement('div');
             modalOverlay.id = 'rate-modal';
-            modalOverlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm fade-in';
+            modalOverlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm';
 
-            const modalContent = document.createElement('div');
-            modalContent.className = 'glass-panel p-6 rounded-xl w-full max-w-sm space-y-6 m-4';
+            const currentRate = Math.round(dashboardState.protectedRate * 100);
+            const previewAmt = Math.round(dashboardState.income * dashboardState.protectedRate);
 
-            modalContent.innerHTML = `
-                <div class="flex justify-between items-center">
-                    <h3 class="text-white font-medium">Adjust Protection Rate</h3>
-                    <button class="text-slate-400 hover:text-white" onclick="document.getElementById('rate-modal').remove()">✕</button>
-                </div>
-                <div>
-                    <div class="flex justify-between text-sm mb-2">
-                        <span class="text-slate-400">Survival</span>
-                        <span class="text-teal-400 font-bold" id="modal-rate-val">${Math.round(state.protectedRate * 100)}%</span>
-                        <span class="text-slate-400">Aggressive</span>
+            modalOverlay.innerHTML = `
+                <div class="glass-panel p-6 rounded-xl w-full max-w-sm space-y-6 m-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-white font-medium">Adjust Protection Rate</h3>
+                        <button class="text-slate-400 hover:text-white close-modal">✕</button>
                     </div>
-                    <input type="range" min="5" max="50" step="5" value="${Math.round(state.protectedRate * 100)}" 
-                        class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500">
+                    <div>
+                        <div class="flex justify-between text-sm mb-2">
+                            <span class="text-slate-400">5%</span>
+                            <span class="text-teal-400 font-bold" id="modal-rate-val">${currentRate}%</span>
+                            <span class="text-slate-400">50%</span>
+                        </div>
+                        <input type="range" min="5" max="50" step="5" value="${currentRate}" 
+                            class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-teal-500" id="rate-slider">
+                    </div>
+                    <div class="text-center">
+                        <p class="text-xs text-slate-500 mb-1">Protected Amount</p>
+                        <p class="text-lg text-teal-400 font-semibold" id="modal-preview-amt">${formatCurrency(previewAmt)}</p>
+                        <p class="text-xs text-slate-500">Spendable: <span id="modal-spendable">${formatCurrency(dashboardState.income - previewAmt)}</span></p>
+                    </div>
+                    <p class="text-xs text-slate-500">
+                        Higher protection reduces your spendable income but builds your safety net faster.
+                    </p>
+                    <button id="modal-save-rate" class="btn-primary w-full py-2 rounded-lg text-sm text-white">
+                        Update Rate
+                    </button>
                 </div>
-                <p class="text-xs text-slate-500">
-                    Higher protection reduces your spendable income but builds your safety net faster.
-                </p>
-                <button id="modal-save-rate" class="btn-primary w-full py-2 rounded-lg text-sm text-white">
-                    Update Rate
-                </button>
             `;
 
-            modalOverlay.appendChild(modalContent);
             document.body.appendChild(modalOverlay);
 
-            // Logic for Modal
-            const rangeInput = modalContent.querySelector('input[type="range"]');
-            const rateValDisplay = modalContent.querySelector('#modal-rate-val');
-            const saveBtn = modalContent.querySelector('#modal-save-rate');
+            const slider = document.getElementById('rate-slider');
+            const rateVal = document.getElementById('modal-rate-val');
+            const previewAmtEl = document.getElementById('modal-preview-amt');
+            const spendableEl = document.getElementById('modal-spendable');
 
-            rangeInput.addEventListener('input', (e) => {
-                rateValDisplay.textContent = e.target.value + '%';
+            slider.addEventListener('input', () => {
+                const newRate = parseInt(slider.value) / 100;
+                const newProtected = Math.round(dashboardState.income * newRate);
+                rateVal.textContent = slider.value + '%';
+                previewAmtEl.textContent = formatCurrency(newProtected);
+                spendableEl.textContent = formatCurrency(dashboardState.income - newProtected);
             });
 
-            saveBtn.addEventListener('click', () => {
-                const newRate = parseInt(rangeInput.value) / 100;
-                state.protectedRate = newRate;
-
-                // If budget exceeds new spendable, reset budget or warn? 
-                // For this sim, we just update math.
+            document.getElementById('modal-save-rate').addEventListener('click', () => {
+                dashboardState.protectedRate = parseInt(slider.value) / 100;
+                dashboardState.protectedAmount = getProtectedAmount();
+                
+                const spendable = getSpendableIncome();
+                const totalBudgeted = getTotalBudgeted();
+                if (totalBudgeted > spendable) {
+                    dashboardState.budget = { needs: 0, wants: 0, unexpected: 0 };
+                    dashboardState.confirmedBudget = false;
+                }
+                
                 saveState();
-                updateUI();
+                renderDashboard();
                 modalOverlay.remove();
-                console.log(`Protected rate updated to ${newRate * 100}%`);
+                console.log(`Protected rate updated to ${dashboardState.protectedRate * 100}%`);
             });
 
-            // Close on click outside
+            modalOverlay.querySelector('.close-modal').addEventListener('click', () => modalOverlay.remove());
             modalOverlay.addEventListener('click', (e) => {
                 if (e.target === modalOverlay) modalOverlay.remove();
             });
         }
 
-        // --- Event Listeners Binding ---
+        function handleConfirmBudget() {
+            const totalBudgeted = getTotalBudgeted();
+            const remaining = getSpendableIncome() - totalBudgeted;
+            
+            if (totalBudgeted === 0) {
+                alert('Please allocate some budget before confirming.');
+                return;
+            }
+            if (remaining < 0) {
+                alert('Your budget exceeds spendable income. Please adjust.');
+                return;
+            }
 
-        // Budget Inputs
-        Object.values(els.inputs).forEach(input => {
-            input.addEventListener('input', handleBudgetInput);
-        });
+            dashboardState.confirmedBudget = true;
+            saveState();
+            renderDashboard();
+            console.log('Budget confirmed:', dashboardState.budget);
+        }
 
-        // Main Buttons
-        if (els.buttons.adjustRate) {
-            els.buttons.adjustRate.addEventListener('click', () => {
-                console.log('Action: Adjust Rate');
-                handleAdjustRate();
-            });
-        } else console.warn("Adjust Rate button not found");
+        function handleSetLimits() {
+            console.log('Action: Set Limits');
+            const btn = document.getElementById('btn-set-limits');
+            const originalText = btn.textContent;
+            btn.textContent = 'Coming Soon';
+            setTimeout(() => btn.textContent = originalText, 1500);
+        }
 
-        if (els.buttons.confirmBudget) {
-            els.buttons.confirmBudget.addEventListener('click', () => {
-                console.log('Action: Confirm Budget');
-                state.confirmedBudget = true;
-                saveState();
-                updateUI();
+        function handleCreateGoal() {
+            console.log('Action: Create Goal Wallet');
+            const btn = document.getElementById('btn-create-goal');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = 'Coming Soon...';
+            setTimeout(() => btn.innerHTML = originalHTML, 1500);
+        }
+
+        function handleWriteLetter() {
+            console.log('Action: Write Letter');
+            alert('Time-Travel Letters feature coming soon!\n\nWrite a note to your future self that arrives at a moment you choose.');
+        }
+
+        function bindEventListeners() {
+            const needsInput = document.getElementById('input-needs');
+            const wantsInput = document.getElementById('input-wants');
+            const unexpectedInput = document.getElementById('input-unexpected');
+
+            if (needsInput) needsInput.addEventListener('input', handleBudgetInput);
+            if (wantsInput) wantsInput.addEventListener('input', handleBudgetInput);
+            if (unexpectedInput) unexpectedInput.addEventListener('input', handleBudgetInput);
+
+            const adjustRateBtn = document.getElementById('btn-adjust-rate');
+            if (adjustRateBtn) adjustRateBtn.addEventListener('click', handleAdjustRate);
+
+            const confirmBudgetBtn = document.getElementById('btn-confirm-budget');
+            if (confirmBudgetBtn) confirmBudgetBtn.addEventListener('click', handleConfirmBudget);
+
+            const setLimitsBtn = document.getElementById('btn-set-limits');
+            if (setLimitsBtn) setLimitsBtn.addEventListener('click', handleSetLimits);
+
+            const createGoalBtn = document.getElementById('btn-create-goal');
+            if (createGoalBtn) createGoalBtn.addEventListener('click', handleCreateGoal);
+
+            const writeLetterBtn = document.getElementById('btn-write-letter');
+            if (writeLetterBtn) writeLetterBtn.addEventListener('click', handleWriteLetter);
+
+            document.querySelectorAll('nav a').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    console.log('Navigation:', link.href);
+                });
             });
         }
 
-        if (els.buttons.setLimits) {
-            els.buttons.setLimits.addEventListener('click', () => {
-                console.log('Action: Set Limits (Placeholder)');
-                // Visual feedback
-                const originalText = els.buttons.setLimits.textContent;
-                els.buttons.setLimits.textContent = "Coming Soon";
-                setTimeout(() => els.buttons.setLimits.textContent = originalText, 1000);
-            });
+        function resetBudgetForNewMonth() {
+            dashboardState.budget = { needs: 0, wants: 0, unexpected: 0 };
+            dashboardState.confirmedBudget = false;
+            dashboardState.month += 1;
+            saveState();
+            renderDashboard();
         }
 
-        if (els.buttons.createGoal) {
-            els.buttons.createGoal.addEventListener('click', () => {
-                console.log('Action: Create Goal Wallet (Placeholder)');
-                const btn = els.buttons.createGoal;
-                const originalText = btn.textContent;
-                btn.textContent = "Processing...";
-                setTimeout(() => btn.textContent = originalText, 500);
-            });
-        }
-
-        if (els.buttons.writeLetter) {
-            els.buttons.writeLetter.addEventListener('click', () => {
-                console.log('Action: Write Letter');
-                alert("Simulated: Time travel letter interface would open here.");
-            });
-        }
-
-        // Init
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('FinPlay Dashboard Initialized');
-            updateUI();
+            console.log('FinPlay Dashboard Initializing...');
+            
+            initializeDashboardState();
+            bindEventListeners();
+            renderDashboard();
+            
+            console.log('Dashboard state:', dashboardState);
+            console.log('Profile loaded:', loadProfileFromStorage());
         });
-
     </script>
 </body>
 

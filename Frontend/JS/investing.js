@@ -1,7 +1,7 @@
-console.log("🔥 INVESTING.JS LOADED (PHASE 1 + 2 + 3):", window.location.pathname, new Date().toISOString());
+console.log("🔥 INVESTING.JS LOADED (PHASE 1 + 2 + 3 + 4):", window.location.pathname, new Date().toISOString());
 
 /**
- * FinPlay Investing Module - PHASE 1 + PHASE 2 + PHASE 3
+ * FinPlay Investing Module - PHASE 1 + PHASE 2 + PHASE 3 + PHASE 4
  * 
  * Phase 1: Investing Foundations
  * - Budget → Investing unlock
@@ -24,7 +24,14 @@ console.log("🔥 INVESTING.JS LOADED (PHASE 1 + 2 + 3):", window.location.pathn
  * - Stress state (freeze investing)
  * - Liquidity awareness
  * 
- * NO: Selling, rebalancing, SIPs, real charts
+ * Phase 4: Long-Term Learning & Reflection
+ * - Time compression simulation (5/10/20 years)
+ * - Decision history timeline
+ * - Behavior insights engine
+ * - Strategy profile classification
+ * - Financial literacy score
+ * 
+ * NO: Selling, rebalancing, SIPs, real charts, AI advice
  */
 
 // ========== MARKET ASSETS (STATIC DATA) ==========
@@ -48,7 +55,33 @@ const XP_REWARDS = {
     firstDiversified: 5,
     holdThroughVolatility: 3,
     handledEmergency: 5,
-    survivedCrashDiversified: 5
+    survivedCrashDiversified: 5,
+    completedLongTermSim: 10,
+    reviewedFullHistory: 5
+};
+
+// ========== PHASE 4: STRATEGY PROFILES ==========
+const STRATEGY_PROFILES = {
+    conservativeBuilder: {
+        name: 'Conservative Builder',
+        icon: '🛡️',
+        description: 'You prioritize stability over growth. Low-risk assets and cash reserves define your approach.'
+    },
+    balancedLearner: {
+        name: 'Balanced Learner',
+        icon: '⚖️',
+        description: 'You spread risk across different assets. A thoughtful approach that adapts to market conditions.'
+    },
+    aggressiveExplorer: {
+        name: 'Aggressive Explorer',
+        icon: '🚀',
+        description: 'You lean into high-risk assets seeking growth. Bold moves with higher volatility tolerance.'
+    },
+    volatilitySurvivor: {
+        name: 'Volatility Survivor',
+        icon: '🏆',
+        description: 'You weathered market storms without panic. Patience and resilience mark your journey.'
+    }
 };
 
 // ========== PHASE 3: LIFE EVENTS ==========
@@ -122,6 +155,12 @@ let phase2State = {
 let phase3State = {
     lastEventId: null,
     stressActive: false
+};
+
+// ========== PHASE 4 STATE TRACKING ==========
+let phase4State = {
+    longTermSimCompleted: false,
+    historyReviewed: false
 };
 
 // ========== STORAGE KEYS ==========
@@ -427,6 +466,281 @@ function getLifeEventFeedback(eventResult) {
     return "💡 " + event.feedback;
 }
 
+// ========== PHASE 4: TIME COMPRESSION SIMULATION ==========
+
+function runTimeCompression(years) {
+    const portfolio = getPortfolio();
+    if (!portfolio || portfolio.holdings.length === 0) {
+        return { 
+            success: false, 
+            message: 'You need investments to run a long-term simulation.' 
+        };
+    }
+    
+    const months = years * 12;
+    const diversified = isDiversified();
+    
+    let simHoldings = portfolio.holdings.map(h => ({
+        ...h,
+        simValue: h.currentValue
+    }));
+    
+    let crisesSurvived = 0;
+    let totalVolatility = 0;
+    let bearMonths = 0;
+    let bullMonths = 0;
+    
+    for (let m = 0; m < months; m++) {
+        const rand = Math.random();
+        let scenario;
+        if (rand < 0.25) { scenario = 'bear'; bearMonths++; }
+        else if (rand < 0.55) { scenario = 'bull'; bullMonths++; }
+        else { scenario = 'sideways'; }
+        
+        const hasLifeEvent = Math.random() < 0.15;
+        let crashThisMonth = false;
+        
+        if (hasLifeEvent && Math.random() < 0.2) {
+            crashThisMonth = true;
+            crisesSurvived++;
+        }
+        
+        simHoldings.forEach(holding => {
+            let returnPercent = 0;
+            
+            if (crashThisMonth) {
+                if (holding.riskLevel === 'High') returnPercent = -8 - Math.random() * 7;
+                else if (holding.riskLevel === 'Medium') returnPercent = -4 - Math.random() * 4;
+                else returnPercent = -1 - Math.random() * 2;
+                if (diversified) returnPercent *= 0.7;
+            } else {
+                switch (scenario) {
+                    case 'bull':
+                        if (holding.riskLevel === 'High') returnPercent = 3 + Math.random() * 5;
+                        else if (holding.riskLevel === 'Medium') returnPercent = 2 + Math.random() * 3;
+                        else returnPercent = 1 + Math.random() * 1.5;
+                        break;
+                    case 'bear':
+                        if (holding.riskLevel === 'High') returnPercent = -3 - Math.random() * 4;
+                        else if (holding.riskLevel === 'Medium') returnPercent = -1.5 - Math.random() * 2;
+                        else returnPercent = -0.5 - Math.random() * 1;
+                        break;
+                    default:
+                        if (holding.riskLevel === 'High') returnPercent = -1 + Math.random() * 2;
+                        else if (holding.riskLevel === 'Medium') returnPercent = -0.5 + Math.random() * 1;
+                        else returnPercent = 0 + Math.random() * 0.5;
+                }
+                if (diversified) returnPercent *= 0.9;
+            }
+            
+            totalVolatility += Math.abs(returnPercent);
+            holding.simValue = Math.max(100, Math.round(holding.simValue * (1 + returnPercent / 100)));
+        });
+    }
+    
+    const finalValue = simHoldings.reduce((sum, h) => sum + h.simValue, 0);
+    const startValue = portfolio.holdings.reduce((sum, h) => sum + h.currentValue, 0);
+    const totalReturn = ((finalValue - startValue) / startValue) * 100;
+    const avgVolatility = totalVolatility / months;
+    
+    return {
+        success: true,
+        years,
+        months,
+        startValue,
+        finalValue,
+        totalReturn,
+        crisesSurvived,
+        avgVolatility,
+        diversified,
+        bullMonths,
+        bearMonths
+    };
+}
+
+// ========== PHASE 4: DECISION HISTORY ==========
+
+function getDecisionHistory() {
+    const portfolio = getPortfolio();
+    if (!portfolio) return [];
+    
+    const history = portfolio.decisionHistory || [];
+    return history.slice(-20);
+}
+
+function recordDecision(type, details) {
+    const portfolio = getPortfolio();
+    if (!portfolio) return;
+    
+    if (!portfolio.decisionHistory) portfolio.decisionHistory = [];
+    
+    const entry = {
+        month: portfolio.month,
+        type,
+        timestamp: Date.now(),
+        portfolioValue: calculateMetrics().currentValue,
+        diversified: isDiversified(),
+        ...details
+    };
+    
+    portfolio.decisionHistory.push(entry);
+    
+    if (portfolio.decisionHistory.length > 50) {
+        portfolio.decisionHistory = portfolio.decisionHistory.slice(-50);
+    }
+    
+    savePortfolio(portfolio);
+}
+
+// ========== PHASE 4: BEHAVIOR INSIGHTS ENGINE ==========
+
+function generateBehaviorInsights() {
+    const portfolio = getPortfolio();
+    if (!portfolio || portfolio.month < 3) return [];
+    
+    const insights = [];
+    const history = portfolio.decisionHistory || [];
+    
+    const diversifiedMonths = history.filter(h => h.diversified).length;
+    const totalMonths = history.length;
+    
+    if (diversifiedMonths > totalMonths * 0.7 && totalMonths >= 3) {
+        insights.push({
+            icon: '🛡️',
+            text: 'You maintained diversification most of the time. This likely reduced your volatility during market swings.'
+        });
+    } else if (diversifiedMonths < totalMonths * 0.3 && totalMonths >= 3) {
+        insights.push({
+            icon: '⚠️',
+            text: 'Your portfolio was concentrated most of the time. This may have amplified both gains and losses.'
+        });
+    }
+    
+    const lifeEvents = history.filter(h => h.type === 'life_event');
+    const emergencies = lifeEvents.filter(e => e.eventType === 'Emergency');
+    const stressTriggers = emergencies.filter(e => e.stressTriggered);
+    
+    if (emergencies.length > 0 && stressTriggers.length === 0) {
+        insights.push({
+            icon: '💪',
+            text: 'You handled all emergencies without cash shortage. Your liquidity buffer served you well.'
+        });
+    } else if (stressTriggers.length > 0) {
+        insights.push({
+            icon: '💡',
+            text: `Cash shortages occurred ${stressTriggers.length} time(s). Building a larger emergency fund could prevent future freezes.`
+        });
+    }
+    
+    const holdingRisks = portfolio.holdings.map(h => h.riskLevel);
+    const highRiskCount = holdingRisks.filter(r => r === 'High').length;
+    const lowRiskCount = holdingRisks.filter(r => r === 'Low').length;
+    
+    if (highRiskCount > lowRiskCount && portfolio.holdings.length >= 2) {
+        insights.push({
+            icon: '🚀',
+            text: 'You leaned toward high-risk investments. Higher potential returns come with higher volatility.'
+        });
+    } else if (lowRiskCount > highRiskCount && portfolio.holdings.length >= 2) {
+        insights.push({
+            icon: '🔒',
+            text: 'You favored lower-risk investments. Steadier growth with less dramatic swings.'
+        });
+    }
+    
+    const invested = history.filter(h => h.type === 'investment').length;
+    if (invested > 0 && portfolio.month > 3) {
+        const investmentRate = invested / portfolio.month;
+        if (investmentRate > 0.5) {
+            insights.push({
+                icon: '📈',
+                text: 'Consistent investing behavior. Regular contributions often outperform timing attempts.'
+            });
+        }
+    }
+    
+    if (insights.length === 0) {
+        insights.push({
+            icon: '📊',
+            text: 'Keep making decisions to build your financial story. Patterns emerge over time.'
+        });
+    }
+    
+    return insights.slice(0, 5);
+}
+
+// ========== PHASE 4: STRATEGY PROFILE CLASSIFICATION ==========
+
+function classifyStrategyProfile() {
+    const portfolio = getPortfolio();
+    if (!portfolio || portfolio.month < 3) return null;
+    
+    const history = portfolio.decisionHistory || [];
+    const { label: riskLabel } = calculatePortfolioRiskScore();
+    const diversified = isDiversified();
+    
+    const lifeEvents = history.filter(h => h.type === 'life_event');
+    const crashes = lifeEvents.filter(e => e.investmentImpact === 'crash');
+    const stressTriggers = lifeEvents.filter(e => e.stressTriggered);
+    
+    if (crashes.length >= 2 && diversified) {
+        return 'volatilitySurvivor';
+    }
+    
+    if (riskLabel === 'High' && portfolio.holdings.length >= 2) {
+        return 'aggressiveExplorer';
+    }
+    
+    if (riskLabel === 'Low' || (stressTriggers.length === 0 && portfolio.cash > portfolio.totalInvested * 0.3)) {
+        return 'conservativeBuilder';
+    }
+    
+    return 'balancedLearner';
+}
+
+// ========== PHASE 4: FINANCIAL LITERACY SCORE ==========
+
+function calculateLiteracyScore() {
+    const portfolio = getPortfolio();
+    if (!portfolio) return { total: 0, breakdown: {} };
+    
+    const breakdown = {};
+    let total = 0;
+    
+    const diversificationConsistency = portfolio.decisionHistory?.filter(h => h.diversified).length || 0;
+    const totalEntries = portfolio.decisionHistory?.length || 1;
+    const divScore = Math.min(25, Math.round((diversificationConsistency / totalEntries) * 25));
+    breakdown.diversification = divScore;
+    total += divScore;
+    
+    const lifeEvents = portfolio.decisionHistory?.filter(h => h.type === 'life_event') || [];
+    const emergencies = lifeEvents.filter(e => e.eventType === 'Emergency');
+    const handled = emergencies.filter(e => !e.stressTriggered).length;
+    const survivalScore = emergencies.length > 0 
+        ? Math.min(25, Math.round((handled / emergencies.length) * 25))
+        : (portfolio.month >= 3 ? 15 : 5);
+    breakdown.survival = survivalScore;
+    total += survivalScore;
+    
+    const { score: riskScore } = calculatePortfolioRiskScore();
+    let riskAlignScore = 15;
+    if (riskScore > 0 && riskScore < 3) {
+        riskAlignScore = 20;
+    }
+    if (portfolio.holdings.length >= 3) {
+        riskAlignScore += 5;
+    }
+    breakdown.riskAlignment = Math.min(25, riskAlignScore);
+    total += breakdown.riskAlignment;
+    
+    const stressCount = portfolio.decisionHistory?.filter(h => h.stressTriggered).length || 0;
+    const stabilityScore = Math.max(0, 25 - (stressCount * 5));
+    breakdown.stability = stabilityScore;
+    total += stabilityScore;
+    
+    return { total: Math.min(100, total), breakdown };
+}
+
 // ========== XP SYSTEM ==========
 
 function addXp(amount) {
@@ -598,6 +912,8 @@ function tradeAsset(assetId) {
         savePortfolio(portfolio);
         showNotification(`Invested ${formatCurrency(investAmount)} in ${asset.name}`, 'success');
     }
+    
+    recordDecision('investment', { assetName: asset.name, amount: investAmount, riskLevel: asset.riskLevel });
     
     checkAndAwardDiversificationXP();
     
@@ -1029,6 +1345,176 @@ function renderTransactions() {
     container.innerHTML = '<p class="empty-state">Transaction history unlocks in higher levels</p>';
 }
 
+// ========== PHASE 4: UI RENDERING ==========
+
+function renderTimeSimResult(result) {
+    const container = document.getElementById('timeSimResult');
+    if (!container) return;
+    
+    if (!result.success) {
+        container.innerHTML = `<p class="empty-state">${result.message}</p>`;
+        container.style.display = 'block';
+        return;
+    }
+    
+    const returnClass = result.totalReturn >= 0 ? 'positive' : 'negative';
+    const returnSign = result.totalReturn >= 0 ? '+' : '';
+    
+    container.innerHTML = `
+        <h4>${result.years}-Year Projection (${result.months} months)</h4>
+        <div class="sim-stats">
+            <div class="sim-stat">
+                <div class="sim-stat-value ${returnClass}">${returnSign}${result.totalReturn.toFixed(1)}%</div>
+                <div class="sim-stat-label">Total Return</div>
+            </div>
+            <div class="sim-stat">
+                <div class="sim-stat-value">${formatCurrency(result.finalValue)}</div>
+                <div class="sim-stat-label">Final Value</div>
+            </div>
+            <div class="sim-stat">
+                <div class="sim-stat-value">${result.crisesSurvived}</div>
+                <div class="sim-stat-label">Crises Survived</div>
+            </div>
+        </div>
+        <div class="sim-summary">
+            ${result.diversified ? '✓ Diversification reduced volatility by ~10%.' : '⚠ A diversified portfolio would have reduced volatility.'}
+            <br>Market conditions: ${result.bullMonths} bull months, ${result.bearMonths} bear months.
+            <br><em>This is a projection based on historical patterns, not a prediction.</em>
+        </div>
+    `;
+    container.style.display = 'block';
+}
+
+function renderDecisionTimeline() {
+    const container = document.getElementById('decisionTimeline');
+    const reviewBtn = document.getElementById('reviewHistoryBtn');
+    if (!container) return;
+    
+    const history = getDecisionHistory();
+    
+    if (history.length === 0) {
+        container.innerHTML = '<p class="empty-state">Make investments and advance months to see your history</p>';
+        if (reviewBtn) reviewBtn.style.display = 'none';
+        return;
+    }
+    
+    container.innerHTML = history.map(entry => {
+        let actionText = '';
+        let eventText = '';
+        let tagClass = entry.diversified ? 'diversified' : 'concentrated';
+        let tagText = entry.diversified ? 'Diversified' : 'Concentrated';
+        
+        if (entry.stressTriggered) {
+            tagClass = 'frozen';
+            tagText = 'Frozen';
+        }
+        
+        switch (entry.type) {
+            case 'investment':
+                actionText = `Invested in ${entry.assetName}`;
+                break;
+            case 'month_advance':
+                actionText = entry.scenario ? `Month advanced (${entry.scenario})` : 'Month advanced';
+                break;
+            case 'life_event':
+                actionText = 'Life event occurred';
+                eventText = entry.eventTitle || 'Unknown event';
+                break;
+            default:
+                actionText = entry.type;
+        }
+        
+        return `
+            <div class="timeline-entry">
+                <div class="timeline-month">M${entry.month}</div>
+                <div class="timeline-content">
+                    <div class="timeline-action">${actionText}</div>
+                    ${eventText ? `<div class="timeline-event">${eventText}</div>` : ''}
+                    <div class="timeline-value">Portfolio: ${formatCurrency(entry.portfolioValue)}</div>
+                    <span class="timeline-tag ${tagClass}">${tagText}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    if (reviewBtn && history.length >= 5 && !phase4State.historyReviewed) {
+        reviewBtn.style.display = 'block';
+    }
+}
+
+function renderBehaviorInsights() {
+    const container = document.getElementById('behaviorInsights');
+    if (!container) return;
+    
+    const insights = generateBehaviorInsights();
+    
+    if (insights.length === 0) {
+        container.innerHTML = '<p class="empty-state">Insights will appear after you\'ve made several decisions</p>';
+        return;
+    }
+    
+    container.innerHTML = insights.map(insight => `
+        <div class="insight-item">
+            <span class="insight-icon">${insight.icon}</span>
+            <span class="insight-text">${insight.text}</span>
+        </div>
+    `).join('');
+}
+
+function renderStrategyProfile() {
+    const profileNameEl = document.getElementById('profileName');
+    const profileDescEl = document.getElementById('profileDescription');
+    const profileIconEl = document.querySelector('.profile-icon');
+    if (!profileNameEl) return;
+    
+    const profileKey = classifyStrategyProfile();
+    
+    if (!profileKey) {
+        profileNameEl.textContent = '-';
+        profileDescEl.textContent = 'Complete more months to discover your investing style.';
+        if (profileIconEl) profileIconEl.textContent = '🎯';
+        return;
+    }
+    
+    const profile = STRATEGY_PROFILES[profileKey];
+    profileNameEl.textContent = profile.name;
+    profileDescEl.textContent = profile.description;
+    if (profileIconEl) profileIconEl.textContent = profile.icon;
+}
+
+function renderLiteracyScore() {
+    const scoreEl = document.getElementById('literacyScore');
+    const breakdownEl = document.getElementById('scoreBreakdown');
+    if (!scoreEl) return;
+    
+    const { total, breakdown } = calculateLiteracyScore();
+    
+    scoreEl.textContent = total;
+    
+    if (breakdownEl && Object.keys(breakdown).length > 0) {
+        const labels = {
+            diversification: 'Diversification',
+            survival: 'Crisis Survival',
+            riskAlignment: 'Risk Alignment',
+            stability: 'Emotional Stability'
+        };
+        
+        breakdownEl.innerHTML = Object.entries(breakdown).map(([key, value]) => `
+            <div class="score-item">
+                <span class="score-item-label">${labels[key] || key}</span>
+                <span class="score-item-value">${value}/25</span>
+            </div>
+        `).join('');
+    }
+}
+
+function renderPhase4() {
+    renderDecisionTimeline();
+    renderBehaviorInsights();
+    renderStrategyProfile();
+    renderLiteracyScore();
+}
+
 // ========== UI REFRESH ==========
 
 function refreshUI() {
@@ -1040,6 +1526,7 @@ function refreshUI() {
     renderHoldings();
     renderAllocation();
     renderTransactions();
+    renderPhase4();
 }
 
 function scrollToMarket() {
@@ -1177,7 +1664,39 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
     
-    console.log('🟢 Phase 1 initialization complete');
+    document.querySelectorAll('.time-sim-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const years = parseInt(btn.dataset.years);
+            console.log('🟢 CLICKED: Time Simulation', { years });
+            
+            document.querySelectorAll('.time-sim-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            const result = runTimeCompression(years);
+            renderTimeSimResult(result);
+            
+            if (result.success && !phase4State.longTermSimCompleted) {
+                phase4State.longTermSimCompleted = true;
+                addXp(XP_REWARDS.completedLongTermSim);
+                showNotification(`Completed ${years}-Year Simulation! +10 XP`, 'success');
+            }
+        });
+    });
+    
+    const reviewHistoryBtn = document.getElementById('reviewHistoryBtn');
+    if (reviewHistoryBtn) {
+        reviewHistoryBtn.addEventListener('click', () => {
+            console.log('🟢 CLICKED: Review History');
+            if (!phase4State.historyReviewed) {
+                phase4State.historyReviewed = true;
+                addXp(XP_REWARDS.reviewedFullHistory);
+                showNotification('Reviewed Full History! +5 XP', 'success');
+                reviewHistoryBtn.style.display = 'none';
+            }
+        });
+    }
+    
+    console.log('🟢 Phase 1-4 initialization complete');
     console.log('🟢 Summary:');
     console.log('   - Market cards:', document.querySelectorAll('.market-card').length);
     console.log('   - Filter buttons:', document.querySelectorAll('.filter-btn').length);

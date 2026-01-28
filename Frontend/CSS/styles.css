@@ -5330,3 +5330,140 @@ body {
     font-size: 0.65rem;
     padding: 2px 6px;
 }
+
+/* ========== PHASE 3: Life Events & Real-World Shocks ========== */
+
+/* Life Event Banner in Month Summary */
+.life-event-banner {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid;
+}
+
+.life-event-emergency {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.life-event-opportunity {
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.life-event-neutral {
+    background: rgba(100, 116, 139, 0.1);
+    border-color: rgba(100, 116, 139, 0.3);
+}
+
+.life-event-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.life-event-icon {
+    font-size: 1.5rem;
+}
+
+.life-event-type {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.life-event-emergency .life-event-type {
+    color: #EF4444;
+}
+
+.life-event-opportunity .life-event-type {
+    color: #22C55E;
+}
+
+.life-event-neutral .life-event-type {
+    color: #94A3B8;
+}
+
+.life-event-title {
+    margin: 0 0 8px 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+}
+
+.life-event-description {
+    margin: 0 0 12px 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.life-event-impact {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.life-event-impact.positive {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22C55E;
+}
+
+.life-event-impact.negative {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+}
+
+.life-event-warning {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: rgba(245, 158, 11, 0.15);
+    border-radius: 8px;
+    color: #F59E0B;
+    font-size: 0.85rem;
+}
+
+/* Stress State Banner in Market Section */
+.stress-state-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.stress-icon {
+    font-size: 1.5rem;
+}
+
+.stress-content strong {
+    display: block;
+    color: #F59E0B;
+    margin-bottom: 4px;
+}
+
+.stress-content p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* CTA Frozen State */
+.cta-frozen {
+    background: rgba(245, 158, 11, 0.1) !important;
+    border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+.cta-frozen .cta-icon {
+    color: #F59E0B !important;
+}

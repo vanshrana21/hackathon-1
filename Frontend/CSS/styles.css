@@ -1280,12 +1280,16 @@ body {
     justify-content: center;
     z-index: 1000;
     opacity: 0;
-    transition: opacity 0.3s ease;
+    pointer-events: none;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
     padding: 24px;
 }
 
 .modal-overlay.show {
     opacity: 1;
+    pointer-events: auto;
+    visibility: visible;
 }
 
 .modal-content {

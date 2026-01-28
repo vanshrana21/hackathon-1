@@ -727,6 +727,7 @@ function renderMarket(filter = 'all') {
         `;
 
         card.querySelector('.market-btn').addEventListener('click', () => {
+            console.log('🟢 Clicked: Trade/FD Button', { assetId: asset.id, assetName: asset.name, type: asset.type });
             if (!isInvestingUnlocked()) {
                 showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
                 return;
@@ -1110,26 +1111,40 @@ function scrollToMarket() {
 function wireFirstInvestmentButton() {
     const btn = document.getElementById('makeFirstInvestmentBtn');
     if (btn) {
-        btn.addEventListener('click', () => {
+        btn.onclick = () => {
+            console.log('🟢 Clicked: Make First Investment Button');
             if (!isInvestingUnlocked()) {
                 showNotification('Complete your monthly budget on the Dashboard to unlock investing.', 'error');
                 return;
             }
             scrollToMarket();
-        });
+        };
     }
 }
 
 // ========== INITIALIZATION ==========
 
 async function initializePage() {
-    if (window.SyncService) {
-        await window.SyncService.initializeFromServer();
+    console.log('🟢 initializePage: Starting');
+    
+    try {
+        if (window.SyncService) {
+            await window.SyncService.initializeFromServer();
+        }
+    } catch (e) {
+        console.warn('SyncService error (continuing):', e);
     }
     
     const profile = getProfile();
+    console.log('🟢 initializePage: Profile check', { hasProfile: !!profile });
+    
     if (!profile) {
-        window.location.href = '/';
+        console.log('🟢 initializePage: No profile, redirecting to home');
+        document.getElementById('loadingState').innerHTML = `
+            <div class="spinner"></div>
+            <p>No profile found. Redirecting...</p>
+        `;
+        setTimeout(() => { window.location.href = '/'; }, 1500);
         return;
     }
 
@@ -1140,7 +1155,7 @@ async function initializePage() {
     document.getElementById('investingContent').style.display = 'block';
 
     refreshUI();
-    console.log('[investing.js] Page initialized. Investing unlocked:', isInvestingUnlocked());
+    console.log('🟢 initializePage: Complete. Investing unlocked:', isInvestingUnlocked());
 }
 
 // ========== EVENT BINDINGS ==========
